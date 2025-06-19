@@ -1,0 +1,11 @@
+Django==4.2.10
+djangorestframework==3.14.0
+djangorestframework-simplejwt==5.3.0
+djoser==2.2.0
+mysqlclient==2.2.0
+python-decouple==3.8
+pillow==10.1.0
+# GeoDjango dependencies
+mysql-connector-python==8.0.33
+GDAL==3.4.3
+

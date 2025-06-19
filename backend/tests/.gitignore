@@ -1,0 +1,34 @@
+# Test Reports and Generated Files
+reports/
+*.html
+htmlcov/
+.coverage
+coverage.xml
+
+# Test Database
+test_*.db
+*.sqlite3
+
+# Environment Files
+.env.e2e
+.env.test
+
+# Pytest Cache
+.pytest_cache/
+__pycache__/
+*.pyc
+*.pyo
+
+# Test Logs
+logs/
+*.log
+
+# IDE Files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS Files
+.DS_Store
+Thumbs.db 
