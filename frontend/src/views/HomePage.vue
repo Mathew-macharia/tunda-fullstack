@@ -151,7 +151,7 @@
                   KSh {{ listing.current_price }}
                 </div>
                 <div class="text-xs text-gray-500">
-                  per {{ listing.product.unit_display }}
+                  per {{ listing.product_unit_display }}
                 </div>
               </div>
 
@@ -175,11 +175,11 @@
               
               <div class="flex items-center justify-between">
                 <div class="text-xs text-gray-500">
-                  {{ listing.quantity_available }} {{ listing.product.unit_display }} left
+                  {{ listing.quantity_available }} {{ listing.product_unit_display }} left
                 </div>
                 
                 <button
-                  v-if="isAuthenticated && isCustomer && listing.listing_status === 'available'"
+                  v-if="listing.listing_status === 'available'"
                   @click.stop="addToCart(listing)"
                   :disabled="addingToCart === listing.listing_id"
                   class="bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
@@ -188,14 +188,8 @@
                   <span v-else>Add to Cart</span>
                 </button>
                 
-                <router-link
-                  v-else-if="!isAuthenticated"
-                  to="/login"
-                  @click.stop
-                  class="bg-gray-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-gray-700 transition-colors"
-                >
-                  Login to Buy
-                </router-link>
+                <!-- No longer "Login to Buy" for unauthenticated users, just "Add to Cart" -->
+                <!-- The button above handles both authenticated and unauthenticated -->
               </div>
             </div>
           </div>
@@ -233,7 +227,7 @@
 <script>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { isAuthenticated, isCustomer, user } from '@/stores/auth'
+import { isAuthenticated, isCustomer, addGuestCartItem } from '@/stores/auth' // Import addGuestCartItem
 import { productsAPI, cartAPI } from '@/services/api'
 
 export default {
@@ -355,19 +349,19 @@ export default {
     }
     
     const addToCart = async (listing) => {
-      if (!isCustomer.value) {
-        router.push('/login')
-        return
-      }
-      
       addingToCart.value = listing.listing_id
       
       try {
-        await cartAPI.addToCart(listing.listing_id, listing.min_order_quantity || 1)
+        if (isAuthenticated.value && isCustomer.value) {
+          await cartAPI.addToCart(listing.listing_id, listing.min_order_quantity || 1)
+          console.log(`${listing.product_name} added to authenticated cart!`)
+        } else {
+          // Add to guest cart if not authenticated or not a customer
+          addGuestCartItem(listing, listing.min_order_quantity || 1) // Pass the full listing object
+          console.log(`${listing.product_name} added to guest cart!`)
+        }
         
         window.dispatchEvent(new CustomEvent('cartUpdated'))
-        
-        console.log(`${listing.product_name} added to cart!`)
         
       } catch (error) {
         console.error('Failed to add to cart:', error)
@@ -397,7 +391,6 @@ export default {
       // Computed
       isAuthenticated,
       isCustomer,
-      user,
       currentHealthTip,
       
       // Methods

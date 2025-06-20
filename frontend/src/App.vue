@@ -31,17 +31,20 @@ import logoImage from '@/assets/tunda_logo.jpg' // Adjust the filename as needed
               <!-- Products link - hidden from riders -->
               <router-link v-if="!isRider" to="/products" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">Products</router-link>
               
+              <!-- Cart link - visible for all non-rider/admin roles (including guests) -->
+              <router-link v-if="!isRider && !isAdmin" to="/cart" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center space-x-1">
+                <span>Cart</span>
+                <span v-if="cartItemsCount > 0" 
+                      class="bg-green-600 text-white text-xs rounded-full px-2 py-1 min-w-5 text-center">
+                  {{ cartItemsCount }}
+                </span>
+              </router-link>
+
               <template v-if="isAuthenticated">
                 <!-- Customer navigation -->
                 <template v-if="isCustomer">
                   <router-link to="/customer" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">Dashboard</router-link>
-                  <router-link to="/cart" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center space-x-1">
-                    <span>Cart</span>
-                    <span v-if="cartItemsCount > 0" 
-                          class="bg-green-600 text-white text-xs rounded-full px-2 py-1 min-w-5 text-center">
-                      {{ cartItemsCount }}
-                    </span>
-                  </router-link>
+                  <!-- Cart link moved above -->
                   <router-link to="/orders" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">Orders</router-link>
                 </template>
                 
@@ -131,13 +134,16 @@ import logoImage from '@/assets/tunda_logo.jpg' // Adjust the filename as needed
             <!-- Products link - hidden from riders in mobile menu too -->
             <router-link v-if="!isRider" to="/products" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors duration-200">Products</router-link>
             
+            <!-- Cart link - visible for all non-rider/admin roles (including guests) -->
+            <router-link v-if="!isRider && !isAdmin" to="/cart" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors duration-200">
+              Cart <span v-if="cartItemsCount > 0" class="text-green-600">({{ cartItemsCount }})</span>
+            </router-link>
+
             <template v-if="isAuthenticated">
               <!-- Customer mobile navigation -->
               <template v-if="isCustomer">
                 <router-link to="/customer" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors duration-200">Dashboard</router-link>
-                <router-link to="/cart" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors duration-200">
-                  Cart <span v-if="cartItemsCount > 0" class="text-green-600">({{ cartItemsCount }})</span>
-                </router-link>
+                <!-- Cart link moved above -->
                 <router-link to="/orders" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors duration-200">Orders</router-link>
               </template>
               
@@ -230,7 +236,8 @@ import {
   isAdmin,
   getUserName,
   getUserRoleDisplay,
-  logout 
+  logout,
+  guestCartItems // Import guestCartItems
 } from '@/stores/auth'
 import { cartAPI } from '@/services/api'
 
@@ -242,15 +249,19 @@ export default {
     const cartItemsCount = ref(0)
     const toasts = ref([])
     
-    // Load cart count for customers
+    // Load cart count based on authentication status
     const loadCartCount = async () => {
-      if (isCustomer.value && isAuthenticated.value) {
+      if (isAuthenticated.value && isCustomer.value) {
         try {
           const cart = await cartAPI.getCart()
           cartItemsCount.value = cart.items_count || 0
         } catch (error) {
-          console.error('Failed to load cart count:', error)
+          console.error('Failed to load authenticated cart count:', error)
+          cartItemsCount.value = 0 // Reset on error
         }
+      } else {
+        // For unauthenticated users, use the guest cart items count
+        cartItemsCount.value = guestCartItems.value.length
       }
     }
     
@@ -263,7 +274,7 @@ export default {
         console.log('Logout function completed')
         
         showMobileMenu.value = false
-        cartItemsCount.value = 0
+        cartItemsCount.value = 0 // Reset cart count immediately on logout
         
         console.log('Navigating to home...')
         await router.push('/')
@@ -311,6 +322,13 @@ export default {
     onUnmounted(() => {
       window.removeEventListener('cartUpdated', loadCartCount)
     })
+    
+    // Watch for changes in guestCartItems to update cart count
+    // This is important because guestCartItems is updated directly in auth.js
+    // and other components might modify it without dispatching 'cartUpdated' event.
+    // However, the current implementation of addGuestCartItem, updateGuestCartItem, removeGuestCartItem
+    // in auth.js *do* dispatch 'cartUpdated', so this might be redundant but safe.
+    // watch(guestCartItems, loadCartCount, { deep: true }); // Uncomment if needed
     
     return {
       // Auth state

@@ -15,9 +15,7 @@ class IsCustomer(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.user_role == 'customer'
 
-class CartViewSet(mixins.RetrieveModelMixin, 
-                  mixins.DestroyModelMixin,
-                  viewsets.GenericViewSet):
+class CartViewSet(viewsets.ModelViewSet): # Changed base class to ModelViewSet
     """
     API endpoint for managing customer shopping carts
     """
@@ -194,4 +192,62 @@ class CartViewSet(mixins.RetrieveModelMixin,
             return Response(
                 {'error': 'You do not have an active cart'},
                 status=status.HTTP_404_NOT_FOUND
+            )
+
+    def merge_guest_cart(self, request):
+        """
+        Merge guest cart items into the authenticated user's cart,
+        prioritizing guest cart by overwriting existing items.
+        """
+        guest_items_data = request.data.get('items', [])
+        
+        if not guest_items_data:
+            return Response(
+                {'message': 'No guest cart items provided to merge'},
+                status=status.HTTP_200_OK
+            )
+            
+        try:
+            with transaction.atomic():
+                # Get or create the user's cart
+                cart, created = Cart.objects.get_or_create(customer=request.user)
+                
+                # Clear existing items in the authenticated user's cart
+                cart.items.all().delete()
+                
+                # Add items from the guest cart
+                for item_data in guest_items_data:
+                    listing_id = item_data.get('listing_id')
+                    quantity = item_data.get('quantity')
+                    
+                    if not listing_id or quantity is None:
+                        # Log error but continue with other items
+                        print(f"Skipping invalid guest item: {item_data}")
+                        continue
+                        
+                    try:
+                        listing = ProductListing.objects.get(listing_id=listing_id)
+                        
+                        # Create new cart item (since we cleared the cart, no need to check for existence)
+                        CartItem.objects.create(
+                            cart=cart,
+                            listing=listing,
+                            quantity=quantity
+                        )
+                    except ProductListing.DoesNotExist:
+                        print(f"ProductListing with ID {listing_id} not found. Skipping item.")
+                        continue
+                        
+                serializer = self.get_serializer(cart)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+                
+        except Cart.DoesNotExist:
+            return Response(
+                {'error': 'Authenticated user does not have a cart'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {'error': f'An unexpected error occurred during merge: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )

@@ -101,6 +101,12 @@ export const authAPI = {
   async changePassword(passwordData) {
     const response = await api.post('/users/change-password/', passwordData)
     return response.data
+  },
+
+  async mergeGuestCart(items) {
+    // This endpoint will need to be implemented on the backend
+    const response = await api.post('/carts/merge_guest_cart/', { items })
+    return response.data
   }
 }
 
@@ -195,7 +201,7 @@ export const cartAPI = {
   async updateCartItem(itemId, quantity) {
     const response = await api.post('/carts/update_quantity/', {
       cart_item_id: itemId,
-      quantity: quantity
+      quantity: parseFloat(quantity) // Ensure quantity is a float
     })
     return response.data
   },

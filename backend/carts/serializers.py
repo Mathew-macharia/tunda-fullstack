@@ -6,26 +6,39 @@ from decimal import Decimal
 
 class CartItemSerializer(serializers.ModelSerializer):
     """
-    Serializer for cart items with nested product listing details
+    Serializer for cart items with direct product listing details for display
     """
-    listing_details = serializers.SerializerMethodField(read_only=True)
+    product_name = serializers.CharField(source='listing.product.product_name', read_only=True)
+    farm_name = serializers.CharField(source='listing.farm.farm_name', read_only=True)
+    current_price = serializers.DecimalField(source='listing.current_price', max_digits=10, decimal_places=2, read_only=True)
+    product_unit = serializers.CharField(source='listing.product.get_unit_of_measure_display', read_only=True)
+    photos = serializers.JSONField(source='listing.photos', read_only=True)
+    quantity_available = serializers.DecimalField(source='listing.quantity_available', max_digits=10, decimal_places=2, read_only=True)
+    min_order_quantity = serializers.DecimalField(source='listing.min_order_quantity', max_digits=10, decimal_places=2, read_only=True)
+    availability_status = serializers.CharField(source='listing.get_listing_status_display', read_only=True)
+    price_changed = serializers.SerializerMethodField(read_only=True)
     subtotal = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
     
     class Meta:
         model = CartItem
         fields = [
-            'cart_item_id', 'cart', 'listing', 'listing_details', 'quantity', 
-            'price_at_addition', 'subtotal', 'added_at', 'updated_at'
+            'cart_item_id', 'cart', 'listing', 'quantity', 'price_at_addition', 'subtotal', 
+            'added_at', 'updated_at', 'product_name', 'farm_name', 'current_price', 
+            'product_unit', 'photos', 'quantity_available', 'min_order_quantity', 
+            'availability_status', 'price_changed'
         ]
-        read_only_fields = ['cart_item_id', 'cart', 'price_at_addition', 'added_at', 'updated_at']
+        read_only_fields = [
+            'cart_item_id', 'cart', 'price_at_addition', 'added_at', 'updated_at',
+            'product_name', 'farm_name', 'current_price', 'product_unit', 'photos',
+            'quantity_available', 'min_order_quantity', 'availability_status', 'price_changed'
+        ]
     
-    def get_listing_details(self, obj):
+    def get_price_changed(self, obj):
         """
-        Get detailed information about the product listing
+        Check if the current price of the listing has changed since it was added to the cart.
         """
-        from products.serializers import ProductListingSerializer
-        return ProductListingSerializer(obj.listing, context=self.context).data
-    
+        return obj.price_at_addition != obj.listing.current_price
+
     def validate_listing(self, value):
         """
         Validate that the listing is available and active

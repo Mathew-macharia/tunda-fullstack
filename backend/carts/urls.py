@@ -6,5 +6,6 @@ router = DefaultRouter()
 router.register(r'', CartViewSet, basename='cart')
 
 urlpatterns = [
+    path('merge_guest_cart/', CartViewSet.as_view({'post': 'merge_guest_cart'}), name='cart-merge-guest-cart'),
     path('', include(router.urls)),
 ]

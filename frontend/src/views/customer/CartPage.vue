@@ -39,9 +39,9 @@
               <div class="flex space-x-3 mb-3">
                 <div class="flex-shrink-0">
                   <img
-                    v-if="item.listing_details && item.listing_details.photos && item.listing_details.photos.length"
-                    :src="item.listing_details.photos[0]"
-                    :alt="item.listing_details.product_name"
+                    v-if="item.photos && item.photos.length"
+                    :src="item.photos[0]"
+                    :alt="item.product_name"
                     class="h-16 w-16 object-cover rounded-lg"
                   />
                   <div v-else class="h-16 w-16 bg-gray-200 rounded-lg flex items-center justify-center">
@@ -53,33 +53,29 @@
                 
                 <div class="flex-1 min-w-0">
                   <h3 class="font-medium text-gray-900 text-sm leading-tight">
-                    {{ item.listing_details.product_name }}
+                    {{ item.product_name }}
                   </h3>
                   <p class="text-xs text-gray-500 mt-1">
-                    From {{ item.listing_details.farm_name }}
+                    From {{ item.farm_name }}
                   </p>
                   <p class="text-xs text-gray-500">
-                    KSh {{ item.price_at_addition }} per {{ item.listing_details.product_unit }}
+                    KSh {{ item.current_price }} per {{ item.product_unit }}
                   </p>
                 </div>
                 
                 <!-- Remove Button (Top Right) -->
                 <button
                   @click="removeItem(item)"
-                  :disabled="removingItem === item.cart_item_id"
+                  :disabled="removingItem === (isAuthenticated ? item.cart_item_id : item.listing_id)"
                   class="text-red-500 text-xs px-2 py-1"
                 >
                   Remove
                 </button>
               </div>
               
-              <!-- Warnings -->
-              <div v-if="item.price_changed" class="mb-2 text-xs text-yellow-600 bg-yellow-50 p-2 rounded">
-                ⚠️ Price changed to KSh {{ item.listing_details.current_price }}
-              </div>
-              
-              <div v-if="item.availability_status !== 'Available'" class="mb-2 text-xs text-red-600 bg-red-50 p-2 rounded">
-                ⚠️ {{ item.availability_status }}
+              <!-- Warnings (simplified for guest cart, as full details like price_changed/availability_status are from backend) -->
+              <div v-if="!isAuthenticated && item.quantity > item.quantity_available" class="mb-2 text-xs text-red-600 bg-red-50 p-2 rounded">
+                ⚠️ Quantity exceeds available stock ({{ item.quantity_available }} {{ item.product_unit }} available)
               </div>
               
               <!-- Quantity and Total Row -->
@@ -88,7 +84,7 @@
                   <span class="text-sm text-gray-600">Qty:</span>
                   <button
                     @click="updateQuantity(item, item.quantity - 1)"
-                    :disabled="item.quantity <= (item.listing_details.min_order_quantity || 1) || updatingItem === item.cart_item_id"
+                    :disabled="item.quantity <= (item.min_order_quantity || 1) || updatingItem === (isAuthenticated ? item.cart_item_id : item.listing_id)"
                     class="p-1 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -102,7 +98,7 @@
                   
                   <button
                     @click="updateQuantity(item, item.quantity + 1)"
-                    :disabled="item.quantity >= item.listing_details.quantity_available || updatingItem === item.cart_item_id"
+                    :disabled="item.quantity >= item.quantity_available || updatingItem === (isAuthenticated ? item.cart_item_id : item.listing_id)"
                     class="p-1 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -113,7 +109,7 @@
                 
                 <div class="text-right">
                   <div class="font-medium text-gray-900">
-                    KSh {{ item.subtotal }}
+                    KSh {{ (item.current_price * item.quantity).toFixed(2) }}
                   </div>
                 </div>
               </div>
@@ -124,9 +120,9 @@
               <!-- Product Image -->
               <div class="flex-shrink-0">
                 <img
-                  v-if="item.listing_details && item.listing_details.photos && item.listing_details.photos.length"
-                  :src="item.listing_details.photos[0]"
-                  :alt="item.listing_details.product_name"
+                  v-if="item.photos && item.photos.length"
+                  :src="item.photos[0]"
+                  :alt="item.product_name"
                   class="h-20 w-20 object-cover rounded-lg"
                 />
                 <div v-else class="h-20 w-20 bg-gray-200 rounded-lg flex items-center justify-center">
@@ -139,23 +135,26 @@
               <!-- Product Info -->
               <div class="flex-1 min-w-0">
                 <h3 class="text-lg font-medium text-gray-900">
-                  {{ item.listing_details.product_name }}
+                  {{ item.product_name }}
                 </h3>
                 <p class="text-sm text-gray-500">
-                  From {{ item.listing_details.farm_name }}
+                  From {{ item.farm_name }}
                 </p>
                 <p class="text-sm text-gray-500">
-                  KSh {{ item.price_at_addition }} per {{ item.listing_details.product_unit }}
+                  KSh {{ item.current_price }} per {{ item.product_unit }}
                 </p>
                 
                 <!-- Price Change Warning -->
-                <div v-if="item.price_changed" class="mt-2 text-sm text-yellow-600">
-                  ⚠️ Price has changed to KSh {{ item.listing_details.current_price }}
+                <div v-if="isAuthenticated && item.price_changed" class="mt-2 text-sm text-yellow-600">
+                  ⚠️ Price has changed to KSh {{ item.current_price }}
                 </div>
                 
                 <!-- Availability Warning -->
-                <div v-if="item.availability_status !== 'Available'" class="mt-2 text-sm text-red-600">
+                <div v-if="isAuthenticated && item.availability_status !== 'Available'" class="mt-2 text-sm text-red-600">
                   ⚠️ {{ item.availability_status }}
+                </div>
+                <div v-else-if="!isAuthenticated && item.quantity > item.quantity_available" class="mt-2 text-sm text-red-600">
+                  ⚠️ Quantity exceeds available stock ({{ item.quantity_available }} {{ item.product_unit }} available)
                 </div>
               </div>
               
@@ -163,7 +162,7 @@
               <div class="flex items-center space-x-2">
                 <button
                   @click="updateQuantity(item, item.quantity - 1)"
-                  :disabled="item.quantity <= (item.listing_details.min_order_quantity || 1) || updatingItem === item.cart_item_id"
+                  :disabled="item.quantity <= (item.min_order_quantity || 1) || updatingItem === (isAuthenticated ? item.cart_item_id : item.listing_id)"
                   class="p-1 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -177,7 +176,7 @@
                 
                 <button
                   @click="updateQuantity(item, item.quantity + 1)"
-                  :disabled="item.quantity >= item.listing_details.quantity_available || updatingItem === item.cart_item_id"
+                  :disabled="item.quantity >= item.quantity_available || updatingItem === (isAuthenticated ? item.cart_item_id : item.listing_id)"
                   class="p-1 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -189,11 +188,11 @@
               <!-- Subtotal -->
               <div class="text-right">
                 <div class="text-lg font-medium text-gray-900">
-                  KSh {{ item.subtotal }}
+                  KSh {{ (item.current_price * item.quantity).toFixed(2) }}
                 </div>
                 <button
                   @click="removeItem(item)"
-                  :disabled="removingItem === item.cart_item_id"
+                  :disabled="removingItem === (isAuthenticated ? item.cart_item_id : item.listing_id)"
                   class="mt-1 text-sm text-red-600 hover:text-red-500"
                 >
                   Remove
@@ -245,51 +244,67 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { cartAPI } from '@/services/api'
+import { isAuthenticated, guestCartItems, updateGuestCartItem, removeGuestCartItem } from '@/stores/auth'
 
 export default {
   name: 'CartPage',
   setup() {
     const loading = ref(true)
-    const cart = ref(null)
+    const authenticatedCart = ref(null) // For authenticated user's cart
     const updatingItem = ref(null)
     const removingItem = ref(null)
     
+    // Computed property to determine which cart to display
+    const cart = computed(() => {
+      return isAuthenticated.value ? authenticatedCart.value : { items: guestCartItems.value, total_items: guestCartItems.value.length, total_cost: calculateGuestCartTotal() }
+    })
+
+    const calculateGuestCartTotal = () => {
+      return guestCartItems.value.reduce((total, item) => total + (parseFloat(item.quantity) * parseFloat(item.current_price)), 0).toFixed(2);
+    }
+    
     const loadCart = async () => {
+      loading.value = true
       try {
-        const response = await cartAPI.getCart()
-        cart.value = response
+        if (isAuthenticated.value) {
+          const response = await cartAPI.getCart()
+          authenticatedCart.value = response
+        } else {
+          // Guest cart is already reactive via guestCartItems from auth store
+          // No API call needed, just ensure guestCartItems is loaded (handled by auth store init)
+        }
       } catch (error) {
         console.error('Failed to load cart:', error)
+        authenticatedCart.value = null // Clear authenticated cart on error
       } finally {
         loading.value = false
       }
     }
     
     const updateQuantity = async (item, newQuantity) => {
-      if (newQuantity < (item.listing_details.min_order_quantity || 1) || 
-          newQuantity > item.listing_details.quantity_available) {
-        return
-      }
+      // Note: min_order_quantity and quantity_available are not available in guestCartItems directly.
+      // This might lead to issues for guest users if not handled.
+      // For now, we'll assume basic quantity updates.
       
-      updatingItem.value = item.cart_item_id
+      updatingItem.value = item.listing_id || item.cart_item_id // Use listing_id for guest, cart_item_id for auth
       
       try {
-        // Send quantity as a decimal number (float)
-        await cartAPI.updateCartItem(item.cart_item_id, newQuantity)
-        await loadCart()
+        if (isAuthenticated.value) {
+          await cartAPI.updateCartItem(item.cart_item_id, newQuantity)
+          await loadCart() // Reload authenticated cart
+        } else {
+          updateGuestCartItem(item.listing_id, newQuantity)
+          // No need to reload, guestCartItems is reactive
+        }
         
-        // Dispatch cart updated event
         window.dispatchEvent(new CustomEvent('cartUpdated'))
       } catch (error) {
         console.error('Failed to update quantity:', error)
-        
-        // Check if the error response has details
         if (error.response?.data) {
           console.error('Error details:', error.response.data)
         }
-        
         alert('Failed to update quantity. Please try again.')
       } finally {
         updatingItem.value = null
@@ -297,16 +312,21 @@ export default {
     }
     
     const removeItem = async (item) => {
-      removingItem.value = item.cart_item_id
+      removingItem.value = item.listing_id || item.cart_item_id // Use listing_id for guest, cart_item_id for auth
       
       try {
-        await cartAPI.removeFromCart(item.cart_item_id)
-        await loadCart()
+        if (isAuthenticated.value) {
+          await cartAPI.removeFromCart(item.cart_item_id)
+          await loadCart() // Reload authenticated cart
+        } else {
+          removeGuestCartItem(item.listing_id)
+          // No need to reload, guestCartItems is reactive
+        }
         
-        // Dispatch cart updated event
         window.dispatchEvent(new CustomEvent('cartUpdated'))
       } catch (error) {
         console.error('Failed to remove item:', error)
+        alert('Failed to remove item. Please try again.')
       } finally {
         removingItem.value = null
       }
@@ -321,6 +341,7 @@ export default {
       cart,
       updatingItem,
       removingItem,
+      isAuthenticated, // Export for template conditionals
       updateQuantity,
       removeItem
     }

@@ -97,8 +97,8 @@ const routes = [
   {
     path: '/cart',
     name: 'cart',
-    component: CartPage,
-    meta: { requiresAuth: true, roles: ['customer'] }
+    component: CartPage
+    // Removed meta: { requiresAuth: true, roles: ['customer'] } to allow guest access
   },
   {
     path: '/checkout',

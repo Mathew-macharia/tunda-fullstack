@@ -57,7 +57,13 @@ class ProductListingSerializer(serializers.ModelSerializer):
     """Serializer for the ProductListing model"""
     farmer_name = serializers.SerializerMethodField(read_only=True)
     farm_name = serializers.SerializerMethodField(read_only=True)
-    product = ProductSerializer(read_only=True) # Use nested ProductSerializer
+    product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all()) # Allow product_id as input
+    product_name = serializers.CharField(source='product.product_name', read_only=True) # Expose product name
+    product_id_for_reviews = serializers.SerializerMethodField(read_only=True) # Expose product_id for reviews
+    product_unit_display = serializers.SerializerMethodField(read_only=True) # Expose product unit
+    product_description = serializers.SerializerMethodField(read_only=True) # Expose product description
+    product_is_perishable = serializers.SerializerMethodField(read_only=True) # Expose product is_perishable
+    product_shelf_life_days = serializers.SerializerMethodField(read_only=True) # Expose product shelf_life_days
     status_display = serializers.CharField(source='get_listing_status_display', read_only=True)
     quality_display = serializers.CharField(source='get_quality_grade_display', read_only=True)
     average_rating = serializers.SerializerMethodField(read_only=True)
@@ -71,15 +77,36 @@ class ProductListingSerializer(serializers.ModelSerializer):
             'current_price', 'quantity_available', 'min_order_quantity',
             'harvest_date', 'expected_harvest_date', 'quality_grade', 'quality_display',
             'is_organic_certified', 'listing_status', 'status_display', 'photos', 'notes',
-            'created_at', 'updated_at', 'average_rating', 'review_count', 'sample_review_comment'
+            'created_at', 'updated_at', 'average_rating', 'review_count', 'sample_review_comment',
+            'product_name', 'product_id_for_reviews', 'product_unit_display', 'product_description',
+            'product_is_perishable', 'product_shelf_life_days'
         ]
-        read_only_fields = ['listing_id', 'farmer', 'created_at', 'updated_at']
+        read_only_fields = [
+            'listing_id', 'farmer', 'created_at', 'updated_at', 'farmer_name', 'farm_name',
+            'product_name', 'product_id_for_reviews', 'product_unit_display', 'product_description',
+            'product_is_perishable', 'product_shelf_life_days'
+        ]
     
     def get_farmer_name(self, obj):
         return obj.farmer.get_full_name()
     
     def get_farm_name(self, obj):
         return obj.farm.farm_name
+
+    def get_product_id_for_reviews(self, obj):
+        return obj.product.product_id
+
+    def get_product_unit_display(self, obj):
+        return obj.product.get_unit_of_measure_display()
+
+    def get_product_description(self, obj):
+        return obj.product.description
+
+    def get_product_is_perishable(self, obj):
+        return obj.product.is_perishable
+
+    def get_product_shelf_life_days(self, obj):
+        return obj.product.shelf_life_days
 
     def get_average_rating(self, obj):
         """Calculate the average rating for the product associated with this listing"""
@@ -119,11 +146,7 @@ class ProductListingSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("You can only create listings for farms you own.")
         return value
     
-    def validate_product(self, value):
-        """Ensure the product is active"""
-        if not value.is_active:
-            raise serializers.ValidationError("Cannot create a listing for an inactive product.")
-        return value
+    # Removed validate_product method as PrimaryKeyRelatedField handles existence
     
     def validate(self, data):
         """Validate the data"""

@@ -1,11 +1,31 @@
 import { ref, computed } from 'vue'
-import { authAPI } from '@/services/api'
+import { authAPI, cartAPI } from '@/services/api' // Import cartAPI
 import { jwtDecode } from 'jwt-decode'
 
 // Global authentication state
 const user = ref(null)
 const isAuthenticated = ref(false)
 const isLoading = ref(false)
+
+// Guest cart state
+const GUEST_CART_STORAGE_KEY = 'guest_cart_items'
+const guestCartItems = ref([])
+
+// Helper to save guest cart to localStorage
+const saveGuestCart = () => {
+  localStorage.setItem(GUEST_CART_STORAGE_KEY, JSON.stringify(guestCartItems.value))
+}
+
+// Helper to load guest cart from localStorage
+const loadGuestCart = () => {
+  try {
+    const storedCart = localStorage.getItem(GUEST_CART_STORAGE_KEY)
+    guestCartItems.value = storedCart ? JSON.parse(storedCart) : []
+  } catch (e) {
+    console.error("Failed to parse guest cart from localStorage", e)
+    guestCartItems.value = []
+  }
+}
 
 // Initialize auth state from localStorage
 const initializeAuth = () => {
@@ -20,6 +40,10 @@ const initializeAuth = () => {
         // Fetch user data
         authAPI.getCurrentUser().then(userData => {
           user.value = userData
+          // Merge guest cart if user is customer
+          if (userData.user_role === 'customer' && guestCartItems.value.length > 0) {
+            mergeGuestCartToUserCart()
+          }
         }).catch(() => {
           logout()
         })
@@ -30,6 +54,7 @@ const initializeAuth = () => {
       logout()
     }
   }
+  loadGuestCart() // Always load guest cart on initialization
 }
 
 // Computed properties for role-based access
@@ -52,6 +77,11 @@ const login = async (phoneNumber, password) => {
     const userData = await authAPI.getCurrentUser()
     user.value = userData
     isAuthenticated.value = true
+
+    // Merge guest cart if user is customer
+    if (userData.user_role === 'customer' && guestCartItems.value.length > 0) {
+      await mergeGuestCartToUserCart()
+    }
     
     return { success: true, user: userData }
   } catch (error) {
@@ -73,6 +103,10 @@ const register = async (userData) => {
     // Auto-login after successful registration
     const loginResult = await login(userData.phone_number, userData.password)
     if (loginResult.success) {
+      // Merge guest cart if user is customer
+      if (loginResult.user.user_role === 'customer' && guestCartItems.value.length > 0) {
+        await mergeGuestCartToUserCart()
+      }
       return { success: true, user: loginResult.user, message: 'Registration successful!' }
     }
     
@@ -94,6 +128,7 @@ const logout = () => {
   localStorage.removeItem('refresh_token')
   user.value = null
   isAuthenticated.value = false
+  // Do NOT clear guest cart on logout, it might be used by another guest session
 }
 
 const updateProfile = async (profileData) => {
@@ -126,6 +161,62 @@ const changePassword = async (passwordData) => {
     }
   } finally {
     isLoading.value = false
+  }
+}
+
+// Guest Cart Methods
+const addGuestCartItem = (listing, quantity) => {
+  const existingItemIndex = guestCartItems.value.findIndex(item => item.listing_id === listing.listing_id)
+  
+  const itemDetails = {
+    listing_id: listing.listing_id,
+    product_name: listing.product_name,
+    farm_name: listing.farm_name,
+    photos: listing.photos,
+    current_price: listing.current_price,
+    product_unit: listing.product_unit_display, // Use the new direct field
+    min_order_quantity: listing.min_order_quantity,
+    quantity_available: listing.quantity_available,
+    // Add any other details needed for display on the cart page
+  }
+
+  if (existingItemIndex > -1) {
+    guestCartItems.value[existingItemIndex].quantity = parseFloat(guestCartItems.value[existingItemIndex].quantity) + parseFloat(quantity)
+  } else {
+    guestCartItems.value.push({ ...itemDetails, quantity: parseFloat(quantity) })
+  }
+  saveGuestCart()
+}
+
+const updateGuestCartItem = (listingId, newQuantity) => {
+  const item = guestCartItems.value.find(item => item.listing_id === listingId)
+  if (item) {
+    item.quantity = parseFloat(newQuantity)
+    saveGuestCart()
+  }
+}
+
+const removeGuestCartItem = (listingId) => {
+  guestCartItems.value = guestCartItems.value.filter(item => item.listing_id !== listingId)
+  saveGuestCart()
+}
+
+const clearGuestCart = () => {
+  guestCartItems.value = []
+  saveGuestCart()
+}
+
+const mergeGuestCartToUserCart = async () => {
+  if (guestCartItems.value.length > 0) {
+    try {
+      await authAPI.mergeGuestCart(guestCartItems.value)
+      clearGuestCart() // Clear local guest cart after merging
+      window.dispatchEvent(new CustomEvent('cartUpdated')) // Notify UI
+      console.log('Guest cart merged successfully!')
+    } catch (error) {
+      console.error('Failed to merge guest cart:', error)
+      // Optionally, notify user that some items might not have been merged
+    }
   }
 }
 
@@ -164,6 +255,7 @@ export {
   user,
   isAuthenticated,
   isLoading,
+  guestCartItems, // Export guest cart state
   
   // Computed
   isCustomer,
@@ -181,5 +273,11 @@ export {
   changePassword,
   hasRole,
   hasAnyRole,
-  initializeAuth
-} 
+  initializeAuth,
+  // Export guest cart methods
+  addGuestCartItem,
+  updateGuestCartItem,
+  removeGuestCartItem,
+  clearGuestCart,
+  mergeGuestCartToUserCart
+}

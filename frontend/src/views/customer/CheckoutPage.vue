@@ -41,15 +41,15 @@
               <div v-show="showItems" class="mt-3 space-y-2">
                 <div v-for="item in cart.items" :key="item.cart_item_id" class="flex items-center space-x-2 text-sm">
                   <img
-                    v-if="item.listing_details && item.listing_details.photos && item.listing_details.photos.length"
-                    :src="item.listing_details.photos[0]"
-                    :alt="item.listing_details.product_name"
+                    v-if="item.photos && item.photos.length"
+                    :src="item.photos[0]"
+                    :alt="item.product_name"
                     class="h-8 w-8 object-cover rounded"
                   />
                   <div v-else class="h-8 w-8 bg-gray-200 rounded"></div>
                   
                   <div class="flex-1">
-                    <p class="font-medium text-gray-900 text-xs leading-tight">{{ item.listing_details.product_name }}</p>
+                    <p class="font-medium text-gray-900 text-xs leading-tight">{{ item.product_name }}</p>
                     <p class="text-xs text-gray-500">{{ item.quantity }} × KSh {{ item.price_at_addition }}</p>
                   </div>
                   
@@ -301,19 +301,19 @@
             <div class="space-y-4 mb-6">
               <div v-for="item in cart.items" :key="item.cart_item_id" class="flex items-center space-x-3">
                 <img
-                  v-if="item.listing_details && item.listing_details.photos && item.listing_details.photos.length"
-                  :src="item.listing_details.photos[0]"
-                  :alt="item.listing_details.product_name"
+                  v-if="item.photos && item.photos.length"
+                  :src="item.photos[0]"
+                  :alt="item.product_name"
                   class="h-12 w-12 object-cover rounded-lg"
                 />
                 <div v-else class="h-12 w-12 bg-gray-200 rounded-lg"></div>
                 
                 <div class="flex-1 min-w-0">
                   <p class="text-sm font-medium text-gray-900 truncate">
-                    {{ item.listing_details.product_name }}
+                    {{ item.product_name }}
                   </p>
                   <p class="text-xs text-gray-500">
-                    {{ item.quantity }} {{ item.listing_details.product_unit }} × KSh {{ item.price_at_addition }}
+                    {{ item.quantity }} {{ item.product_unit }} × KSh {{ item.price_at_addition }}
                   </p>
                 </div>
                 
@@ -364,7 +364,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { cartAPI, ordersAPI, locationsAPI } from '@/services/api'
-import { user } from '@/stores/auth'
+import { user, isAuthenticated, mergeGuestCartToUserCart, guestCartItems } from '@/stores/auth' // Import isAuthenticated, mergeGuestCartToUserCart, guestCartItems
 
 export default {
   name: 'CheckoutPage',
@@ -372,7 +372,7 @@ export default {
     const router = useRouter()
     
     const loading = ref(true)
-    const cart = ref(null)
+    const authenticatedCart = ref(null) // For authenticated user's cart
     const counties = ref([])
     const subCounties = ref([])
     const selectedCounty = ref('')
@@ -392,6 +392,21 @@ export default {
       special_instructions: ''
     })
 
+    // Computed property to determine which cart to display
+    const cart = computed(() => {
+      if (isAuthenticated.value) {
+        return authenticatedCart.value
+      } else {
+        // For guest users, we need to calculate total_cost and total_items from guestCartItems
+        const total_items = guestCartItems.value.reduce((sum, item) => sum + item.quantity, 0);
+        // Note: We cannot accurately calculate total_cost for guest cart here as we don't have product prices.
+        // This will be handled on the backend when the cart is merged.
+        // For display, we'll show 0 or a placeholder.
+        const total_cost = '0.00'; 
+        return { items: guestCartItems.value, total_items, total_cost };
+      }
+    })
+
     // Computed
     const isFormValid = computed(() => {
       const addr = orderForm.value.delivery_address
@@ -405,10 +420,18 @@ export default {
     // Methods
     const loadCart = async () => {
       try {
-        const response = await cartAPI.getCart()
-        cart.value = response
+        if (isAuthenticated.value) {
+          const response = await cartAPI.getCart()
+          authenticatedCart.value = response
+        } else {
+          // If not authenticated, cart data comes from guestCartItems (reactive)
+          // We might need to fetch product details for display if guestCartItems only has IDs
+          // For now, we assume guestCartItems has enough info for basic display (listing_id, quantity)
+          // The full details will be available after merge on backend.
+        }
       } catch (error) {
         console.error('Failed to load cart:', error)
+        authenticatedCart.value = null // Clear authenticated cart on error
       }
     }
 
@@ -496,6 +519,16 @@ export default {
 
     // Lifecycle
     onMounted(async () => {
+      // Authentication gate: If not authenticated and guest cart is not empty, redirect to login
+      if (!isAuthenticated.value && guestCartItems.value.length > 0) {
+        router.push({ name: 'login', query: { redirect: router.currentRoute.value.fullPath } });
+        return; // Stop further execution
+      } else if (!isAuthenticated.value && guestCartItems.value.length === 0) {
+        // If not authenticated and cart is empty, redirect to products page
+        router.push({ name: 'products' });
+        return; // Stop further execution
+      }
+
       await Promise.all([
         loadCart(),
         loadCounties()
@@ -517,7 +550,8 @@ export default {
       isFormValid,
       showItems,
       loadSubCounties,
-      submitOrder
+      submitOrder,
+      isAuthenticated // Export isAuthenticated for template
     }
   }
 }

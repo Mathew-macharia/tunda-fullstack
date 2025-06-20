@@ -63,7 +63,7 @@
                 KSh {{ product.current_price }}
               </span>
               <span class="text-sm sm:text-lg text-gray-500">
-                per {{ product.product.unit_display }}
+                per {{ product.product_unit_display }}
               </span>
             </div>
 
@@ -96,7 +96,7 @@
               </span>
               
               <span class="text-xs sm:text-sm text-gray-500">
-                {{ product.quantity_available }} {{ product.product.unit_display }} available
+                {{ product.quantity_available }} {{ product.product_unit_display }} available
               </span>
             </div>
           </div>
@@ -119,7 +119,7 @@
           </div>
           
           <!-- Add to Cart Section -->
-          <div v-if="isAuthenticated && isCustomer" class="mb-6 sticky bottom-0 bg-white p-3 rounded-lg shadow-lg sm:static sm:bg-transparent sm:p-0 sm:shadow-none">
+          <div class="mb-6 sticky bottom-0 bg-white p-3 rounded-lg shadow-lg sm:static sm:bg-transparent sm:p-0 sm:shadow-none">
             <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
               <label for="quantity" class="text-sm font-medium text-gray-700">Quantity:</label>
               <div class="flex items-center space-x-2">
@@ -131,9 +131,9 @@
                   :max="product.quantity_available"
                   class="w-16 sm:w-20 px-2 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500 text-center"
                 />
-                <span class="text-xs sm:text-sm text-gray-500">{{ product.product.unit_display }}</span>
-              </div>
-            </div>
+            <span class="text-xs sm:text-sm text-gray-500">{{ product.product_unit_display }}</span>
+          </div>
+        </div>
             
             <button
               v-if="product.listing_status === 'available'"
@@ -150,19 +150,15 @@
             </div>
           </div>
           
-          <div v-else-if="!isAuthenticated" class="mb-6">
-            <router-link to="/login" class="w-full btn-primary py-3 text-sm sm:text-lg text-center block">
-              Login to Purchase
-            </router-link>
-          </div>
+          <!-- Removed "Login to Purchase" block, as "Add to Cart" is now available for guests -->
         </div>
       </div>
       
       <!-- Product Details Section - Full width on mobile -->
       <div class="mt-6 lg:mt-8 space-y-6">
-        <div v-if="product.product.description" class="bg-white p-4 rounded-lg">
+        <div v-if="product.product_description" class="bg-white p-4 rounded-lg">
           <h3 class="text-lg font-medium text-gray-900 mb-3">Description</h3>
-          <p class="text-gray-700 text-sm sm:text-base leading-relaxed">{{ product.product.description }}</p>
+          <p class="text-gray-700 text-sm sm:text-base leading-relaxed">{{ product.product_description }}</p>
         </div>
         
         <div class="bg-white p-4 rounded-lg">
@@ -170,12 +166,12 @@
           <dl class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div class="border-b border-gray-100 pb-2 sm:border-b-0 sm:pb-0">
               <dt class="text-xs sm:text-sm font-medium text-gray-500 mb-1">Unit of Measure</dt>
-              <dd class="text-sm sm:text-base text-gray-900">{{ product.product.unit_display }}</dd>
+              <dd class="text-sm sm:text-base text-gray-900">{{ product.product_unit_display }}</dd>
             </div>
             <div class="border-b border-gray-100 pb-2 sm:border-b-0 sm:pb-0">
               <dt class="text-xs sm:text-sm font-medium text-gray-500 mb-1">Minimum Order</dt>
               <dd class="text-sm sm:text-base text-gray-900">
-                {{ product.min_order_quantity }} {{ product.product.unit_display }}
+                {{ product.min_order_quantity }} {{ product.product_unit_display }}
               </dd>
             </div>
             <div class="border-b border-gray-100 pb-2 sm:border-b-0 sm:pb-0">
@@ -186,9 +182,9 @@
               <dt class="text-xs sm:text-sm font-medium text-gray-500 mb-1">Harvest Date</dt>
               <dd class="text-sm sm:text-base text-gray-900">{{ formatDate(product.harvest_date) }}</dd>
             </div>
-            <div v-if="product.product.is_perishable" class="border-b border-gray-100 pb-2 sm:border-b-0 sm:pb-0">
+            <div v-if="product.product_is_perishable" class="border-b border-gray-100 pb-2 sm:border-b-0 sm:pb-0">
               <dt class="text-xs sm:text-sm font-medium text-gray-500 mb-1">Shelf Life</dt>
-              <dd class="text-sm sm:text-base text-gray-900">{{ product.product.shelf_life_days }} days</dd>
+              <dd class="text-sm sm:text-base text-gray-900">{{ product.product_shelf_life_days }} days</dd>
             </div>
           </dl>
         </div>
@@ -217,7 +213,7 @@
 <script>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { isAuthenticated, isCustomer } from '@/stores/auth'
+import { isAuthenticated, isCustomer, addGuestCartItem } from '@/stores/auth' // Import addGuestCartItem
 import { productsAPI, cartAPI, reviewsAPI } from '@/services/api'
 import ReviewCard from '@/components/common/ReviewCard.vue'
 
@@ -241,9 +237,9 @@ export default {
         product.value = response
         quantity.value = response.min_order_quantity || 1
 
-        // Fetch reviews for this product only if product.product.product_id is available
-        if (product.value && product.value.product && product.value.product.product_id) {
-          const reviewsResponse = await reviewsAPI.getProductReviews(product.value.product.product_id)
+        // Fetch reviews for this product only if product.product_id_for_reviews is available
+        if (product.value && product.value.product_id_for_reviews) {
+          const reviewsResponse = await reviewsAPI.getProductReviews(product.value.product_id_for_reviews)
           reviews.value = reviewsResponse
         } else {
           console.warn('Product ID not available for fetching reviews.')
@@ -278,7 +274,14 @@ export default {
       addingToCart.value = true
       
       try {
-        await cartAPI.addToCart(product.value.listing_id, quantity.value)
+        if (isAuthenticated.value && isCustomer.value) {
+          await cartAPI.addToCart(product.value.listing_id, quantity.value)
+          console.log(`${product.value.product_name} added to authenticated cart!`)
+        } else {
+          // Add to guest cart if not authenticated or not a customer
+          addGuestCartItem(product.value, quantity.value) // Pass the full product object
+          console.log(`${product.value.product_name} added to guest cart!`)
+        }
         
         // Dispatch cart updated event
         window.dispatchEvent(new CustomEvent('cartUpdated'))

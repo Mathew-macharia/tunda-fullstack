@@ -297,15 +297,15 @@
     </div>
   </div>
   <!-- Review Modal -->
-  <ReviewModal
-    :isOpen="showReviewModal"
-    :editingReview="selectedItem?.existingReview"
-    :targetType="'product'"
-    :targetId="String(selectedItem?.listing || '')"
-    :orderItem="selectedItem"
-    @close="closeReviewModal"
-    @success="onReviewSuccess"
-  />
+    <ReviewModal
+      :isOpen="showReviewModal"
+      :editingReview="selectedItem?.existingReview"
+      :targetType="'product'"
+      :targetId="String(selectedItem?.listing_details?.product_id || '')"
+      :orderItem="selectedItem"
+      @close="closeReviewModal"
+      @success="onReviewSuccess"
+    />
 </template>
 
 <script>
