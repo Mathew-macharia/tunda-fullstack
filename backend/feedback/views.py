@@ -38,10 +38,22 @@ class ReviewViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def product_reviews(self, request):
         """Return all reviews for a specific product"""
-        product_id = request.query_params.get('product_id', None)
-        if product_id is None:
+        print(f"DEBUG: Raw query params: {request.query_params}")
+        product_id_str = request.query_params.get('product_id', None)
+        print(f"DEBUG: product_id_str from query params: {product_id_str}")
+
+        if product_id_str is None:
             return Response(
                 {"detail": "Product ID is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            product_id = int(product_id_str)
+            print(f"DEBUG: Converted product_id to int: {product_id}")
+        except ValueError:
+            return Response(
+                {"detail": "Invalid Product ID format. Must be an integer."},
                 status=status.HTTP_400_BAD_REQUEST
             )
         

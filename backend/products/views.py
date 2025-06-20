@@ -143,7 +143,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         queryset = Product.objects.filter(is_perishable=True, is_active=True)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
-    
+
     @action(detail=False, methods=['get'])
     def non_perishable(self, request):
         """

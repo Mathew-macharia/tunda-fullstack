@@ -315,12 +315,22 @@
                         KSh {{ listing.current_price }}
                       </div>
                       <div class="text-xs sm:text-sm text-gray-500">
-                        per {{ listing.product_unit }}
+                        per {{ listing.product.unit_display }}
                       </div>
                     </div>
                   </div>
                 </div>
                 
+                <!-- Compact Rating -->
+                <div v-if="listing.review_count > 0" class="flex items-center text-xs text-gray-600 mb-2">
+                  <svg class="h-3 w-3 text-yellow-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.929 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z"></path>
+                  </svg>
+                  <span class="font-medium mr-1">{{ listing.average_rating ? listing.average_rating.toFixed(1) : '0.0' }}</span>
+                  <span class="text-gray-400">•</span>
+                  <span class="ml-1">{{ listing.review_count }} reviews</span>
+                </div>
+
                 <div class="flex items-center text-xs sm:text-sm text-gray-500 mb-2">
                   <svg class="h-3 w-3 sm:h-4 sm:w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
@@ -331,7 +341,7 @@
                 
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
                   <div class="text-xs sm:text-sm text-gray-500">
-                    {{ listing.quantity_available }} {{ listing.product_unit }} available
+                    {{ listing.quantity_available }} {{ listing.product.unit_display }} available
                   </div>
                   
                   <button

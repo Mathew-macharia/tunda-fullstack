@@ -17,8 +17,26 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only_fields = ['review_id', 'reviewer', 'is_verified_purchase', 'review_date']
     
     def get_reviewer_username(self, obj):
-        """Return the phone number of the reviewer"""
-        return obj.reviewer.phone_number
+        """
+        Return the phone number of the reviewer for admins.
+        For other users, return initials from first_name and last_name, or 'A' if no name.
+        """
+        request = self.context.get('request')
+        if request and request.user.is_authenticated and request.user.user_role == 'admin':
+            return obj.reviewer.phone_number
+        
+        # For non-admin users, generate initials
+        first_name_initial = obj.reviewer.first_name[0].upper() if obj.reviewer.first_name else ''
+        last_name_initial = obj.reviewer.last_name[0].upper() if obj.reviewer.last_name else ''
+        
+        if first_name_initial and last_name_initial:
+            return f"{first_name_initial}{last_name_initial}"
+        elif first_name_initial:
+            return first_name_initial
+        elif last_name_initial:
+            return last_name_initial
+        else:
+            return 'A' # Default to 'A' if no name parts are available
     
     def validate(self, data):
         """
@@ -47,17 +65,19 @@ class ReviewSerializer(serializers.ModelSerializer):
                 })
             
             # Verify the user hasn't already reviewed this target from this order item
-            existing_review = Review.objects.filter(
-                reviewer=user,
-                order_item=order_item,
-                target_type=data['target_type'],
-                target_id=data['target_id']
-            ).exists()
-            
-            if existing_review:
-                raise serializers.ValidationError({
-                    'order_item': f"You've already reviewed this {data['target_type']} from this order."
-                })
+            # This check should only apply when creating a new review, not updating an existing one
+            if not self.instance: # Only apply this validation if it's a creation (not an update)
+                existing_review = Review.objects.filter(
+                    reviewer=user,
+                    order_item=order_item,
+                    target_type=data['target_type'],
+                    target_id=data['target_id']
+                ).exists()
+                
+                if existing_review:
+                    raise serializers.ValidationError({
+                        'order_item': f"You've already reviewed this {data['target_type']} from this order."
+                    })
             
             # Set verified purchase since it's linked to a valid order item
             data['is_verified_purchase'] = True

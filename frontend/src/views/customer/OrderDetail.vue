@@ -301,7 +301,7 @@
     :isOpen="showReviewModal"
     :editingReview="selectedItem?.existingReview"
     :targetType="'product'"
-    :targetId="selectedItem?.listing_details?.product?.product_id || selectedItem?.listing_details?.listing_id || selectedItem?.listing || ''"
+    :targetId="String(selectedItem?.listing || '')"
     :orderItem="selectedItem"
     @close="closeReviewModal"
     @success="onReviewSuccess"

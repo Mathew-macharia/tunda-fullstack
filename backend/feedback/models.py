@@ -9,14 +9,13 @@ class Review(models.Model):
     TARGET_TYPES = (
         ('product', 'Product'),
         ('farmer', 'Farmer'),
-        ('rider', 'Rider'),
     )
     
     review_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     reviewer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
     order_item = models.ForeignKey(OrderItem, on_delete=models.SET_NULL, null=True, blank=True)
     target_type = models.CharField(max_length=10, choices=TARGET_TYPES)
-    target_id = models.UUIDField()  # ID of product, farmer, or rider
+    target_id = models.IntegerField()  # ID of product, farmer, or rider (changed from UUIDField to IntegerField)
     rating = models.DecimalField(
         max_digits=2, 
         decimal_places=1,
