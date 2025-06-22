@@ -486,7 +486,7 @@ export default {
           page_size: 12,
           ...(filters.search && { search: filters.search }),
           ...(filters.category && { product__category: filters.category }),
-          ...(filters.availableOnly && { listing_status: 'available' }),
+          ...(filters.availableOnly ? { listing_status: 'available' } : {}),
           ...(filters.organicOnly && { is_organic_certified: 'true' }),
           ...(filters.sortBy && { ordering: getSortOrder(filters.sortBy) })
         }

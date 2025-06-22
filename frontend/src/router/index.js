@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { isAuthenticated, hasRole } from '@/stores/auth'
+import { isAuthenticated, hasRole, isCustomer, isFarmer, isRider, isAdmin, user, logout, isInitialized, initializeAuth } from '@/stores/auth'
 
 // Lazy load components for better performance
 const HomePage = () => import('@/views/HomePage.vue')
@@ -48,7 +48,23 @@ const routes = [
   {
     path: '/',
     name: 'home',
-    component: HomePage
+    component: HomePage,
+    beforeEnter: (to, from, next) => {
+      // Redirect non-customer users to their respective dashboards
+      if (isAuthenticated.value) {
+        if (isFarmer.value) {
+          next('/farmer')
+        } else if (isRider.value) {
+          next('/rider')
+        } else if (isAdmin.value) {
+          next('/admin')
+        } else {
+          next() // Allow customers and guests to access homepage
+        }
+      } else {
+        next() // Allow unauthenticated users to access homepage
+      }
+    }
   },
   {
     path: '/login',
@@ -87,12 +103,46 @@ const routes = [
   {
     path: '/products',
     name: 'products',
-    component: ProductsPage
+    component: ProductsPage,
+    beforeEnter: (to, from, next) => {
+      // Block access for non-customer authenticated users
+      if (isAuthenticated.value && (!isCustomer.value || isFarmer.value || isRider.value || isAdmin.value)) {
+        console.log('Redirecting from products - Role:', { 
+          isCustomer: isCustomer.value, 
+          isFarmer: isFarmer.value, 
+          isRider: isRider.value, 
+          isAdmin: isAdmin.value 
+        })
+        if (isFarmer.value) {
+          return next('/farmer')
+        } else if (isRider.value) {
+          return next('/rider')
+        } else if (isAdmin.value) {
+          return next('/admin')
+        }
+        return next('/')
+      }
+      next()
+    }
   },
   {
     path: '/products/:id',
     name: 'product-detail',
-    component: ProductDetail
+    component: ProductDetail,
+    beforeEnter: (to, from, next) => {
+      // Block access for non-customer authenticated users
+      if (isAuthenticated.value && (!isCustomer.value || isFarmer.value || isRider.value || isAdmin.value)) {
+        if (isFarmer.value) {
+          return next('/farmer')
+        } else if (isRider.value) {
+          return next('/rider')
+        } else if (isAdmin.value) {
+          return next('/admin')
+        }
+        return next('/')
+      }
+      next()
+    }
   },
   {
     path: '/cart',
@@ -265,36 +315,42 @@ const router = createRouter({
   }
 })
 
-// Navigation guards
+// Global navigation guard
 router.beforeEach(async (to, from, next) => {
-  const { requiresAuth, requiresGuest, roles } = to.meta
+  // Wait for auth to be initialized
+  await initializeAuth()
 
-  // Check if route requires authentication
-  if (requiresAuth && !isAuthenticated.value) {
-    next({ name: 'login', query: { redirect: to.fullPath } })
-    return
+  // If authenticated but no role is detected, something is wrong
+  if (isAuthenticated.value && (!user.value || !user.value.user_role)) {
+    console.error('User authenticated but no role detected - forcing logout')
+    logout()
+    return next('/login')
   }
 
-  // Check if route requires guest (not authenticated)
-  if (requiresGuest && isAuthenticated.value) {
-    next({ name: 'home' })
-    return
+  // Handle auth required routes
+  if (to.meta.requiresAuth && !isAuthenticated.value) {
+    return next('/login')
   }
 
-  // Check role-based access
-  if (roles && roles.length > 0) {
-    const userHasRole = roles.some(role => hasRole(role))
-    if (!userHasRole) {
-      // Redirect to appropriate dashboard based on user role
-      const { user } = await import('@/stores/auth')
-      const userRole = user.value?.user_role
-      
-      if (userRole) {
-        next({ name: `${userRole}-dashboard` })
-      } else {
-        next({ name: 'home' })
-      }
-      return
+  // Handle guest-only routes
+  if (to.meta.requiresGuest && isAuthenticated.value) {
+    return next('/')
+  }
+
+  // Block product routes for non-customers
+  if (isAuthenticated.value && !isCustomer.value && to.path.startsWith('/products')) {    
+    // Determine redirect based on role
+    const role = user.value?.user_role
+    switch(role) {
+      case 'farmer':
+        return next('/farmer')
+      case 'rider':
+        return next('/rider')
+      case 'admin':
+        return next('/admin')
+      default:
+        console.error('Unknown role detected:', role)
+        return next('/')
     }
   }
 

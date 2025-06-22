@@ -6,6 +6,8 @@ import { jwtDecode } from 'jwt-decode'
 const user = ref(null)
 const isAuthenticated = ref(false)
 const isLoading = ref(false)
+const isInitialized = ref(false)
+let initPromise = null
 
 // Guest cart state
 const GUEST_CART_STORAGE_KEY = 'guest_cart_items'
@@ -29,39 +31,62 @@ const loadGuestCart = () => {
 
 // Initialize auth state from localStorage
 const initializeAuth = () => {
-  const token = localStorage.getItem('access_token')
-  if (token) {
-    try {
-      const decodedToken = jwtDecode(token)
-      const currentTime = Date.now() / 1000
-      
-      if (decodedToken.exp > currentTime) {
-        isAuthenticated.value = true
-        // Fetch user data
-        authAPI.getCurrentUser().then(userData => {
-          user.value = userData
-          // Merge guest cart if user is customer
-          if (userData.user_role === 'customer' && guestCartItems.value.length > 0) {
-            mergeGuestCartToUserCart()
+  if (initPromise) return initPromise
+
+  initPromise = new Promise(async (resolve) => {
+    const token = localStorage.getItem('access_token')
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token)
+        const currentTime = Date.now() / 1000
+        
+        if (decodedToken.exp > currentTime) {
+          isAuthenticated.value = true
+          // Fetch user data
+          try {
+            const userData = await authAPI.getCurrentUser()
+            user.value = userData
+            // Merge guest cart if user is customer
+            if (userData.user_role === 'customer' && guestCartItems.value.length > 0) {
+              await mergeGuestCartToUserCart()
+            }
+          } catch (error) {
+            console.error('Failed to load user data:', error)
+            logout()
           }
-        }).catch(() => {
+        } else {
           logout()
-        })
-      } else {
+        }
+      } catch (error) {
+        console.error('Token decode error:', error)
         logout()
       }
-    } catch (error) {
-      logout()
     }
-  }
-  loadGuestCart() // Always load guest cart on initialization
+    loadGuestCart() // Always load guest cart on initialization
+    isInitialized.value = true
+    resolve()
+  })
+
+  return initPromise
 }
 
 // Computed properties for role-based access
-const isCustomer = computed(() => user.value?.user_role === 'customer')
-const isFarmer = computed(() => user.value?.user_role === 'farmer')
-const isRider = computed(() => user.value?.user_role === 'rider')
-const isAdmin = computed(() => user.value?.user_role === 'admin')
+const isCustomer = computed(() => {
+  const role = user.value?.user_role === 'customer'
+  return role
+})
+const isFarmer = computed(() => {
+  const role = user.value?.user_role === 'farmer'
+  return role
+})
+const isRider = computed(() => {
+  const role = user.value?.user_role === 'rider'
+  return role
+})
+const isAdmin = computed(() => {
+  const role = user.value?.user_role === 'admin'
+  return role
+})
 
 // Auth methods
 const login = async (phoneNumber, password) => {
@@ -212,7 +237,6 @@ const mergeGuestCartToUserCart = async () => {
       await authAPI.mergeGuestCart(guestCartItems.value)
       clearGuestCart() // Clear local guest cart after merging
       window.dispatchEvent(new CustomEvent('cartUpdated')) // Notify UI
-      console.log('Guest cart merged successfully!')
     } catch (error) {
       console.error('Failed to merge guest cart:', error)
       // Optionally, notify user that some items might not have been merged
@@ -247,34 +271,27 @@ const getUserRoleDisplay = computed(() => {
   return roleMap[user.value?.user_role] || 'User'
 })
 
-// Initialize auth on module load
-initializeAuth()
-
+// Export the initialization state and promise
 export {
-  // State
   user,
   isAuthenticated,
   isLoading,
-  guestCartItems, // Export guest cart state
-  
-  // Computed
+  isInitialized,
+  initializeAuth,
   isCustomer,
   isFarmer,
   isRider,
   isAdmin,
-  getUserName,
-  getUserRoleDisplay,
-  
-  // Methods
   login,
-  register,
   logout,
+  register,
   updateProfile,
   changePassword,
   hasRole,
   hasAnyRole,
-  initializeAuth,
-  // Export guest cart methods
+  getUserName,
+  getUserRoleDisplay,
+  guestCartItems,
   addGuestCartItem,
   updateGuestCartItem,
   removeGuestCartItem,
