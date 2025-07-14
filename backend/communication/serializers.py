@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Notification, Message, SupportTicket
+from .models import Notification, Message, SupportTicket, FAQ
 from users.models import User
 from orders.models import Order
 
@@ -122,7 +122,7 @@ class SupportTicketSerializer(serializers.ModelSerializer):
             'assigned_to', 'assigned_to_username', 'resolution_notes',
             'created_at', 'resolved_at'
         ]
-        read_only_fields = ['ticket_id', 'ticket_number', 'created_at', 'resolved_at']
+        read_only_fields = ['ticket_id', 'user', 'ticket_number', 'created_at', 'resolved_at']
     
     def get_user_username(self, obj):
         """Return the phone number of the user"""
@@ -150,8 +150,13 @@ class SupportTicketSerializer(serializers.ModelSerializer):
         
         # For creation, user should be set to the authenticated user (unless admin)
         if self.instance is None:  # Create operation
-            if user and user.user_role != 'admin':
-                data['user'] = user
+            if user:
+                # Always set the user field to the authenticated user for non-admin users
+                if user.user_role != 'admin':
+                    data['user'] = user
+                # For admin users, if no user is specified, default to themselves
+                elif 'user' not in data:
+                    data['user'] = user
         
         # Only admins can update status, priority, assigned_to, and resolution_notes
         if self.instance and user and user.user_role != 'admin':
@@ -176,3 +181,15 @@ class AdminTicketUpdateSerializer(serializers.ModelSerializer):
         if value and value.user_role != 'admin':
             raise serializers.ValidationError("Tickets can only be assigned to admin users.")
         return value
+
+
+class FAQSerializer(serializers.ModelSerializer):
+    """Serializer for the FAQ model"""
+    
+    class Meta:
+        model = FAQ
+        fields = [
+            'faq_id', 'question', 'answer', 'target_role', 'is_active',
+            'order_index', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['faq_id', 'created_at', 'updated_at']

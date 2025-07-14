@@ -6,7 +6,7 @@ from rest_framework.permissions import AllowAny
 from django.contrib.auth import get_user_model
 from django.db.models import Q, Count
 from django.http import HttpResponse
-from .serializers import UserProfileUpdateSerializer, ChangePasswordSerializer, UserSerializer
+from .serializers import UserProfileUpdateSerializer, ChangePasswordSerializer, UserSerializer, AdminUserCreateSerializer
 import csv
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -55,6 +55,29 @@ class AdminUserViewSet(viewsets.ModelViewSet):
     search_fields = ['first_name', 'last_name', 'email', 'phone_number']
     ordering_fields = ['created_at', 'last_login', 'first_name', 'user_role']
     ordering = ['-created_at']
+
+    def get_serializer_class(self):
+        """
+        Return different serializers for different actions.
+        Use AdminUserCreateSerializer for creation, UserSerializer for everything else.
+        """
+        if self.action == 'create':
+            return AdminUserCreateSerializer
+        return UserSerializer
+
+    def create(self, request, *args, **kwargs):
+        """
+        Override create method to use AdminUserCreateSerializer and return UserSerializer data.
+        """
+        # Use AdminUserCreateSerializer for creation
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        
+        # Return the created user data using UserSerializer for consistent response format
+        response_serializer = UserSerializer(user)
+        headers = self.get_success_headers(response_serializer.data)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def get_queryset(self):
         queryset = User.objects.all()

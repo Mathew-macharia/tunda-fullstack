@@ -39,44 +39,9 @@ class Cart(models.Model):
         return sum(item.quantity for item in self.items.all())
     
     def calculate_delivery_fee(self, delivery_location=None):
-        """Calculate delivery fee based on location and cart contents (integrated after delivery app)"""
-        try:
-            from core.models import SystemSettings
-            from django.contrib.gis.geos import Point
-            from django.contrib.gis.measure import Distance
-            
-            # Get base delivery fee from system settings
-            base_fee = SystemSettings.objects.get_setting('base_delivery_fee', Decimal('50.00'))
-            
-            if not delivery_location:
-                return base_fee
-            
-            # Calculate distance-based fee (simplified version)
-            # In real implementation, would use proper geolocation services
-            distance_fee = Decimal('0.00')
-            
-            # Free delivery threshold
-            free_delivery_threshold = SystemSettings.objects.get_setting('free_delivery_threshold', Decimal('1000.00'))
-            if self.items_total >= free_delivery_threshold:
-                return Decimal('0.00')
-            
-            # Weight-based fee for heavy items
-            weight_fee = Decimal('0.00')
-            total_weight = sum(
-                float(item.quantity) for item in self.items.all() 
-                if item.listing.product.unit_of_measure == 'kg'
-            )
-            
-            if total_weight > 20:  # Over 20kg
-                weight_fee = Decimal('30.00')
-            elif total_weight > 10:  # Over 10kg
-                weight_fee = Decimal('15.00')
-            
-            return base_fee + distance_fee + weight_fee
-            
-        except:
-            # Fallback to base delivery fee
-            return Decimal('50.00')
+        """Calculate delivery fee by using centralized Order calculation logic"""
+        from orders.models import Order
+        return Order.calculate_delivery_fee_for_cart(self.items.all(), delivery_location)
     
     @property
     def estimated_delivery_fee(self):

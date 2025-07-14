@@ -49,6 +49,12 @@ class SystemSettingsViewSet(viewsets.ModelViewSet):
         """
         # Define a list of public setting keys that all users can access
         public_keys = [
+            'base_delivery_fee',
+            'free_delivery_threshold',
+            'weight_threshold_light',
+            'weight_surcharge_light',
+            'weight_threshold_heavy',
+            'weight_surcharge_heavy',
             'delivery_fee_per_km',
             'min_order_amount',
             'mpesa_paybill',

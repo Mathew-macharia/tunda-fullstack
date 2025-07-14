@@ -11,7 +11,12 @@ SECRET_KEY = 'your-secret-key'  # Replace with a secure key in production
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'https://c35b75b61394.ngrok-free.app',
+    'https://d84e3ed37cc4.ngrok-free.app',
+    'http://localhost:8000',
+    'localhost',
+]
 
 # Application definition
 INSTALLED_APPS = [
@@ -82,7 +87,7 @@ WSGI_APPLICATION = 'tunda.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'tunda_db',
+        'NAME': 'tunda_db_copy',
         'USER': 'wiseman',
         'PASSWORD': 'nopassword',
         'HOST': 'localhost',
@@ -159,3 +164,34 @@ CORS_ALLOW_ALL_ORIGINS = True  # Only for development
 
 # Allow credentials to be included in CORS requests
 CORS_ALLOW_CREDENTIALS = True
+
+# Google Maps API Configuration
+GOOGLE_MAPS_API_KEY = os.getenv('GOOGLE_MAPS_API_KEY', 'AIzaSyA2c7DbZnMoxriVKRmsIoF90mOt4jTffOQ')
+
+# Caching for geocoding results and performance
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+        'TIMEOUT': 86400,  # 24 hours default timeout
+        'OPTIONS': {
+            'MAX_ENTRIES': 2000,
+        }
+    },
+    'geocoding': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'geocoding-cache',
+        'TIMEOUT': 86400,  # 24 hours for geocoding results
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000,
+        }
+    },
+    'distance': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'distance-cache',
+        'TIMEOUT': 3600,  # 1 hour for distance calculations
+        'OPTIONS': {
+            'MAX_ENTRIES': 500,
+        }
+    }
+}

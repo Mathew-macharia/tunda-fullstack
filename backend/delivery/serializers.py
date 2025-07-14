@@ -47,16 +47,20 @@ class VehicleSerializer(serializers.ModelSerializer):
 
 class DeliverySerializer(serializers.ModelSerializer):
     """Serializer for Delivery model"""
+from orders.serializers import OrderSerializer # Import OrderSerializer
+
+class DeliverySerializer(serializers.ModelSerializer):
+    """Serializer for Delivery model"""
     rider_name = serializers.SerializerMethodField(read_only=True)
-    order_number = serializers.SerializerMethodField(read_only=True)
     customer_name = serializers.SerializerMethodField(read_only=True)
     delivery_location = serializers.SerializerMethodField(read_only=True)
     vehicle_details = serializers.SerializerMethodField(read_only=True)
+    order = OrderSerializer(read_only=True) # Include full Order object
 
     class Meta:
         model = Delivery
         fields = [
-            'delivery_id', 'order', 'order_number', 'rider', 'rider_name', 
+            'delivery_id', 'order', 'rider', 'rider_name', 
             'vehicle', 'vehicle_details', 'delivery_status', 'pickup_time', 
             'delivery_time', 'delivery_notes', 'customer_name', 'delivery_location',
             'created_at', 'updated_at'
@@ -65,34 +69,16 @@ class DeliverySerializer(serializers.ModelSerializer):
     
     def get_rider_name(self, obj):
         """Return the rider's full name if a rider is assigned"""
-        if isinstance(obj, dict):
-            # During create/update, obj might be a dict
-            return None
-            
         if obj.rider:
             return obj.rider.get_full_name()
         return None
     
-    def get_order_number(self, obj):
-        """Return the order number"""
-        if isinstance(obj, dict):
-            # During create/update, obj might be a dict
-            return None
-        return obj.order.order_number
-    
     def get_customer_name(self, obj):
         """Return the customer's name"""
-        if isinstance(obj, dict):
-            # During create/update, obj might be a dict
-            return None
         return obj.order.customer.get_full_name()
     
     def get_delivery_location(self, obj):
         """Return the delivery location details"""
-        if isinstance(obj, dict):
-            # During create/update, obj might be a dict
-            return None
-            
         location = obj.order.delivery_location
         if location:
             return {
@@ -107,10 +93,6 @@ class DeliverySerializer(serializers.ModelSerializer):
     
     def get_vehicle_details(self, obj):
         """Return vehicle details if a vehicle is assigned"""
-        if isinstance(obj, dict):
-            # During create/update, obj might be a dict
-            return None
-            
         if obj.vehicle:
             return {
                 'vehicle_id': obj.vehicle.vehicle_id,
@@ -131,7 +113,7 @@ class DeliverySerializer(serializers.ModelSerializer):
         # Validate order status
         order = data.get('order', getattr(self.instance, 'order', None))
         if order:
-            valid_order_statuses = ['confirmed', 'en_route', 'delivered']
+            valid_order_statuses = ['confirmed', 'processing', 'out_for_delivery', 'delivered']
             if order.order_status not in valid_order_statuses:
                 raise serializers.ValidationError({
                     'order': f"Only orders with status in {valid_order_statuses} can have deliveries."
@@ -167,8 +149,9 @@ class DeliveryUpdateSerializer(serializers.ModelSerializer):
             
         current_status = self.instance.delivery_status
         valid_transitions = {
-            'pending_pickup': ['on_the_way', 'failed'],
-            'on_the_way': ['delivered', 'failed'],
+            'assigned': ['picked_up', 'failed'],
+            'picked_up': ['in_transit', 'failed'],
+            'in_transit': ['delivered', 'failed'],
             'delivered': [],  # Terminal state
             'failed': []      # Terminal state
         }

@@ -44,8 +44,9 @@ class Vehicle(models.Model):
 class Delivery(models.Model):
     """Model representing a delivery of an order"""
     DELIVERY_STATUS_CHOICES = (
-        ('pending_pickup', 'Pending Pickup'),
-        ('on_the_way', 'On The Way'),
+        ('assigned', 'Assigned'),
+        ('picked_up', 'Picked Up'),
+        ('in_transit', 'In Transit'),
         ('delivered', 'Delivered'),
         ('failed', 'Failed'),
     )
@@ -85,7 +86,7 @@ class Delivery(models.Model):
         self.clean()
         
         # Set timestamps based on status changes
-        if self.delivery_status == 'on_the_way' and not self.pickup_time:
+        if self.delivery_status == 'picked_up' and not self.pickup_time:
             self.pickup_time = timezone.now()
         elif self.delivery_status == 'delivered' and not self.delivery_time:
             self.delivery_time = timezone.now()
@@ -126,7 +127,10 @@ def update_order_status_on_delivery_update(sender, instance, **kwargs):
     order = instance.order
     
     # Update order status based on delivery status
-    if instance.delivery_status == 'on_the_way' and order.order_status != 'out_for_delivery':
+    if instance.delivery_status == 'picked_up' and order.order_status != 'processing':
+        order.order_status = 'processing'
+        order.save()
+    elif instance.delivery_status == 'in_transit' and order.order_status != 'out_for_delivery':
         order.order_status = 'out_for_delivery'
         order.save()
     elif instance.delivery_status == 'delivered' and order.order_status != 'delivered':

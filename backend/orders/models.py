@@ -121,21 +121,192 @@ class Order(models.Model):
         """Check if order can be cancelled"""
         return self.order_status in ['pending_payment', 'confirmed']
     
-    def calculate_delivery_fee(self):
-        """Calculate delivery fee based on location and order contents"""
+    def calculate_delivery_fee(self, delivery_location=None):
+        """
+        CENTRALIZED delivery fee calculation - Single Source of Truth
+        Calculate delivery fee based on order contents, weight, location, and business rules
+        """
         try:
             from core.models import SystemSettings
             from decimal import Decimal
             
+            # Get system settings
             base_fee = SystemSettings.objects.get_setting('base_delivery_fee', Decimal('50.00'))
             free_delivery_threshold = SystemSettings.objects.get_setting('free_delivery_threshold', Decimal('1000.00'))
+            weight_threshold_light = SystemSettings.objects.get_setting('weight_threshold_light', Decimal('10.00'))
+            weight_surcharge_light = SystemSettings.objects.get_setting('weight_surcharge_light', Decimal('15.00'))
+            weight_threshold_heavy = SystemSettings.objects.get_setting('weight_threshold_heavy', Decimal('20.00'))
+            weight_surcharge_heavy = SystemSettings.objects.get_setting('weight_surcharge_heavy', Decimal('30.00'))
             
-            if self.total_amount >= free_delivery_threshold:
+            # Calculate subtotal (items only, excluding delivery fee)
+            items_total = sum(item.total_price for item in self.items.all())
+            
+            # Free delivery threshold check
+            if items_total >= free_delivery_threshold:
                 return Decimal('0.00')
             
-            return base_fee
-        except:
-            return self.delivery_fee or 0
+            # Start with base fee
+            total_fee = base_fee
+            
+            # Calculate weight-based surcharge
+            total_weight = Decimal('0.00')
+            for item in self.items.all():
+                if item.listing.product.unit_of_measure == 'kg':
+                    total_weight += item.quantity
+            
+            # Apply weight surcharges
+            if total_weight > weight_threshold_heavy:
+                total_fee += weight_surcharge_heavy
+            elif total_weight > weight_threshold_light:
+                total_fee += weight_surcharge_light
+            
+            # Distance-based fee calculation
+            distance_fee = Decimal('0.00')
+            if delivery_location:
+                try:
+                    from core.services.address_service import AddressService
+                    
+                    address_service = AddressService()
+                    
+                    # Get customer coordinates
+                    customer_coords = address_service.get_customer_coordinates(delivery_location)
+                    
+                    # Get all farms involved in this order
+                    farms = set(item.listing.farm for item in self.items.all())
+                    
+                    if len(farms) == 1:
+                        # Single farm delivery
+                        farm = list(farms)[0]
+                        farm_coords = address_service.get_farm_coordinates(farm)
+                        distance_km = address_service.calculate_distance(farm_coords, customer_coords)
+                        
+                        # Apply distance-based fee
+                        fee_per_km = SystemSettings.objects.get_setting('delivery_fee_per_km', Decimal('5.00'))
+                        distance_fee = Decimal(str(distance_km)) * fee_per_km
+                        
+                    else:
+                        # Multi-farm delivery - use farthest farm + consolidation fee
+                        max_distance = Decimal('0.00')
+                        
+                        for farm in farms:
+                            farm_coords = address_service.get_farm_coordinates(farm)
+                            distance_km = address_service.calculate_distance(farm_coords, customer_coords)
+                            max_distance = max(max_distance, Decimal(str(distance_km)))
+                        
+                        # Base distance fee (farthest farm)
+                        fee_per_km = SystemSettings.objects.get_setting('delivery_fee_per_km', Decimal('5.00'))
+                        distance_fee = max_distance * fee_per_km
+                        
+                        # Add consolidation fee for additional farms
+                        consolidation_fee = SystemSettings.objects.get_setting('multi_farm_consolidation_fee', Decimal('25.00'))
+                        distance_fee += consolidation_fee * (len(farms) - 1)
+                        
+                except Exception as e:
+                    print(f"Distance calculation error: {e}")
+                    # Fallback to no distance fee
+                    distance_fee = Decimal('0.00')
+            
+            total_fee += distance_fee
+            
+            return total_fee
+            
+        except Exception as e:
+            # Fallback to existing delivery fee or base fee
+            return self.delivery_fee if self.delivery_fee else Decimal('50.00')
+    
+    @staticmethod
+    def calculate_delivery_fee_for_cart(cart_items, delivery_location=None):
+        """
+        Calculate delivery fee for cart items before order creation
+        Static method to estimate delivery fee during cart/checkout process
+        """
+        try:
+            from core.models import SystemSettings
+            from decimal import Decimal
+            
+            # Get system settings
+            base_fee = SystemSettings.objects.get_setting('base_delivery_fee', Decimal('50.00'))
+            free_delivery_threshold = SystemSettings.objects.get_setting('free_delivery_threshold', Decimal('1000.00'))
+            weight_threshold_light = SystemSettings.objects.get_setting('weight_threshold_light', Decimal('10.00'))
+            weight_surcharge_light = SystemSettings.objects.get_setting('weight_surcharge_light', Decimal('15.00')) 
+            weight_threshold_heavy = SystemSettings.objects.get_setting('weight_threshold_heavy', Decimal('20.00')) 
+            weight_surcharge_heavy = SystemSettings.objects.get_setting('weight_surcharge_heavy', Decimal('30.00'))
+            
+            # Calculate subtotal from cart items
+            items_total = sum(item.quantity * item.price_at_addition for item in cart_items)
+            
+            # Free delivery threshold check
+            if items_total >= free_delivery_threshold:
+                return Decimal('0.00')
+            
+            # Start with base fee
+            total_fee = base_fee
+            
+            # Calculate weight-based surcharge
+            total_weight = Decimal('0.00')
+            for item in cart_items:
+                if item.listing.product.unit_of_measure == 'kg':
+                    total_weight += item.quantity
+            
+            # Apply weight surcharges
+            if total_weight > weight_threshold_heavy:
+                total_fee += weight_surcharge_heavy
+            elif total_weight > weight_threshold_light:
+                total_fee += weight_surcharge_light
+            
+            # Distance-based fee calculation
+            distance_fee = Decimal('0.00')
+            if delivery_location:
+                try:
+                    from core.services.address_service import AddressService
+                    
+                    address_service = AddressService()
+                    
+                    # Get customer coordinates
+                    customer_coords = address_service.get_customer_coordinates(delivery_location)
+                    
+                    # Get all farms involved in cart
+                    farms = set(item.listing.farm for item in cart_items)
+                    
+                    if len(farms) == 1:
+                        # Single farm delivery
+                        farm = list(farms)[0]
+                        farm_coords = address_service.get_farm_coordinates(farm)
+                        distance_km = address_service.calculate_distance(farm_coords, customer_coords)
+                        
+                        # Apply distance-based fee
+                        fee_per_km = SystemSettings.objects.get_setting('delivery_fee_per_km', Decimal('5.00'))
+                        distance_fee = Decimal(str(distance_km)) * fee_per_km
+                        
+                    else:
+                        # Multi-farm delivery - use farthest farm + consolidation fee
+                        max_distance = Decimal('0.00')
+                        
+                        for farm in farms:
+                            farm_coords = address_service.get_farm_coordinates(farm)
+                            distance_km = address_service.calculate_distance(farm_coords, customer_coords)
+                            max_distance = max(max_distance, Decimal(str(distance_km)))
+                        
+                        # Base distance fee (farthest farm)
+                        fee_per_km = SystemSettings.objects.get_setting('delivery_fee_per_km', Decimal('5.00'))
+                        distance_fee = max_distance * fee_per_km
+                        
+                        # Add consolidation fee for additional farms
+                        consolidation_fee = SystemSettings.objects.get_setting('multi_farm_consolidation_fee', Decimal('25.00'))
+                        distance_fee += consolidation_fee * (len(farms) - 1)
+                        
+                except Exception as e:
+                    print(f"Distance calculation error: {e}")
+                    # Fallback to no distance fee
+                    distance_fee = Decimal('0.00')
+            
+            total_fee += distance_fee
+            
+            return total_fee
+            
+        except Exception as e:
+            # Fallback to base fee
+            return Decimal('50.00')
 
 
 class OrderItem(models.Model):
@@ -187,95 +358,112 @@ class OrderItem(models.Model):
 
 # Signal handlers for automatic notifications and business logic
 
-@receiver(post_save, sender=Order)
-def send_order_notifications(sender, instance, created, **kwargs):
-    """Send notifications when order is created or status changes"""
-    if not created:
-        return
-        
-    print(f"DEBUG: Order {instance.order_id} created, sending notifications...")
-    
-    try:
-        from communication.models import Notification
-        print(f"DEBUG: Successfully imported Notification model")
-        
-        # Send order confirmation to customer
-        if instance.customer.should_receive_notification('order_update'):
-            print(f"DEBUG: Creating customer notification for order {instance.order_id}")
-            print(f"DEBUG: Customer: {instance.customer}")
-            print(f"DEBUG: Customer SMS: {instance.customer.sms_notifications}")
-            try:
-                notification = Notification.objects.create(
-                    user=instance.customer,
-                    notification_type='order_update',
-                    title=f'Order Confirmed #{instance.order_number}',
-                    message=f'Your order for KES {instance.total_amount} has been confirmed and is being processed.',
-                    send_sms=instance.customer.sms_notifications
-                )
-                print(f"DEBUG: Customer notification created successfully: {notification.notification_id}")
-            except Exception as e:
-                print(f"DEBUG: Error creating customer notification: {e}")
-                import traceback
-                traceback.print_exc()
-        
-        # Notify farmers about new orders
-        farmers = instance.get_farmers()
-        print(f"DEBUG: Found {len(farmers)} farmers for this order")
-        print(f"DEBUG: Order items: {list(instance.items.all())}")
-        
-        for farmer in farmers:
-            if farmer.should_receive_notification('order_update'):
-                farmer_items = instance.items.filter(farmer=farmer)
-                total_farmer_amount = sum(item.total_price for item in farmer_items)
-                
-                print(f"DEBUG: Creating farmer notification for {farmer}")
-                try:
-                    notification = Notification.objects.create(
-                        user=farmer,
-                        notification_type='order_update',
-                        title=f'New Order Received #{instance.order_number}',
-                        message=f'You have received a new order worth KES {total_farmer_amount}. Please prepare the items for delivery.',
-                        send_sms=farmer.sms_notifications
-                    )
-                    print(f"DEBUG: Farmer notification created successfully: {notification.notification_id}")
-                except Exception as e:
-                    print(f"DEBUG: Error creating farmer notification: {e}")
-                    import traceback
-                    traceback.print_exc()
-        
-    except ImportError as e:
-        print(f"DEBUG: Communication app not available: {e}")
-    except Exception as e:
-        print(f"DEBUG: Unexpected error in send_order_notifications: {e}")
-        import traceback
-        traceback.print_exc()
-        # Don't raise the exception - let the order creation succeed
-
 @receiver(pre_save, sender=Order)
 def track_order_status_changes(sender, instance, **kwargs):
-    """Track order status changes and send appropriate notifications"""
-    if instance.pk:  # Only for existing orders
+    """
+    Tracks order status changes and stores the original status for post_save.
+    Also creates a Delivery record when an order is confirmed.
+    """
+    if instance.pk:
         try:
-            old_instance = Order.objects.get(pk=instance.pk)
+            old_instance = sender.objects.get(pk=instance.pk)
+            instance._original_order_status = old_instance.order_status
             
-            # Status changed
-            if old_instance.order_status != instance.order_status:
-                # Handle specific status changes
-                if instance.order_status == 'confirmed' and old_instance.order_status == 'pending_payment':
-                    # Order confirmed, create delivery record
+            # If order status changes to 'confirmed', create a Delivery record
+            if old_instance.order_status != 'confirmed' and instance.order_status == 'confirmed':
+                try:
+                    from delivery.models import Delivery
+                    if not Delivery.objects.filter(order=instance).exists():
+                        Delivery.objects.create(order=instance, rider=instance.rider)
+                        print(f"DEBUG: Delivery record created for Order {instance.order_id}")
+                except ImportError:
+                    print("DEBUG: Delivery app not available, skipping Delivery record creation.")
+        except sender.DoesNotExist:
+            instance._original_order_status = None # New order
+    else:
+        instance._original_order_status = None # New order
+
+@receiver(post_save, sender=Order)
+def handle_order_status_changes(sender, instance, created, **kwargs):
+    """
+    Handle order status changes, including updating order item statuses to 'delivered'
+    when the order is delivered, and sending notifications.
+    """
+    # Logic for initial order creation notifications
+    if created:
+        print(f"DEBUG: Order {instance.order_id} created, sending notifications...")
+        try:
+            from communication.models import Notification
+            print(f"DEBUG: Successfully imported Notification model")
+            
+            # Send order confirmation to customer
+            if instance.customer.should_receive_notification('order_update'):
+                print(f"DEBUG: Creating customer notification for order {instance.order_id}")
+                print(f"DEBUG: Customer: {instance.customer}")
+                print(f"DEBUG: Customer SMS: {instance.customer.sms_notifications}")
+                try:
+                    notification = Notification.objects.create(
+                        user=instance.customer,
+                        notification_type='order_update',
+                        title=f'Order Confirmed #{instance.order_number}',
+                        message=f'Your order for KES {instance.total_amount} has been confirmed and is being processed.',
+                        send_sms=instance.customer.sms_notifications
+                    )
+                    print(f"DEBUG: Customer notification created successfully: {notification.notification_id}")
+                except Exception as e:
+                    print(f"DEBUG: Error creating customer notification: {e}")
+                    import traceback
+                    traceback.print_exc()
+            
+            # Notify farmers about new orders
+            farmers = instance.get_farmers()
+            print(f"DEBUG: Found {len(farmers)} farmers for this order")
+            print(f"DEBUG: Order items: {list(instance.items.all())}")
+            
+            for farmer in farmers:
+                if farmer.should_receive_notification('order_update'):
+                    farmer_items = instance.items.filter(farmer=farmer)
+                    total_farmer_amount = sum(item.total_price for item in farmer_items)
+                    
+                    print(f"DEBUG: Creating farmer notification for {farmer}")
                     try:
-                        from delivery.models import Delivery
-                        
-                        # Create delivery record if it doesn't exist
-                        if not hasattr(instance, 'delivery'):
-                            Delivery.objects.create(
-                                order=instance,
-                                delivery_status='pending_pickup'
-                            )
-                    except ImportError:
-                        pass
+                        notification = Notification.objects.create(
+                            user=farmer,
+                            notification_type='order_update',
+                            title=f'New Order Received #{instance.order.order_number}',
+                            message=f'You have received a new order worth KES {total_farmer_amount}. Please prepare the items for delivery.',
+                            send_sms=farmer.sms_notifications
+                        )
+                        print(f"DEBUG: Farmer notification created successfully: {notification.notification_id}")
+                    except Exception as e:
+                        print(f"DEBUG: Error creating farmer notification: {e}")
+                        import traceback
+                        traceback.print_exc()
+            
+        except ImportError as e:
+            print(f"DEBUG: Communication app not available: {e}")
+        except Exception as e:
+            print(f"DEBUG: Unexpected error in handle_order_status_changes (creation): {e}")
+            import traceback
+            traceback.print_exc()
+            # Don't raise the exception - let the order creation succeed
+
+    # Logic for existing order status changes
+    if not created and instance.pk: # Only for updates to existing orders
+        try:
+            # Check if order_status has actually changed using the original status from pre_save
+            original_order_status = getattr(instance, '_original_order_status', None)
+            
+            if original_order_status != instance.order_status:
+                # If order status changes to 'delivered', update all order items to 'delivered'
+                if instance.order_status == 'delivered':
+                    for item in instance.items.all():
+                        if item.item_status != 'delivered':
+                            item.item_status = 'delivered'
+                            item.save(update_fields=['item_status']) # Save only the changed field
+                    print(f"DEBUG: Order {instance.order_id} delivered. All order items marked as delivered.")
                 
-                # Send status update notifications
+                # Send status update notifications (existing logic)
                 try:
                     from communication.models import Notification
                     
@@ -292,39 +480,13 @@ def track_order_status_changes(sender, instance, **kwargs):
                             Notification.objects.create(
                                 user=instance.customer,
                                 notification_type='order_update',
-                                title=f'Order Update #{instance.order_number}',
+                                title=f'Order Update #{instance.order.order_number}',
                                 message=status_messages[instance.order_status],
                                 send_sms=instance.customer.sms_notifications
                             )
-                
                 except ImportError:
                     pass
-                    
-        except Order.DoesNotExist:
-            pass
-
-@receiver(post_save, sender=OrderItem)
-def send_order_item_notifications(sender, instance, created, **kwargs):
-    """Send notifications when order item status changes"""
-    if not created:  # Only for updates
-        try:
-            from communication.models import Notification
-            
-            status_messages = {
-                'harvested': f'Your {instance.listing.product.product_name} has been harvested and is ready for packing.',
-                'packed': f'Your {instance.listing.product.product_name} has been packed and is ready for delivery.',
-                'delivered': f'Your {instance.listing.product.product_name} has been delivered.',
-            }
-            
-            if instance.item_status in status_messages:
-                if instance.order.customer.should_receive_notification('order_update'):
-                    Notification.objects.create(
-                        user=instance.order.customer,
-                        notification_type='order_update',
-                        title=f'Item Update - Order #{instance.order.order_number}',
-                        message=status_messages[instance.item_status],
-                        send_sms=instance.order.customer.sms_notifications
-                    )
-        
-        except ImportError:
-            pass
+        except Exception as e:
+            print(f"DEBUG: Unexpected error in handle_order_status_changes (update): {e}")
+            import traceback
+            traceback.print_exc()

@@ -372,3 +372,37 @@ class ProductListingViewSet(viewsets.ModelViewSet):
         
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['post'])
+    def upload_photo(self, request):
+        """
+        Upload a photo for a product listing
+        """
+        try:
+            photo = request.FILES['photo']
+            # Generate a unique filename
+            import uuid
+            filename = f"{uuid.uuid4()}.{photo.name.split('.')[-1]}"
+            
+            # Save the file to MEDIA_ROOT/product_photos
+            import os
+            from django.conf import settings
+            
+            # Ensure the directory exists
+            photo_dir = os.path.join(settings.MEDIA_ROOT, 'product_photos')
+            os.makedirs(photo_dir, exist_ok=True)
+            
+            # Save the file
+            file_path = os.path.join(photo_dir, filename)
+            with open(file_path, 'wb+') as destination:
+                for chunk in photo.chunks():
+                    destination.write(chunk)
+            
+            # Return the URL
+            photo_url = f"{settings.MEDIA_URL}product_photos/{filename}"
+            return Response({'url': photo_url}, status=status.HTTP_201_CREATED)
+            
+        except KeyError:
+            return Response({'error': 'No photo provided'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

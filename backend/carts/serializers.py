@@ -105,10 +105,15 @@ class CartSerializer(serializers.ModelSerializer):
     items = CartItemSerializer(many=True, read_only=True)
     total_items = serializers.SerializerMethodField()
     total_cost = serializers.SerializerMethodField()
+    estimated_delivery_fee = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    total_with_delivery = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
     
     class Meta:
         model = Cart
-        fields = ['cart_id', 'customer', 'items', 'total_items', 'total_cost', 'created_at', 'updated_at']
+        fields = [
+            'cart_id', 'customer', 'items', 'total_items', 'total_cost', 
+            'estimated_delivery_fee', 'total_with_delivery', 'created_at', 'updated_at'
+        ]
         read_only_fields = ['cart_id', 'customer', 'created_at', 'updated_at']
     
     def get_total_items(self, obj):

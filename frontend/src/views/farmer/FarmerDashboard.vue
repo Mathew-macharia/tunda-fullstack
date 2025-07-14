@@ -1,10 +1,10 @@
 <template>
-  <div class="min-h-screen bg-gray-50 py-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <div class="min-h-screen bg-gray-50 py-4 sm:py-8">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
       <!-- Header -->
-      <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Farmer Dashboard</h1>
-        <p class="mt-2 text-gray-600">Welcome back, {{ farmerName }}! Manage your farm, products, and orders</p>
+      <div class="mb-6 sm:mb-8">
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Farmer Dashboard</h1>
+        <p class="mt-2 text-sm sm:text-base text-gray-600">Welcome back, {{ farmerName }}! Manage your farm, products, and orders</p>
       </div>
 
       <!-- Loading State -->
@@ -31,100 +31,100 @@
 
       <div v-else>
         <!-- Statistics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div class="bg-white rounded-lg shadow p-6">
+        <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
+          <div class="bg-white rounded-lg shadow p-3 sm:p-6">
             <div class="flex items-center">
-              <div class="p-3 rounded-full bg-green-100">
-                <CurrencyDollarIcon class="h-6 w-6 text-green-600" />
+              <div class="p-2 sm:p-3 rounded-full bg-green-100">
+                <CurrencyDollarIcon class="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
               </div>
-              <div class="ml-4">
-                <p class="text-sm font-medium text-gray-500">Total Revenue</p>
-                <p class="text-2xl font-semibold text-gray-900">KES {{ formatCurrency(dashboardStats.totalRevenue) }}</p>
+              <div class="ml-3 sm:ml-4">
+                <p class="text-xs sm:text-sm font-medium text-gray-500">Total Revenue</p>
+                <p class="text-lg sm:text-2xl font-semibold text-gray-900">KES {{ formatCurrency(dashboardStats.totalRevenue) }}</p>
               </div>
             </div>
           </div>
 
-          <div class="bg-white rounded-lg shadow p-6">
+          <div class="bg-white rounded-lg shadow p-3 sm:p-6">
             <div class="flex items-center">
-              <div class="p-3 rounded-full bg-blue-100">
-                <ShoppingBagIcon class="h-6 w-6 text-blue-600" />
+              <div class="p-2 sm:p-3 rounded-full bg-blue-100">
+                <ShoppingBagIcon class="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
               </div>
-              <div class="ml-4">
-                <p class="text-sm font-medium text-gray-500">Pending Orders</p>
-                <p class="text-2xl font-semibold text-gray-900">{{ dashboardStats.pendingOrders }}</p>
+              <div class="ml-3 sm:ml-4">
+                <p class="text-xs sm:text-sm font-medium text-gray-500">Pending Orders</p>
+                <p class="text-lg sm:text-2xl font-semibold text-gray-900">{{ dashboardStats.pendingOrders }}</p>
               </div>
             </div>
           </div>
 
-          <div class="bg-white rounded-lg shadow p-6">
+          <div class="bg-white rounded-lg shadow p-3 sm:p-6">
             <div class="flex items-center">
-              <div class="p-3 rounded-full bg-purple-100">
-                <ClipboardDocumentListIcon class="h-6 w-6 text-purple-600" />
+              <div class="p-2 sm:p-3 rounded-full bg-purple-100">
+                <ClipboardDocumentListIcon class="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
               </div>
-              <div class="ml-4">
-                <p class="text-sm font-medium text-gray-500">Active Listings</p>
-                <p class="text-2xl font-semibold text-gray-900">{{ dashboardStats.activeListings }}</p>
+              <div class="ml-3 sm:ml-4">
+                <p class="text-xs sm:text-sm font-medium text-gray-500">Active Listings</p>
+                <p class="text-lg sm:text-2xl font-semibold text-gray-900">{{ dashboardStats.activeListings }}</p>
               </div>
             </div>
           </div>
 
-          <div class="bg-white rounded-lg shadow p-6">
+          <div class="bg-white rounded-lg shadow p-3 sm:p-6">
             <div class="flex items-center">
-              <div class="p-3 rounded-full bg-yellow-100">
-                <HomeIcon class="h-6 w-6 text-yellow-600" />
+              <div class="p-2 sm:p-3 rounded-full bg-yellow-100">
+                <HomeIcon class="h-5 w-5 sm:h-6 sm:w-6 text-yellow-600" />
               </div>
-              <div class="ml-4">
-                <p class="text-sm font-medium text-gray-500">Total Farms</p>
-                <p class="text-2xl font-semibold text-gray-900">{{ dashboardStats.totalFarms }}</p>
+              <div class="ml-3 sm:ml-4">
+                <p class="text-xs sm:text-sm font-medium text-gray-500">Total Farms</p>
+                <p class="text-lg sm:text-2xl font-semibold text-gray-900">{{ dashboardStats.totalFarms }}</p>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
           <!-- Main Content -->
-          <div class="lg:col-span-2 space-y-8">
+          <div class="lg:col-span-2 space-y-4 sm:space-y-8">
             <!-- Quick Actions -->
-            <div class="bg-white rounded-lg shadow p-6">
-              <h2 class="text-xl font-semibold text-gray-900 mb-6">Quick Actions</h2>
+            <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+              <h2 class="text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-6">Quick Actions</h2>
               
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <router-link to="/farmer/listings/create" class="group relative bg-green-50 p-6 rounded-lg border-2 border-dashed border-green-300 hover:border-green-400 transition-colors">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <router-link to="/farmer/listings/create" class="group relative bg-green-50 p-4 sm:p-6 rounded-lg border-2 border-dashed border-green-300 hover:border-green-400 transition-colors">
                   <div class="flex items-center">
-                    <PlusIcon class="h-8 w-8 text-green-600" />
-                    <div class="ml-4">
-                      <p class="text-lg font-medium text-gray-900">Add New Product</p>
-                      <p class="text-sm text-gray-500">Create a new product listing</p>
+                    <PlusIcon class="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
+                    <div class="ml-3 sm:ml-4">
+                      <p class="text-base sm:text-lg font-medium text-gray-900">Add New Product</p>
+                      <p class="text-xs sm:text-sm text-gray-500">Create a new product listing</p>
                     </div>
                   </div>
                 </router-link>
 
-                <router-link to="/farmer/orders" class="group relative bg-blue-50 p-6 rounded-lg border-2 border-dashed border-blue-300 hover:border-blue-400 transition-colors">
+                <router-link to="/farmer/orders" class="group relative bg-blue-50 p-4 sm:p-6 rounded-lg border-2 border-dashed border-blue-300 hover:border-blue-400 transition-colors">
                   <div class="flex items-center">
-                    <ClipboardDocumentListIcon class="h-8 w-8 text-blue-600" />
-                    <div class="ml-4">
-                      <p class="text-lg font-medium text-gray-900">Manage Orders</p>
-                      <p class="text-sm text-gray-500">View and update order status</p>
+                    <ClipboardDocumentListIcon class="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
+                    <div class="ml-3 sm:ml-4">
+                      <p class="text-base sm:text-lg font-medium text-gray-900">Manage Orders</p>
+                      <p class="text-xs sm:text-sm text-gray-500">View and update order status</p>
                     </div>
                   </div>
                 </router-link>
 
-                <router-link to="/farmer/farms" class="group relative bg-purple-50 p-6 rounded-lg border-2 border-dashed border-purple-300 hover:border-purple-400 transition-colors">
+                <router-link to="/farmer/farms" class="group relative bg-purple-50 p-4 sm:p-6 rounded-lg border-2 border-dashed border-purple-300 hover:border-purple-400 transition-colors">
                   <div class="flex items-center">
-                    <HomeIcon class="h-8 w-8 text-purple-600" />
-                    <div class="ml-4">
-                      <p class="text-lg font-medium text-gray-900">Manage Farms</p>
-                      <p class="text-sm text-gray-500">Update farm information</p>
+                    <HomeIcon class="h-6 w-6 sm:h-8 sm:w-8 text-purple-600" />
+                    <div class="ml-3 sm:ml-4">
+                      <p class="text-base sm:text-lg font-medium text-gray-900">Manage Farms</p>
+                      <p class="text-xs sm:text-sm text-gray-500">Update farm information</p>
                     </div>
                   </div>
                 </router-link>
 
-                <router-link to="/farmer/listings" class="group relative bg-orange-50 p-6 rounded-lg border-2 border-dashed border-orange-300 hover:border-orange-400 transition-colors">
+                <router-link to="/farmer/listings" class="group relative bg-orange-50 p-4 sm:p-6 rounded-lg border-2 border-dashed border-orange-300 hover:border-orange-400 transition-colors">
                   <div class="flex items-center">
-                    <ListBulletIcon class="h-8 w-8 text-orange-600" />
-                    <div class="ml-4">
-                      <p class="text-lg font-medium text-gray-900">View Products</p>
-                      <p class="text-sm text-gray-500">Manage product listings</p>
+                    <ListBulletIcon class="h-6 w-6 sm:h-8 sm:w-8 text-orange-600" />
+                    <div class="ml-3 sm:ml-4">
+                      <p class="text-base sm:text-lg font-medium text-gray-900">View Products</p>
+                      <p class="text-xs sm:text-sm text-gray-500">Manage product listings</p>
                     </div>
                   </div>
                 </router-link>
@@ -133,15 +133,15 @@
 
             <!-- Recent Orders -->
             <div class="bg-white rounded-lg shadow">
-              <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                <h2 class="text-xl font-semibold text-gray-900">Recent Orders</h2>
+              <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 flex justify-between items-center">
+                <h2 class="text-lg sm:text-xl font-semibold text-gray-900">Recent Orders</h2>
                 <router-link to="/farmer/orders" class="text-green-600 hover:text-green-500 text-sm font-medium">
                   View All
                 </router-link>
               </div>
 
-              <div v-if="recentOrders.length === 0" class="p-6 text-center text-gray-500">
-                <ShoppingBagIcon class="mx-auto h-12 w-12 text-gray-400 mb-4" />
+              <div v-if="recentOrders.length === 0" class="p-4 sm:p-6 text-center text-gray-500">
+                <ShoppingBagIcon class="mx-auto h-10 sm:h-12 w-10 sm:w-12 text-gray-400 mb-3 sm:mb-4" />
                 <p>No recent orders found</p>
                 <p class="text-sm">Start by creating product listings to receive orders.</p>
               </div>
@@ -150,10 +150,10 @@
                 <div
                   v-for="order in recentOrders"
                   :key="order.order_item_id"
-                  class="px-6 py-4 hover:bg-gray-50"
+                  class="px-4 sm:px-6 py-3 sm:py-4 hover:bg-gray-50"
                 >
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-4">
+                  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+                    <div class="flex items-center space-x-3 sm:space-x-4">
                       <img 
                         :src="order.listing_details?.photos?.[0] || '/api/placeholder/40/40'"
                         :alt="order.listing_details?.product_name"
@@ -163,7 +163,7 @@
                         <p class="text-sm font-medium text-gray-900">
                           {{ order.listing_details?.product_name }}
                         </p>
-                        <p class="text-sm text-gray-500">
+                        <p class="text-xs sm:text-sm text-gray-500">
                           Order #{{ order.order?.order_number }}
                         </p>
                         <p class="text-xs text-gray-400">
@@ -172,16 +172,16 @@
                       </div>
                     </div>
                     
-                    <div class="flex items-center space-x-3">
+                    <div class="flex items-center justify-between sm:justify-end sm:space-x-3">
                       <div class="text-right">
                         <p class="text-sm font-medium text-gray-900">
                           {{ order.quantity }} {{ order.listing_details?.product_unit }}
                         </p>
-                        <p class="text-sm text-gray-500">
+                        <p class="text-xs sm:text-sm text-gray-500">
                           KES {{ formatCurrency(order.total_price) }}
                         </p>
                       </div>
-                      <span :class="getOrderItemStatusClass(order.item_status)" class="px-3 py-1 rounded-full text-xs font-medium">
+                      <span :class="getOrderItemStatusClass(order.item_status)" class="px-2 sm:px-3 py-1 rounded-full text-xs font-medium">
                         {{ formatOrderItemStatus(order.item_status) }}
                       </span>
                     </div>
@@ -192,15 +192,15 @@
 
             <!-- Top Products -->
             <div class="bg-white rounded-lg shadow">
-              <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                <h2 class="text-xl font-semibold text-gray-900">Your Product Listings</h2>
+              <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 flex justify-between items-center">
+                <h2 class="text-lg sm:text-xl font-semibold text-gray-900">Your Product Listings</h2>
                 <router-link to="/farmer/listings" class="text-green-600 hover:text-green-500 text-sm font-medium">
                   View All
                 </router-link>
               </div>
 
-              <div v-if="recentListings.length === 0" class="p-6 text-center text-gray-500">
-                <ClipboardDocumentListIcon class="mx-auto h-12 w-12 text-gray-400 mb-4" />
+              <div v-if="recentListings.length === 0" class="p-4 sm:p-6 text-center text-gray-500">
+                <ClipboardDocumentListIcon class="mx-auto h-10 sm:h-12 w-10 sm:w-12 text-gray-400 mb-3 sm:mb-4" />
                 <p>No product listings found</p>
                 <router-link 
                   to="/farmer/listings/create"
@@ -214,9 +214,9 @@
                 <div
                   v-for="listing in recentListings"
                   :key="listing.listing_id"
-                  class="px-6 py-4"
+                  class="px-4 sm:px-6 py-3 sm:py-4"
                 >
-                  <div class="flex items-center space-x-4">
+                  <div class="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
                     <img 
                       :src="listing.photos?.[0] || '/api/placeholder/40/40'"
                       :alt="listing.product_name"
@@ -227,16 +227,16 @@
                       <p class="text-sm font-medium text-gray-900 truncate">
                         {{ listing.product_name }}
                       </p>
-                      <p class="text-sm text-gray-500">
+                      <p class="text-xs sm:text-sm text-gray-500">
                         {{ listing.farm_name }} • KES {{ formatCurrency(listing.current_price) }}/{{ listing.product_unit }}
                       </p>
                     </div>
                     
-                    <div class="text-right">
+                    <div class="flex items-center justify-between sm:text-right">
                       <p class="text-sm font-medium text-gray-900">
                         {{ listing.quantity_available }} {{ listing.product_unit }}
                       </p>
-                      <span :class="getListingStatusClass(listing.listing_status)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                      <span :class="getListingStatusClass(listing.listing_status)" class="ml-2 inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium">
                         {{ formatListingStatus(listing.listing_status) }}
                       </span>
                     </div>
@@ -247,7 +247,7 @@
           </div>
 
           <!-- Sidebar -->
-          <div class="space-y-8">
+          <div class="space-y-4 sm:space-y-8">
             <!-- Farm Overview -->
             <div class="bg-white rounded-lg shadow p-6">
               <h2 class="text-xl font-semibold text-gray-900 mb-6">Your Farms</h2>
@@ -417,7 +417,7 @@
                 <!-- Payout Request Button -->
                 <button
                   v-if="earnings.available_balance > 0"
-                  @click="showPayoutModal"
+                  @click="showPayoutModalHandler"
                   class="mt-6 w-full inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                 >
                   Request Payout
@@ -441,6 +441,14 @@
       </div>
     </div>
   </div>
+
+  <!-- Payout Request Modal -->
+  <PayoutRequestModal
+    :show="showPayoutModal"
+    :availableBalance="earnings.available_balance"
+    @close="closePayoutModal"
+    @payoutRequested="handlePayoutRequested"
+  />
 </template>
 
 <script setup>
@@ -463,8 +471,8 @@ import {
   ListBulletIcon,
   QuestionMarkCircleIcon
 } from '@heroicons/vue/24/outline'
-import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
 import { useToast } from 'vue-toastification'
+import PayoutRequestModal from '@/components/farmer/PayoutRequestModal.vue'
 
 // State
 const loading = ref(true)
@@ -472,6 +480,7 @@ const error = ref(null)
 const farms = ref([])
 const recentOrders = ref([])
 const recentListings = ref([])
+const showPayoutModal = ref(false) // Control payout modal visibility
 
 const dashboardStats = ref({
   totalRevenue: 0,
@@ -511,12 +520,6 @@ const earnings = ref({
 })
 
 const toast = useToast()
-const showPlatformFeeTooltip = ref(false)
-const showAvailableBalanceTooltip = ref(false)
-const showPendingBalanceTooltip = ref(false)
-const showRequestPayout = ref(false)
-const payoutAmount = ref('')
-const payoutError = ref('')
 const tooltipContent = ref('')
 const tooltipVisible = ref(false)
 const tooltipStyle = ref({ top: '0px', left: '0px' })
@@ -533,11 +536,6 @@ const tooltipMessages = ref({
 // Computed
 const farmerName = computed(() => {
   return user.value?.first_name || user.value?.phone_number || 'Farmer'
-})
-
-const isValidPayoutAmount = computed(() => {
-  const amount = Number(payoutAmount.value)
-  return amount > 0 && amount <= monthlyStats.value.availableBalance
 })
 
 // Methods
@@ -657,6 +655,11 @@ const loadRecentListings = async () => {
 }
 
 const loadStats = async () => {
+  // Define default rates at a higher scope
+  const defaultVatRate = 0.16;
+  const defaultTransactionFeeRate = 0.015; // Updated to 1.5%
+  const defaultPlatformFeeRate = 0.10;
+
   try {
     // Calculate total revenue from orders
     const ordersResponse = await farmerOrdersAPI.getOrderItems()
@@ -684,15 +687,22 @@ const loadStats = async () => {
     } catch (err) {
       console.error('Error loading earnings:', err)
       // Set default values if earnings fetch fails
+      // Use the new rates for fallback calculations
+      const defaultPlatformFeeAmount = totalRevenue * defaultPlatformFeeRate;
+      const defaultVatAmount = defaultPlatformFeeAmount * defaultVatRate; // VAT on Platform Fee
+      const defaultTransactionFeeAmount = totalRevenue * defaultTransactionFeeRate;
+      const defaultTotalFees = defaultPlatformFeeAmount + defaultVatAmount + defaultTransactionFeeAmount;
+      const defaultNetRevenue = totalRevenue - defaultTotalFees;
+
       earnings.value = {
         gross_revenue: totalRevenue,
         fees: {
-          vat: totalRevenue * 0.16,
-          transaction_fee: totalRevenue * 0.02,
-          platform_fee: totalRevenue * 0.10,
-          total_fees: totalRevenue * 0.28
+          vat: defaultVatAmount,
+          transaction_fee: defaultTransactionFeeAmount,
+          platform_fee: defaultPlatformFeeAmount,
+          total_fees: defaultTotalFees
         },
-        net_revenue: totalRevenue * 0.72,
+        net_revenue: defaultNetRevenue,
         available_balance: 0,
         pending_balance: 0
       }
@@ -707,10 +717,17 @@ const loadStats = async () => {
       return orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear
     })
     
+    // Recalculate monthly stats with new logic for fees
+    const monthlyGrossRevenue = monthlyOrders.reduce((sum, order) => sum + (parseFloat(order.total_price) || 0), 0);
+    const monthlyPlatformFee = monthlyGrossRevenue * defaultPlatformFeeRate;
+    const monthlyVat = monthlyPlatformFee * defaultVatRate;
+    const monthlyTransactionFee = monthlyGrossRevenue * defaultTransactionFeeRate;
+    const monthlyNetRevenue = monthlyGrossRevenue - (monthlyPlatformFee + monthlyVat + monthlyTransactionFee);
+
     monthlyStats.value = {
-      grossRevenue: monthlyOrders.reduce((sum, order) => sum + (parseFloat(order.total_price) || 0), 0),
-      platformFee: monthlyOrders.reduce((sum, order) => sum + (parseFloat(order.total_price) * 0.10 || 0), 0),
-      netRevenue: monthlyOrders.reduce((sum, order) => sum + (parseFloat(order.total_price) * 0.72 || 0), 0),
+      grossRevenue: monthlyGrossRevenue,
+      platformFee: monthlyPlatformFee,
+      netRevenue: monthlyNetRevenue,
       ordersCompleted: monthlyOrders.filter(o => o.item_status === 'delivered').length,
       productsSold: monthlyOrders.reduce((sum, order) => sum + (parseFloat(order.quantity) || 0), 0),
       availableBalance: earnings.value.available_balance,
@@ -722,28 +739,19 @@ const loadStats = async () => {
   }
 }
 
-const requestPayout = async () => {
-  if (!isValidPayoutAmount.value) {
-    payoutError.value = 'Please enter a valid amount'
-    return
-  }
-
-  try {
-    await financeAPI.createPayout({
-      amount: Number(payoutAmount.value)
-    })
-    toast.success('Payout request submitted successfully')
-    showRequestPayout.value = false
-    payoutAmount.value = ''
-    payoutError.value = ''
-    await loadDashboardData()
-  } catch (error) {
-    toast.error('Failed to submit payout request')
-    console.error('Error requesting payout:', error)
-  }
+const showPayoutModalHandler = () => {
+  showPayoutModal.value = true
 }
 
-const showTooltip = (key) => {
+const closePayoutModal = () => {
+  showPayoutModal.value = false
+}
+
+const handlePayoutRequested = async () => {
+  await loadDashboardData() // Reload data after a payout request
+}
+
+const showTooltip = (key, event) => {
   tooltipContent.value = tooltipMessages.value[key]
   tooltipVisible.value = true
   // Position tooltip near the cursor
@@ -760,4 +768,4 @@ const hideTooltip = () => {
 onMounted(() => {
   loadDashboardData()
 })
-</script> 
+</script>

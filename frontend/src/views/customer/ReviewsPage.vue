@@ -268,7 +268,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { reviewsAPI } from '@/services/api'
-import ReviewModal from '@/components/ReviewModal.vue'
+import ReviewModal from '@/components/common/ReviewModal.vue'
 
 const loading = ref(false)
 const activeTab = ref('my_reviews')

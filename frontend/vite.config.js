@@ -17,6 +17,10 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    host: true
+    host: true,
+    allowedHosts: ['c35b75b61394.ngrok-free.app'],
+    fs: {
+      allow: ['..'] // Allow serving files from one level up (for backend access)
+    }
   }
 })

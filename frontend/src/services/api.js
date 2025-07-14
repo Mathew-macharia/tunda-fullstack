@@ -1,6 +1,15 @@
 import axios from 'axios'
 
 const API_BASE_URL = 'http://localhost:8000/api'
+const BACKEND_BASE_URL = 'http://localhost:8000'
+
+// Helper function to convert relative media URLs to absolute URLs
+const getAbsoluteMediaUrl = (relativeUrl) => {
+  if (!relativeUrl) return null
+  if (relativeUrl.startsWith('http')) return relativeUrl
+  if (relativeUrl.startsWith('/media')) return `${BACKEND_BASE_URL}${relativeUrl}`
+  return relativeUrl
+}
 
 // Create axios instance with default config
 const api = axios.create({
@@ -70,6 +79,43 @@ api.interceptors.response.use(
     return Promise.reject(error)
   }
 )
+
+// Add response interceptor to handle media URLs
+api.interceptors.response.use(response => {
+  // If response is array or object, process all media URLs
+  const processMediaUrls = (data) => {
+    if (Array.isArray(data)) {
+      return data.map(item => processMediaUrls(item))
+    } else if (data && typeof data === 'object') {
+      const processed = { ...data }
+      
+      // Convert photo URLs in the photos array
+      if (Array.isArray(processed.photos)) {
+        processed.photos = processed.photos.map(photo => getAbsoluteMediaUrl(photo))
+      }
+      
+      // Also handle single image_url if present
+      if (processed.image_url) {
+        processed.image_url = getAbsoluteMediaUrl(processed.image_url)
+      }
+      
+      // Recursively process nested objects and arrays
+      for (const key in processed) {
+        if (processed[key] && typeof processed[key] === 'object') {
+          processed[key] = processMediaUrls(processed[key])
+        }
+      }
+      
+      return processed
+    }
+    return data
+  }
+
+  if (response.data) {
+    response.data = processMediaUrls(response.data)
+  }
+  return response
+})
 
 // Auth API
 export const authAPI = {
@@ -180,6 +226,15 @@ export const productsAPI = {
   async markListingPreOrder(id) {
     const response = await api.post(`/products/listings/${id}/mark_pre_order/`)
     return response.data
+  },
+
+  async uploadPhoto(formData) {
+    const response = await api.post('/products/listings/upload_photo/', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    return response.data
   }
 }
 
@@ -193,7 +248,7 @@ export const cartAPI = {
   async addToCart(listingId, quantity) {
     const response = await api.post('/carts/add_item/', {
       listing_id: listingId,
-      quantity: quantity
+      quantity: parseFloat(quantity).toFixed(2) // Format to 2 decimal places
     })
     return response.data
   },
@@ -201,7 +256,7 @@ export const cartAPI = {
   async updateCartItem(itemId, quantity) {
     const response = await api.post('/carts/update_quantity/', {
       cart_item_id: itemId,
-      quantity: parseFloat(quantity) // Ensure quantity is a float
+      quantity: parseFloat(quantity).toFixed(2) // Format to 2 decimal places
     })
     return response.data
   },
@@ -215,6 +270,18 @@ export const cartAPI = {
 
   async clearCart() {
     const response = await api.post('/carts/clear_cart/')
+    return response.data
+  },
+
+  async estimateDeliveryFee(deliveryAddress) {
+    const response = await api.post('/carts/estimate_delivery_fee/', {
+      delivery_address: deliveryAddress
+    })
+    return response.data
+  },
+
+  async getAddressAutocomplete(query) {
+    const response = await api.get(`/carts/address_autocomplete/?q=${encodeURIComponent(query)}`)
     return response.data
   }
 }
@@ -381,6 +448,48 @@ export const paymentsAPI = {
 
   async initiateSTKPush(paymentData) {
     const response = await api.post('/payments/stk-push/', paymentData)
+    return response.data
+  },
+
+  // M-Pesa specific payment methods
+  async initiateMpesaPayment(paymentData) {
+    const response = await api.post('/payments/transactions/initiate_mpesa_payment/', paymentData)
+    return response.data
+  },
+
+  async checkMpesaStatus(transactionId) {
+    const response = await api.get(`/payments/transactions/${transactionId}/check_mpesa_status/`)
+    return response.data
+  },
+
+  async getPaymentTransaction(transactionId) {
+    const response = await api.get(`/payments/transactions/${transactionId}/`)
+    return response.data
+  },
+
+  // Payment Session API methods
+  async createPaymentSession(sessionData) {
+    const response = await api.post('/payments/sessions/', sessionData)
+    return response.data
+  },
+
+  async getPaymentSession(sessionId) {
+    const response = await api.get(`/payments/sessions/${sessionId}/`)
+    return response.data
+  },
+
+  async initiateSessionPayment(sessionId, paymentData) {
+    const response = await api.post(`/payments/sessions/${sessionId}/initiate_payment/`, paymentData)
+    return response.data
+  },
+
+  async getSessionStatus(sessionId) {
+    const response = await api.get(`/payments/sessions/${sessionId}/status/`)
+    return response.data
+  },
+
+  async extendSession(sessionId, extensionData = {}) {
+    const response = await api.post(`/payments/sessions/${sessionId}/extend_session/`, extensionData)
     return response.data
   }
 }
@@ -759,6 +868,16 @@ export const financeAPI = {
     return response.data
   },
 
+  async getRiderEarnings() {
+    const response = await api.get('/finance/rider-earnings/')
+    return response.data
+  },
+
+  async getRiderTransactions(params = {}) {
+    const response = await api.get('/finance/rider-transactions/', { params })
+    return response.data
+  },
+
   async createPayout(payoutData) {
     const response = await api.post('/finance/payouts/', payoutData)
     return response.data
@@ -777,11 +896,30 @@ export const financeAPI = {
   async getPayoutStats() {
     const response = await api.get('/finance/payouts/stats/')
     return response.data
+  },
+
+  async processPayout(payoutId, data) {
+    const response = await api.post(`/finance/payouts/${payoutId}/process/`, data)
+    return response.data
+  },
+
+  async failPayout(payoutId, notes) {
+    const response = await api.post(`/finance/payouts/${payoutId}/fail/`, { notes })
+    return response.data
   }
 }
 
-// Core/Settings API
-// ... rest of the existing code ...
+// System Settings API
+export const settingsAPI = {
+  async getSettings() {
+    const response = await api.get('/core/system-settings/')
+    return response.data
+  },
+  async updateSettings(settingsData) {
+    const response = await api.patch('/core/system-settings/', settingsData)
+    return response.data
+  }
+}
 
 // Admin API for dashboard and admin-specific operations
 export const adminAPI = {

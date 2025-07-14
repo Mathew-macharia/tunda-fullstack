@@ -428,15 +428,41 @@ export default {
 
 <style scoped>
 .quick-action-card {
-  @apply p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 touch-manipulation;
+  padding: 0.75rem;
+  background-color: #f9fafb;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s;
+  touch-action: manipulation;
+}
+
+.quick-action-card:hover {
+  background-color: #f3f4f6;
 }
 
 .btn-primary {
-  @apply bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200;
+  background-color: #059669;
+  color: white;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: #047857;
 }
 
 .btn-secondary {
-  @apply bg-gray-100 hover:bg-gray-200 text-gray-900 font-medium py-2 px-4 rounded-md transition-colors duration-200;
+  background-color: #f3f4f6;
+  color: #111827;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  transition: background-color 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: #e5e7eb;
 }
 
 /* Ensure touch targets are at least 44px */

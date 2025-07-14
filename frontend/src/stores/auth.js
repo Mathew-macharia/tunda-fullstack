@@ -108,6 +108,9 @@ const login = async (phoneNumber, password) => {
       await mergeGuestCartToUserCart()
     }
     
+    // Dispatch cart update event to refresh UI
+    window.dispatchEvent(new CustomEvent('cartUpdated'))
+    
     return { success: true, user: userData }
   } catch (error) {
     console.error('Login error:', error)

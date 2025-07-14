@@ -1,24 +1,24 @@
 <template>
-  <div class="min-h-screen bg-gray-50 py-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <div class="min-h-screen bg-gray-50 py-4 sm:py-8">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
       <!-- Header -->
-      <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Rider Dashboard</h1>
-        <p class="mt-2 text-gray-600">Welcome back, {{ riderName }}! Manage your deliveries and track earnings</p>
+      <div class="mb-6 sm:mb-8">
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Rider Dashboard</h1>
+        <p class="mt-2 text-sm sm:text-base text-gray-600">Welcome back, {{ riderName }}! Manage your deliveries and track earnings</p>
       </div>
 
       <!-- Stats Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
         <div class="bg-white overflow-hidden shadow rounded-lg">
-          <div class="p-5">
+          <div class="p-4 sm:p-5">
             <div class="flex items-center">
               <div class="flex-shrink-0">
-                <TruckIcon class="h-6 w-6 text-blue-400" />
+                <TruckIcon class="h-5 w-5 sm:h-6 sm:w-6 text-blue-400" />
               </div>
-              <div class="ml-5 w-0 flex-1">
+              <div class="ml-3 sm:ml-5 w-0 flex-1">
                 <dl>
-                  <dt class="text-sm font-medium text-gray-500 truncate">Active Deliveries</dt>
-                  <dd class="text-lg font-medium text-gray-900">{{ stats.activeDeliveries }}</dd>
+                  <dt class="text-xs sm:text-sm font-medium text-gray-500 truncate">Active Deliveries</dt>
+                  <dd class="text-base sm:text-lg font-medium text-gray-900">{{ stats.activeDeliveries }}</dd>
                 </dl>
               </div>
             </div>
@@ -26,15 +26,15 @@
         </div>
 
         <div class="bg-white overflow-hidden shadow rounded-lg">
-          <div class="p-5">
+          <div class="p-4 sm:p-5">
             <div class="flex items-center">
               <div class="flex-shrink-0">
-                <CheckCircleIcon class="h-6 w-6 text-green-400" />
+                <CheckCircleIcon class="h-5 w-5 sm:h-6 sm:w-6 text-green-400" />
               </div>
-              <div class="ml-5 w-0 flex-1">
+              <div class="ml-3 sm:ml-5 w-0 flex-1">
                 <dl>
-                  <dt class="text-sm font-medium text-gray-500 truncate">Completed Today</dt>
-                  <dd class="text-lg font-medium text-gray-900">{{ stats.completedToday }}</dd>
+                  <dt class="text-xs sm:text-sm font-medium text-gray-500 truncate">Completed Today</dt>
+                  <dd class="text-base sm:text-lg font-medium text-gray-900">{{ stats.completedToday }}</dd>
                 </dl>
               </div>
             </div>
@@ -42,15 +42,15 @@
         </div>
 
         <div class="bg-white overflow-hidden shadow rounded-lg">
-          <div class="p-5">
+          <div class="p-4 sm:p-5">
             <div class="flex items-center">
               <div class="flex-shrink-0">
-                <CurrencyDollarIcon class="h-6 w-6 text-green-400" />
+                <CurrencyDollarIcon class="h-5 w-5 sm:h-6 sm:w-6 text-green-400" />
               </div>
-              <div class="ml-5 w-0 flex-1">
+              <div class="ml-3 sm:ml-5 w-0 flex-1">
                 <dl>
-                  <dt class="text-sm font-medium text-gray-500 truncate">Today's Earnings</dt>
-                  <dd class="text-lg font-medium text-gray-900">KES {{ formatCurrency(stats.todayEarnings) }}</dd>
+                  <dt class="text-xs sm:text-sm font-medium text-gray-500 truncate">Today's Earnings</dt>
+                  <dd class="text-base sm:text-lg font-medium text-gray-900">KES {{ formatCurrency(stats.todayEarnings) }}</dd>
                 </dl>
               </div>
             </div>
@@ -58,15 +58,15 @@
         </div>
 
         <div class="bg-white overflow-hidden shadow rounded-lg">
-          <div class="p-5">
+          <div class="p-4 sm:p-5">
             <div class="flex items-center">
               <div class="flex-shrink-0">
-                <StarIcon class="h-6 w-6 text-yellow-400" />
+                <StarIcon class="h-5 w-5 sm:h-6 sm:w-6 text-yellow-400" />
               </div>
-              <div class="ml-5 w-0 flex-1">
+              <div class="ml-3 sm:ml-5 w-0 flex-1">
                 <dl>
-                  <dt class="text-sm font-medium text-gray-500 truncate">Rating</dt>
-                  <dd class="text-lg font-medium text-gray-900">{{ stats.averageRating.toFixed(1) }}</dd>
+                  <dt class="text-xs sm:text-sm font-medium text-gray-500 truncate">Rating</dt>
+                  <dd class="text-base sm:text-lg font-medium text-gray-900">{{ stats.averageRating.toFixed(1) }}</dd>
                 </dl>
               </div>
             </div>
@@ -75,54 +75,64 @@
       </div>
 
       <!-- Earnings Section -->
-      <div class="bg-white shadow rounded-lg mb-8">
-        <div class="p-6 border-b border-gray-200">
-          <h2 class="text-lg font-medium text-gray-900">Earnings Overview</h2>
+      <div class="bg-white shadow rounded-lg mb-6 sm:mb-8">
+        <div class="p-4 sm:p-6 border-b border-gray-200">
+          <h2 class="text-lg sm:text-xl font-medium text-gray-900">Earnings Overview</h2>
         </div>
-        <div class="p-6">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="p-4 sm:p-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
             <!-- Total Available Balance -->
-            <div class="bg-green-50 rounded-lg p-6">
-              <h3 class="text-sm font-medium text-gray-700 mb-4">Available for Withdrawal</h3>
-              <p class="text-3xl font-bold text-green-600">KES {{ formatCurrency(stats.availableBalance) }}</p>
+            <div class="bg-green-50 rounded-lg p-4 sm:p-6">
+              <h3 class="text-xs sm:text-sm font-medium text-gray-700 mb-3 sm:mb-4">Available for Withdrawal</h3>
+              <p class="text-2xl sm:text-3xl font-bold text-green-600">KES {{ formatCurrency(stats.availableBalance) }}</p>
               <button 
                 @click="showRequestPayout = true"
-                :disabled="!stats.availableBalance"
-                class="mt-4 w-full inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                :disabled="!stats.availableBalance || hasPendingPayout"
+                class="mt-3 sm:mt-4 w-full inline-flex justify-center items-center px-3 sm:px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
-                Request Withdrawal
+                {{ hasPendingPayout ? 'Pending Payout in Progress' : 'Request Withdrawal' }}
               </button>
+              <p v-if="hasPendingPayout" class="mt-2 text-xs text-gray-600">
+                Please wait for your pending payout to be processed before requesting another.
+              </p>
             </div>
 
             <!-- Pending Balance -->
-            <div class="bg-yellow-50 rounded-lg p-6">
-              <h3 class="text-sm font-medium text-gray-700 mb-4">Pending Clearance</h3>
-              <p class="text-3xl font-bold text-yellow-600">KES {{ formatCurrency(stats.pendingBalance) }}</p>
-              <p class="mt-4 text-sm text-gray-600">Will be available in 24-48 hours</p>
+            <div v-if="stats.pendingBalance > 0" class="bg-yellow-50 rounded-lg p-4 sm:p-6">
+              <h3 class="text-xs sm:text-sm font-medium text-gray-700 mb-3 sm:mb-4">Pending Clearance</h3>
+              <p class="text-2xl sm:text-3xl font-bold text-yellow-600">KES {{ formatCurrency(stats.pendingBalance) }}</p>
+              <p class="mt-3 sm:mt-4 text-xs sm:text-sm text-gray-600">Amounts KES {{ formatCurrency(stats.clearanceThresholdAmount) }} and above are subject to 24-48 hour clearance.</p>
             </div>
 
             <!-- Total Earnings -->
-            <div class="bg-blue-50 rounded-lg p-6">
-              <h3 class="text-sm font-medium text-gray-700 mb-4">Total Earnings</h3>
-              <p class="text-3xl font-bold text-blue-600">KES {{ formatCurrency(stats.totalEarnings) }}</p>
+            <div class="bg-blue-50 rounded-lg p-4 sm:p-6">
+              <h3 class="text-xs sm:text-sm font-medium text-gray-700 mb-3 sm:mb-4">Total Earnings</h3>
+              <p class="text-2xl sm:text-3xl font-bold text-blue-600">KES {{ formatCurrency(stats.totalEarnings) }}</p>
               <router-link 
                 to="/rider/earnings"
-                class="mt-4 inline-block text-sm text-blue-600 hover:text-blue-500"
+                class="mt-3 sm:mt-4 inline-block text-sm text-blue-600 hover:text-blue-500"
               >
                 View detailed report →
               </router-link>
             </div>
+
+            <!-- Withholding Tax -->
+            <div v-if="stats.withholdingTax > 0" class="bg-red-50 rounded-lg p-4 sm:p-6">
+              <h3 class="text-xs sm:text-sm font-medium text-gray-700 mb-3 sm:mb-4">Withholding Tax (WHT)</h3>
+              <p class="text-2xl sm:text-3xl font-bold text-red-600">KES {{ formatCurrency(stats.withholdingTax) }}</p>
+              <p class="mt-3 sm:mt-4 text-xs sm:text-sm text-gray-600">Deducted from your earnings</p>
+            </div>
           </div>
 
           <!-- Recent Transactions -->
-          <div class="mt-8">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Recent Transactions</h3>
+          <div class="mt-6 sm:mt-8">
+            <h3 class="text-lg sm:text-xl font-medium text-gray-900 mb-3 sm:mb-4">Recent Transactions</h3>
             <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
-              <div v-if="recentTransactions.length === 0" class="p-6 text-center text-gray-500">
+              <div v-if="recentTransactions.length === 0" class="p-4 sm:p-6 text-center text-gray-500">
                 <p>No recent transactions</p>
               </div>
               <div v-else class="divide-y divide-gray-200">
-                <div v-for="transaction in recentTransactions" :key="transaction.id" class="p-4 hover:bg-gray-50">
+                <div v-for="transaction in recentTransactions" :key="transaction.id" class="p-3 sm:p-4 hover:bg-gray-50">
                   <div class="flex items-center justify-between">
                     <div>
                       <p class="text-sm font-medium text-gray-900">{{ transaction.description }}</p>
@@ -140,48 +150,48 @@
       </div>
 
       <!-- Quick Actions -->
-      <div class="mb-8">
-        <h2 class="text-lg font-medium text-gray-900 mb-4">Quick Actions</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="mb-6 sm:mb-8">
+        <h2 class="text-lg sm:text-xl font-medium text-gray-900 mb-3 sm:mb-4">Quick Actions</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <router-link
             to="/rider/deliveries"
-            class="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow"
+            class="bg-white p-4 sm:p-6 rounded-lg shadow hover:shadow-md transition-shadow"
           >
             <div class="flex items-center">
-              <TruckIcon class="h-8 w-8 text-blue-600" />
-              <div class="ml-4">
-                <p class="text-lg font-medium text-gray-900">View Deliveries</p>
-                <p class="text-sm text-gray-500">Manage active deliveries</p>
+              <TruckIcon class="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
+              <div class="ml-3 sm:ml-4">
+                <p class="text-base sm:text-lg font-medium text-gray-900">View Deliveries</p>
+                <p class="text-xs sm:text-sm text-gray-500">Manage active deliveries</p>
               </div>
             </div>
           </router-link>
 
-          <div class="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer">
+          <div class="bg-white p-4 sm:p-6 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer">
             <div class="flex items-center">
-              <MapPinIcon class="h-8 w-8 text-green-600" />
-              <div class="ml-4">
-                <p class="text-lg font-medium text-gray-900">Update Location</p>
-                <p class="text-sm text-gray-500">Share your current location</p>
+              <MapPinIcon class="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
+              <div class="ml-3 sm:ml-4">
+                <p class="text-base sm:text-lg font-medium text-gray-900">Update Location</p>
+                <p class="text-xs sm:text-sm text-gray-500">Share your current location</p>
               </div>
             </div>
           </div>
 
-          <div class="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer">
+          <div class="bg-white p-4 sm:p-6 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer">
             <div class="flex items-center">
-              <ClockIcon class="h-8 w-8 text-purple-600" />
-              <div class="ml-4">
-                <p class="text-lg font-medium text-gray-900">Work Schedule</p>
-                <p class="text-sm text-gray-500">Manage availability</p>
+              <ClockIcon class="h-6 w-6 sm:h-8 sm:w-8 text-purple-600" />
+              <div class="ml-3 sm:ml-4">
+                <p class="text-base sm:text-lg font-medium text-gray-900">Work Schedule</p>
+                <p class="text-xs sm:text-sm text-gray-500">Manage availability</p>
               </div>
             </div>
           </div>
 
-          <div class="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer">
+          <div class="bg-white p-4 sm:p-6 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer">
             <div class="flex items-center">
-              <ChartBarIcon class="h-8 w-8 text-orange-600" />
-              <div class="ml-4">
-                <p class="text-lg font-medium text-gray-900">Earnings Report</p>
-                <p class="text-sm text-gray-500">View detailed earnings</p>
+              <ChartBarIcon class="h-6 w-6 sm:h-8 sm:w-8 text-orange-600" />
+              <div class="ml-3 sm:ml-4">
+                <p class="text-base sm:text-lg font-medium text-gray-900">Earnings Report</p>
+                <p class="text-xs sm:text-sm text-gray-500">View detailed earnings</p>
               </div>
             </div>
           </div>
@@ -190,51 +200,51 @@
 
       <!-- Recent Deliveries -->
       <div class="bg-white shadow overflow-hidden sm:rounded-md">
-        <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
-          <h3 class="text-lg leading-6 font-medium text-gray-900">Recent Deliveries</h3>
-          <p class="mt-1 text-sm text-gray-500">Your latest delivery activities</p>
+        <div class="px-4 sm:px-6 py-4 sm:py-5 border-b border-gray-200">
+          <h3 class="text-lg sm:text-xl leading-6 font-medium text-gray-900">Recent Deliveries</h3>
+          <p class="mt-1 text-xs sm:text-sm text-gray-500">Your latest delivery activities</p>
         </div>
 
-        <div v-if="recentDeliveries.length === 0" class="text-center py-8">
-          <TruckIcon class="mx-auto h-12 w-12 text-gray-400" />
-          <h3 class="mt-4 text-sm font-medium text-gray-900">No deliveries yet</h3>
-          <p class="mt-2 text-sm text-gray-500">Check back when you have active deliveries assigned.</p>
+        <div v-if="recentDeliveries.length === 0" class="text-center py-6 sm:py-8">
+          <TruckIcon class="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-gray-400" />
+          <h3 class="mt-3 sm:mt-4 text-sm font-medium text-gray-900">No deliveries yet</h3>
+          <p class="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-500">Check back when you have active deliveries assigned.</p>
         </div>
 
         <ul v-else class="divide-y divide-gray-200">
-          <li v-for="delivery in recentDeliveries" :key="delivery.delivery_id" class="px-4 py-4 sm:px-6 hover:bg-gray-50">
-            <div class="flex items-center justify-between">
+          <li v-for="delivery in recentDeliveries" :key="delivery.delivery_id" class="px-4 sm:px-6 py-3 sm:py-4 hover:bg-gray-50">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
               <div class="flex items-center">
                 <div class="flex-shrink-0">
                   <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
                     <TruckIcon class="h-4 w-4 text-blue-600" />
                   </div>
                 </div>
-                <div class="ml-4">
+                <div class="ml-3 sm:ml-4">
                   <div class="text-sm font-medium text-gray-900">
                     Order #{{ delivery.order?.order_number }}
                   </div>
-                  <div class="text-sm text-gray-500">
-                    {{ delivery.delivery_address }}
+                  <div class="text-xs sm:text-sm text-gray-500">
+                    {{ delivery.order?.delivery_location?.location_name }}
                   </div>
                   <div class="text-xs text-gray-400">
                     {{ formatDate(delivery.created_at) }}
                   </div>
                 </div>
               </div>
-              <div class="flex items-center space-x-3">
-                <span :class="getStatusClass(delivery.delivery_status)" class="px-2 py-1 text-xs font-medium rounded-full">
+              <div class="flex items-center justify-between sm:justify-end space-x-3">
+                <span :class="getStatusClass(delivery.delivery_status)" class="px-2 sm:px-3 py-1 text-xs font-medium rounded-full">
                   {{ formatStatus(delivery.delivery_status) }}
                 </span>
                 <div class="text-sm font-medium text-gray-900">
-                  KES {{ formatCurrency(delivery.delivery_fee) }}
+                  KES {{ formatCurrency(delivery.order?.delivery_fee) }}
                 </div>
               </div>
             </div>
           </li>
         </ul>
 
-        <div class="px-4 py-3 border-t border-gray-200">
+        <div class="px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200">
           <router-link
             to="/rider/deliveries"
             class="text-sm font-medium text-blue-600 hover:text-blue-500"
@@ -278,9 +288,14 @@
                       Request Payout
                     </DialogTitle>
                     <div class="mt-2">
-                      <p class="text-sm text-gray-500 mb-4">
-                        Available balance: KES {{ formatCurrency(stats.availableBalance) }}
-                      </p>
+                      <div class="flex justify-between items-center mb-4">
+                        <p class="text-sm text-gray-500">
+                          Available balance: KES {{ formatCurrency(stats.availableBalance) }}
+                        </p>
+                        <p class="text-sm" :class="{'text-red-600 font-medium': Number(payoutAmount) < stats.minWithdrawalAmount, 'text-gray-500': Number(payoutAmount) >= stats.minWithdrawalAmount}">
+                          Min: KES {{ formatCurrency(stats.minWithdrawalAmount) }}
+                        </p>
+                      </div>
                       <div class="mt-4">
                         <label for="amount" class="block text-sm font-medium text-gray-700 text-left">
                           Amount to withdraw
@@ -291,12 +306,17 @@
                             name="amount"
                             id="amount"
                             v-model="payoutAmount"
+                            :min="stats.minWithdrawalAmount"
                             :max="stats.availableBalance"
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                            :class="{
+                              'border-red-300 focus:ring-red-500 focus:border-red-500': Number(payoutAmount) < stats.minWithdrawalAmount && payoutAmount,
+                              'border-gray-300 focus:ring-blue-500 focus:border-blue-500': !payoutAmount || Number(payoutAmount) >= stats.minWithdrawalAmount
+                            }"
+                            class="block w-full rounded-md shadow-sm sm:text-sm"
                             placeholder="Enter amount"
                           />
                         </div>
-                        <p v-if="payoutError" class="mt-2 text-sm text-red-600">{{ payoutError }}</p>
+                        <p v-if="payoutError && payoutError !== `Minimum withdrawal amount is KES ${formatCurrency(stats.minWithdrawalAmount)}`" class="mt-2 text-sm text-red-600">{{ payoutError }}</p>
                       </div>
                     </div>
                   </div>
@@ -304,8 +324,12 @@
                 <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
                   <button
                     type="button"
-                    class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:col-start-2"
-                    :disabled="!isValidPayoutAmount"
+                    class="inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm sm:col-start-2 disabled:cursor-not-allowed transition-all duration-200"
+                    :class="{
+                      'bg-blue-600 hover:bg-blue-500': isValidPayoutAmount && Number(payoutAmount) >= stats.minWithdrawalAmount,
+                      'bg-gray-300': !isValidPayoutAmount || Number(payoutAmount) < stats.minWithdrawalAmount
+                    }"
+                    :disabled="!isValidPayoutAmount || Number(payoutAmount) < stats.minWithdrawalAmount"
                     @click="requestPayout"
                   >
                     Request Payout
@@ -313,7 +337,11 @@
                   <button
                     type="button"
                     class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0"
-                    @click="showRequestPayout = false"
+                    @click="() => {
+                      showRequestPayout = false;
+                      payoutAmount.value = '';
+                      payoutError.value = '';
+                    }"
                   >
                     Cancel
                   </button>
@@ -328,7 +356,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { user } from '@/stores/auth'
 import { riderAPI } from '@/services/api'
 import { financeAPI } from '@/services/api'
@@ -354,7 +382,10 @@ const stats = ref({
   averageRating: 0,
   availableBalance: 0,
   pendingBalance: 0,
-  totalEarnings: 0
+  totalEarnings: 0,
+  withholdingTax: 0,
+  minWithdrawalAmount: 0,
+  clearanceThresholdAmount: 0
 })
 
 const recentDeliveries = ref([])
@@ -368,10 +399,28 @@ const riderName = computed(() => {
   return user.value?.first_name || user.value?.phone_number || 'Rider'
 })
 
+// Update the isValidPayoutAmount computed property
 const isValidPayoutAmount = computed(() => {
   const amount = Number(payoutAmount.value)
-  return amount > 0 && amount <= stats.value.availableBalance
+  return amount >= stats.value.minWithdrawalAmount && 
+         amount <= stats.value.availableBalance && 
+         amount > 0
 })
+
+// Add watcher for payoutAmount to show validation message
+watch(payoutAmount, (newValue) => {
+  const amount = Number(newValue)
+  if (amount < stats.value.minWithdrawalAmount) {
+    payoutError.value = `Minimum withdrawal amount is KES ${formatCurrency(stats.value.minWithdrawalAmount)}`
+  } else if (amount > stats.value.availableBalance) {
+    payoutError.value = 'Amount exceeds available balance'
+  } else {
+    payoutError.value = ''
+  }
+})
+
+// Add computed property for pending payout
+const hasPendingPayout = computed(() => stats.value.pendingBalance > 0)
 
 // Methods
 const loadDashboardData = async () => {
@@ -387,7 +436,7 @@ const loadDashboardData = async () => {
 
     // Calculate basic stats
     const activeDeliveries = deliveries.filter(d => 
-      d.delivery_status === 'assigned' || d.delivery_status === 'picked_up'
+      d.delivery_status === 'assigned' || d.delivery_status === 'picked_up' || d.delivery_status === 'in_transit'
     ).length
 
     const today = new Date()
@@ -399,7 +448,7 @@ const loadDashboardData = async () => {
     const completedToday = todayDeliveries.filter(d => d.delivery_status === 'delivered').length
     const todayEarnings = todayDeliveries
       .filter(d => d.delivery_status === 'delivered')
-      .reduce((sum, d) => sum + parseFloat(d.delivery_fee || 0), 0)
+      .reduce((sum, d) => sum + parseFloat(d.order?.delivery_fee || 0), 0)
 
     // Load earnings data
     const earningsResponse = await financeAPI.getRiderEarnings()
@@ -415,7 +464,10 @@ const loadDashboardData = async () => {
       averageRating: 4.8, // Would come from rider rating system
       availableBalance: earningsResponse.available_balance || 0,
       pendingBalance: earningsResponse.pending_balance || 0,
-      totalEarnings: earningsResponse.total_earnings || 0
+      totalEarnings: earningsResponse.total_earnings || 0,
+      withholdingTax: earningsResponse.withholding_tax || 0,
+      minWithdrawalAmount: earningsResponse.min_withdrawal_amount || 0,
+      clearanceThresholdAmount: earningsResponse.clearance_threshold_amount || 0
     }
 
   } catch (err) {
@@ -442,7 +494,6 @@ const formatDate = (dateString) => {
 
 const formatStatus = (status) => {
   const statusMap = {
-    'pending': 'Pending',
     'assigned': 'Assigned',
     'picked_up': 'Picked Up',
     'in_transit': 'In Transit',
@@ -454,7 +505,6 @@ const formatStatus = (status) => {
 
 const getStatusClass = (status) => {
   const statusClasses = {
-    'pending': 'bg-yellow-100 text-yellow-800',
     'assigned': 'bg-blue-100 text-blue-800',
     'picked_up': 'bg-indigo-100 text-indigo-800',
     'in_transit': 'bg-purple-100 text-purple-800',
@@ -464,28 +514,40 @@ const getStatusClass = (status) => {
   return statusClasses[status] || 'bg-gray-100 text-gray-800'
 }
 
-const requestPayout = async () => {
-  if (!isValidPayoutAmount.value) {
-    payoutError.value = 'Please enter a valid amount'
-    return
-  }
+  const requestPayout = async () => {
+    if (!isValidPayoutAmount.value) {
+      payoutError.value = 'Please enter a valid amount'
+      return
+    }
 
-  try {
-    await financeAPI.createPayout({
-      amount: Number(payoutAmount.value)
-    })
-    toast.success('Payout request submitted successfully')
-    showRequestPayout.value = false
-    payoutAmount.value = ''
-    payoutError.value = ''
-    await loadDashboardData()
-  } catch (error) {
-    toast.error('Failed to submit payout request')
-    console.error('Error requesting payout:', error)
+    if (hasPendingPayout.value) {
+      payoutError.value = 'You already have a pending payout request'
+      return
+    }
+
+    try {
+      await financeAPI.createPayout({
+        amount: Number(payoutAmount.value),
+        user: user.value.id
+      })
+      toast.success('Payout request submitted successfully')
+      showRequestPayout.value = false
+      payoutAmount.value = ''
+      payoutError.value = ''
+      await loadDashboardData()
+    } catch (error) {
+      if (error.response?.data?.detail) {
+        payoutError.value = error.response.data.detail
+        toast.error(error.response.data.detail)
+      } else {
+        payoutError.value = 'Failed to submit payout request'
+        toast.error('Failed to submit payout request')
+      }
+      console.error('Error requesting payout:', error)
+    }
   }
-}
 
 onMounted(() => {
   loadDashboardData()
 })
-</script> 
+</script>

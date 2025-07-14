@@ -4,7 +4,9 @@ class IsAdminOrRecipientReadOnly(permissions.BasePermission):
     """
     Custom permission to allow:
     - Admin users to perform any action
-    - Recipient users to only view their own payouts
+    - Recipient users (farmers/riders) to:
+        - View their own payouts (GET)
+        - Create payout requests (POST)
     """
     
     def has_permission(self, request, view):
@@ -20,9 +22,14 @@ class IsAdminOrRecipientReadOnly(permissions.BasePermission):
         if view.action in ['process', 'fail']:
             return request.user.user_role == 'admin'
         
-        # Farmers and riders can only list and retrieve payouts
-        if request.method in permissions.SAFE_METHODS and request.user.user_role in ['farmer', 'rider']:
-            return True
+        # Farmers and riders can:
+        # - List and retrieve payouts (GET)
+        # - Create payout requests (POST)
+        if request.user.user_role in ['farmer', 'rider']:
+            if request.method in permissions.SAFE_METHODS:
+                return True
+            if request.method == 'POST' and view.action == 'create':
+                return True
         
         # Others can't do anything
         return False

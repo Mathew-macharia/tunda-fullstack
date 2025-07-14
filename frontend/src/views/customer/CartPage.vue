@@ -82,25 +82,25 @@
               <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-2">
                   <span class="text-sm text-gray-600">Qty:</span>
-                  <button
-                    @click="updateQuantity(item, item.quantity - 1)"
-                    :disabled="item.quantity <= (item.min_order_quantity || 1) || updatingItem === (isAuthenticated ? item.cart_item_id : item.listing_id)"
-                    class="p-1 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
-                    </svg>
-                  </button>
-                  
-                  <span class="px-2 py-1 border border-gray-300 rounded text-sm min-w-8 text-center">
-                    {{ item.quantity }}
-                  </span>
-                  
-                  <button
-                    @click="updateQuantity(item, item.quantity + 1)"
-                    :disabled="item.quantity >= item.quantity_available || updatingItem === (isAuthenticated ? item.cart_item_id : item.listing_id)"
-                    class="p-1 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
+                                  <button
+                  @click="updateQuantity(item, parseFloat(item.quantity) - 1)"
+                  :disabled="parseFloat(item.quantity) <= (parseFloat(item.min_order_quantity) || 1) || updatingItem === (isAuthenticated ? item.cart_item_id : item.listing_id)"
+                  class="p-1 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                  </svg>
+                </button>
+                
+                <span class="px-2 py-1 border border-gray-300 rounded text-sm min-w-8 text-center">
+                  {{ item.quantity }}
+                </span>
+                
+                <button
+                  @click="updateQuantity(item, parseFloat(item.quantity) + 1)"
+                  :disabled="parseFloat(item.quantity) >= parseFloat(item.quantity_available) || updatingItem === (isAuthenticated ? item.cart_item_id : item.listing_id)"
+                  class="p-1 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                     </svg>
@@ -161,8 +161,8 @@
               <!-- Quantity Controls -->
               <div class="flex items-center space-x-2">
                 <button
-                  @click="updateQuantity(item, item.quantity - 1)"
-                  :disabled="item.quantity <= (item.min_order_quantity || 1) || updatingItem === (isAuthenticated ? item.cart_item_id : item.listing_id)"
+                  @click="updateQuantity(item, parseFloat(item.quantity) - 1)"
+                  :disabled="parseFloat(item.quantity) <= (parseFloat(item.min_order_quantity) || 1) || updatingItem === (isAuthenticated ? item.cart_item_id : item.listing_id)"
                   class="p-1 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -175,8 +175,8 @@
                 </span>
                 
                 <button
-                  @click="updateQuantity(item, item.quantity + 1)"
-                  :disabled="item.quantity >= item.quantity_available || updatingItem === (isAuthenticated ? item.cart_item_id : item.listing_id)"
+                  @click="updateQuantity(item, parseFloat(item.quantity) + 1)"
+                  :disabled="parseFloat(item.quantity) >= parseFloat(item.quantity_available) || updatingItem === (isAuthenticated ? item.cart_item_id : item.listing_id)"
                   class="p-1 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -214,12 +214,15 @@
               </div>
               <div class="flex justify-between text-sm sm:text-base">
                 <span class="text-gray-600">Estimated Delivery</span>
-                <span class="font-medium">KSh 50</span>
+                <span class="font-medium">KSh {{ isAuthenticated ? (cart.estimated_delivery_fee || '50.00') : '50.00' }}</span>
+              </div>
+              <div class="text-xs text-blue-600 mt-1">
+                💡 Final delivery fee will be calculated based on your address during checkout
               </div>
               <hr class="my-2">
               <div class="flex justify-between text-lg font-bold">
                 <span>Total</span>
-                <span>KSh {{ (parseFloat(cart.total_cost || 0) + 50).toFixed(2) }}</span>
+                <span>KSh {{ isAuthenticated ? (cart.total_with_delivery || (parseFloat(cart.total_cost || 0) + 50).toFixed(2)) : (parseFloat(cart.total_cost || 0) + 50).toFixed(2) }}</span>
               </div>
             </div>
             

@@ -251,3 +251,209 @@ class CartViewSet(viewsets.ModelViewSet): # Changed base class to ModelViewSet
                 {'error': f'An unexpected error occurred during merge: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+    @action(detail=False, methods=['post'])
+    def estimate_delivery_fee(self, request):
+        """
+        Estimate delivery fee for given address and current cart items with address validation
+        """
+        try:
+            delivery_address = request.data.get('delivery_address')
+            
+            if not delivery_address:
+                return Response(
+                    {'error': 'Delivery address is required'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Validate required address fields
+            required_fields = ['sub_county', 'detailed_address']
+            for field in required_fields:
+                if field not in delivery_address:
+                    return Response(
+                        {'error': f'Missing required field: {field}'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            
+            # PHASE 2: Address Validation
+            from core.services.address_validation_service import AddressValidationService
+            
+            validation_service = AddressValidationService()
+            validation_result = validation_service.validate_address(delivery_address)
+            
+            # Continue with delivery fee calculation even if there are warnings
+            # (warnings are informational, not blocking)
+            
+            # Get cart items
+            try:
+                cart = Cart.objects.get(customer=request.user)
+                cart_items = cart.items.all()
+                
+                if not cart_items.exists():
+                    return Response(
+                        {'error': 'Cart is empty'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                
+            except Cart.DoesNotExist:
+                return Response(
+                    {'error': 'Cart not found'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            # Create temporary address object for calculation
+            from locations.models import SubCounty, UserAddress
+            
+            try:
+                subcounty = SubCounty.objects.get(sub_county_id=delivery_address['sub_county'])
+            except SubCounty.DoesNotExist:
+                return Response(
+                    {'error': 'Invalid sub-county selected'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Create temporary address-like object that matches AddressService expectations
+            class TempAddress:
+                def __init__(self, subcounty, detailed_address, delivery_address_dict):
+                    self.sub_county = subcounty
+                    self.county = subcounty.county
+                    self.detailed_address = detailed_address
+                    self.location_name = delivery_address_dict.get('location_name', '')
+                    self.latitude = delivery_address_dict.get('latitude')
+                    self.longitude = delivery_address_dict.get('longitude')
+            
+            temp_address = TempAddress(subcounty, delivery_address['detailed_address'], delivery_address)
+            
+            # Calculate delivery fee using centralized logic with distance tracking
+            from orders.models import Order
+            from core.services.address_service import AddressService
+            from core.models import SystemSettings
+            from decimal import Decimal
+            
+            # Get system settings
+            base_fee = SystemSettings.objects.get_setting('base_delivery_fee', Decimal('50.00'))
+            fee_per_km = SystemSettings.objects.get_setting('delivery_fee_per_km', Decimal('5.00'))
+            free_threshold = SystemSettings.objects.get_setting('free_delivery_threshold', Decimal('1000.00'))
+            
+            # Calculate delivery fee and get distance information
+            delivery_fee = Order.calculate_delivery_fee_for_cart(cart_items, temp_address)
+            
+            # Try to get distance information for display
+            distance_km = None
+            calculation_method = 'fallback'
+            address_used_for_calculation = None
+            geocoding_confidence = None
+            
+            try:
+                address_service = AddressService()
+                # Convert temp_address to dictionary format expected by AddressService
+                address_dict = {
+                    'detailed_address': temp_address.detailed_address,
+                    'sub_county': temp_address.sub_county.sub_county_name,
+                    'county': temp_address.county.county_name,
+                    'latitude': temp_address.latitude,
+                    'longitude': temp_address.longitude
+                }
+                
+                # Get customer coordinates with geocoding details
+                geocoding_result = address_service.get_customer_coordinates_with_details(address_dict)
+                if isinstance(geocoding_result, dict) and 'coordinates' in geocoding_result:
+                    customer_coords = geocoding_result['coordinates']
+                    address_used_for_calculation = geocoding_result.get('address_used', 'Unknown')
+                    geocoding_confidence = geocoding_result.get('confidence', 0.0)
+                else:
+                    customer_coords = geocoding_result
+                
+                # Get all unique farms
+                farms = set(item.listing.farm for item in cart_items)
+                
+                if farms:
+                    # Calculate distance to farthest farm (matching our delivery fee logic)
+                    max_distance = 0
+                    for farm in farms:
+                        try:
+                            farm_coords = address_service.get_farm_coordinates(farm)
+                            distance = address_service.calculate_distance(customer_coords, farm_coords)
+                            max_distance = max(max_distance, distance)
+                        except Exception as e:
+                            print(f"Error calculating distance to farm {farm}: {e}")
+                    
+                    if max_distance > 0:
+                        distance_km = round(max_distance, 2)
+                        calculation_method = 'distance_based'
+                        
+            except Exception as e:
+                print(f"Error getting distance information: {e}")
+            
+            # Calculate subtotal
+            subtotal = sum(item.quantity * item.price_at_addition for item in cart_items)
+            
+            response_data = {
+                'delivery_fee': float(delivery_fee),
+                'distance_km': distance_km,
+                'subtotal': float(subtotal),
+                'is_free_delivery': delivery_fee == 0 and subtotal >= free_threshold,
+                'calculation_details': {
+                    'base_fee': float(base_fee),
+                    'fee_per_km': float(fee_per_km),
+                    'free_delivery_threshold': float(free_threshold),
+                    'calculation_method': calculation_method
+                },
+                'farms_count': len(set(item.listing.farm for item in cart_items)),
+                'message': f'Delivery fee calculated using {calculation_method} method',
+                # PHASE 2: Include address validation results
+                'address_validation': {
+                    'is_valid': validation_result['is_valid'],
+                    'warnings': validation_result['warnings'],
+                    'suggestions': validation_result['suggestions'],
+                    'confidence': validation_result['confidence'],
+                    'mismatch_detected': validation_result['mismatch_detected'],
+                    'detected_location': validation_result.get('detected_location')
+                },
+                # Address resolution details - shows which address was actually used for calculation
+                'address_resolution': {
+                    'address_used': address_used_for_calculation,
+                    'geocoding_confidence': geocoding_confidence,
+                    'input_address': f"{delivery_address.get('detailed_address', '')}, {subcounty.sub_county_name}, {subcounty.county.county_name}",
+                    'explanation': 'Shows which address was actually used for distance calculation vs what you entered'
+                }
+            }
+            
+            return Response(response_data, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to calculate delivery fee: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    @action(detail=False, methods=['get'])
+    def address_autocomplete(self, request):
+        """
+        PHASE 3: Get address autocomplete suggestions
+        """
+        try:
+            query = request.query_params.get('q', '').strip()
+            limit = int(request.query_params.get('limit', 5))
+            
+            if not query or len(query) < 2:
+                return Response(
+                    {'suggestions': []},
+                    status=status.HTTP_200_OK
+                )
+            
+            from core.services.address_validation_service import AddressValidationService
+            
+            validation_service = AddressValidationService()
+            suggestions = validation_service.get_autocomplete_suggestions(query, limit)
+            
+            return Response(
+                {'suggestions': suggestions},
+                status=status.HTTP_200_OK
+            )
+            
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to get address suggestions: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

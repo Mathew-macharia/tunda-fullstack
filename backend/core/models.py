@@ -52,6 +52,30 @@ class SystemSettingsManager(models.Manager):
                 'description': 'Minimum order amount for free delivery in KES'
             },
             {
+                'setting_key': 'weight_threshold_light',
+                'setting_value': '10.00',
+                'setting_type': 'number',
+                'description': 'Weight threshold for light surcharge in kg'
+            },
+            {
+                'setting_key': 'weight_surcharge_light',
+                'setting_value': '15.00',
+                'setting_type': 'number',
+                'description': 'Additional delivery fee for orders over light weight threshold in KES'
+            },
+            {
+                'setting_key': 'weight_threshold_heavy',
+                'setting_value': '20.00',
+                'setting_type': 'number',
+                'description': 'Weight threshold for heavy surcharge in kg'
+            },
+            {
+                'setting_key': 'weight_surcharge_heavy',
+                'setting_value': '30.00',
+                'setting_type': 'number',
+                'description': 'Additional delivery fee for orders over heavy weight threshold in KES'
+            },
+            {
                 'setting_key': 'vat_rate',
                 'setting_value': '0.16',
                 'setting_type': 'number',
@@ -59,9 +83,9 @@ class SystemSettingsManager(models.Manager):
             },
             {
                 'setting_key': 'transaction_fee_rate',
-                'setting_value': '0.02',
+                'setting_value': '0.015',
                 'setting_type': 'number',
-                'description': 'Transaction fee rate (2%)'
+                'description': 'Transaction fee rate (1.5%)'
             },
             {
                 'setting_key': 'platform_fee_rate',
@@ -98,6 +122,85 @@ class SystemSettingsManager(models.Manager):
                 'setting_value': '["Mpesa", "CashOnDelivery", "BankTransfer"]',
                 'setting_type': 'json',
                 'description': 'List of supported payment methods'
+            },
+            {
+                'setting_key': 'delivery_fee_per_km',
+                'setting_value': '5.00',
+                'setting_type': 'number',
+                'description': 'Delivery fee per kilometer in KES'
+            },
+            {
+                'setting_key': 'max_delivery_distance_km',
+                'setting_value': '50',
+                'setting_type': 'number',
+                'description': 'Maximum delivery distance in kilometers'
+            },
+            {
+                'setting_key': 'multi_farm_consolidation_fee',
+                'setting_value': '25.00',
+                'setting_type': 'number',
+                'description': 'Additional fee per extra farm in multi-farm orders'
+            },
+            {
+                'setting_key': 'wht_rate',
+                'setting_value': '0.03',
+                'setting_type': 'number',
+                'description': 'Withholding Tax rate (3%) for riders'
+            },
+            {
+                'setting_key': 'wht_threshold',
+                'setting_value': '24000.00',
+                'setting_type': 'number',
+                'description': 'Withholding Tax threshold in KES for riders'
+            },
+            # M-Pesa API Settings
+            {
+                'setting_key': 'mpesa_consumer_key',
+                'setting_value': '',
+                'setting_type': 'string',
+                'description': 'M-Pesa API Consumer Key from Daraja Portal'
+            },
+            {
+                'setting_key': 'mpesa_consumer_secret',
+                'setting_value': '',
+                'setting_type': 'string',
+                'description': 'M-Pesa API Consumer Secret from Daraja Portal'
+            },
+            {
+                'setting_key': 'mpesa_business_shortcode',
+                'setting_value': '',
+                'setting_type': 'string',
+                'description': 'M-Pesa Business Shortcode (Till/PayBill Number)'
+            },
+            {
+                'setting_key': 'mpesa_passkey',
+                'setting_value': '',
+                'setting_type': 'string',
+                'description': 'M-Pesa STK Push Passkey'
+            },
+            {
+                'setting_key': 'mpesa_environment',
+                'setting_value': 'sandbox',
+                'setting_type': 'string',
+                'description': 'M-Pesa Environment (sandbox/production)'
+            },
+            {
+                'setting_key': 'mpesa_callback_url',
+                'setting_value': 'https://yourdomain.com/api/payments/transactions/mpesa_callback/',
+                'setting_type': 'string',
+                'description': 'M-Pesa Callback URL for payment notifications'
+            },
+            {
+                'setting_key': 'min_withdrawal_amount',
+                'setting_value': '200.00',
+                'setting_type': 'number',
+                'description': 'Minimum amount allowed for a withdrawal in KES'
+            },
+            {
+                'setting_key': 'clearance_threshold_amount',
+                'setting_value': '20000.00',
+                'setting_type': 'number',
+                'description': 'Withdrawal amount threshold for 24-48 hour clearance in KES'
             }
         ]
         
@@ -145,3 +248,71 @@ class SystemSettings(models.Model):
         Get the value converted to its appropriate type
         """
         return SystemSettings.objects._convert_value(self.setting_value, self.setting_type)
+
+class PopularPlace(models.Model):
+    """
+    Popular places and landmarks for address validation and autocomplete
+    """
+    PLACE_TYPES = [
+        ('shopping', 'Shopping Center/Mall'),
+        ('restaurant', 'Restaurant'),
+        ('hotel', 'Hotel'),
+        ('attraction', 'Tourist Attraction'),
+        ('park', 'Park/Recreation'),
+        ('business', 'Business District'),
+        ('area', 'Residential/Commercial Area'),
+        ('education', 'Educational Institution'),
+        ('hospital', 'Hospital/Medical'),
+        ('transport', 'Transport Hub'),
+        ('government', 'Government Office'),
+        ('religious', 'Religious Site'),
+        ('other', 'Other'),
+    ]
+    
+    place_id = models.AutoField(primary_key=True)
+    place_name = models.CharField(max_length=200, db_index=True)
+    place_type = models.CharField(max_length=20, choices=PLACE_TYPES, default='other')
+    sub_county = models.ForeignKey('locations.SubCounty', on_delete=models.CASCADE, related_name='popular_places')
+    alternative_names = models.JSONField(default=list, blank=True, help_text="Alternative names/spellings for this place")
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    is_verified = models.BooleanField(default=False, help_text="Whether this place has been verified")
+    popularity_score = models.IntegerField(default=0, help_text="Higher score = more popular")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'PopularPlaces'
+        indexes = [
+            models.Index(fields=['place_name']),
+            models.Index(fields=['place_type']),
+            models.Index(fields=['sub_county']),
+            models.Index(fields=['popularity_score']),
+        ]
+        unique_together = ['place_name', 'sub_county']
+    
+    def __str__(self):
+        return f"{self.place_name} ({self.sub_county.sub_county_name})"
+
+class AddressValidationCache(models.Model):
+    """
+    Cache for address validation results to improve performance
+    """
+    cache_id = models.AutoField(primary_key=True)
+    address_hash = models.CharField(max_length=64, unique=True, db_index=True)
+    detailed_address = models.TextField()
+    sub_county = models.ForeignKey('locations.SubCounty', on_delete=models.CASCADE, null=True, blank=True)
+    validation_result = models.JSONField()
+    confidence_score = models.FloatField(default=0.0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(db_index=True)
+    
+    class Meta:
+        db_table = 'AddressValidationCache'
+        indexes = [
+            models.Index(fields=['address_hash']),
+            models.Index(fields=['expires_at']),
+        ]
+    
+    def __str__(self):
+        return f"Cache for {self.detailed_address[:50]}..."

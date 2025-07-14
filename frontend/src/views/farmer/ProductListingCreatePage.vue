@@ -368,14 +368,14 @@ const uploadPhotos = async () => {
   
   for (const file of photoFiles.value) {
     const formData = new FormData()
-    formData.append('file', file)
+    formData.append('photo', file)
     
     try {
-      // In a real app, you'd upload to a file storage service
-      // For now, we'll just use placeholder URLs
-      uploadedUrls.push(`/api/placeholder/${Math.random().toString(36).substr(2, 9)}`)
+      const response = await productsAPI.uploadPhoto(formData)
+      uploadedUrls.push(response.url)
     } catch (err) {
       console.error('Error uploading photo:', err)
+      // You might want to show an error message to the user here
     }
   }
   

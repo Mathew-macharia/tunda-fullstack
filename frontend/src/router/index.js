@@ -10,6 +10,11 @@ const ProfilePage = () => import('@/views/ProfilePage.vue')
 // Common pages
 const NotificationsPage = () => import('@/views/common/NotificationsPage.vue')
 
+// Support pages
+const CustomerSupportPage = () => import('@/views/customer/SupportPage.vue')
+const FarmerSupportPage = () => import('@/views/farmer/SupportPage.vue')
+const RiderSupportPage = () => import('@/views/rider/SupportPage.vue')
+
 // Customer pages
 const CustomerDashboard = () => import('@/views/customer/CustomerDashboard.vue')
 const ProductsPage = () => import('@/views/customer/ProductsPage.vue')
@@ -43,6 +48,7 @@ const DeliveriesManagement = () => import('@/views/admin/DeliveriesManagement.vu
 const SystemSettings = () => import('@/views/admin/SystemSettings.vue')
 const ReviewsManagement = () => import('@/views/admin/ReviewsManagement.vue')
 const PayoutsManagement = () => import('@/views/admin/PayoutsManagement.vue')
+const SupportManagement = () => import('@/views/admin/SupportManagement.vue')
 
 const routes = [
   {
@@ -174,6 +180,12 @@ const routes = [
     component: ReviewsPage,
     meta: { requiresAuth: true, roles: ['customer'] }
   },
+  {
+    path: '/support',
+    name: 'customer-support',
+    component: CustomerSupportPage,
+    meta: { requiresAuth: true, roles: ['customer'] }
+  },
 
   // Farmer routes
   {
@@ -224,6 +236,12 @@ const routes = [
     component: PayoutsPage,
     meta: { requiresAuth: true, roles: ['farmer'] }
   },
+  {
+    path: '/farmer/support',
+    name: 'farmer-support',
+    component: FarmerSupportPage,
+    meta: { requiresAuth: true, roles: ['farmer'] }
+  },
 
   // Rider routes
   {
@@ -248,6 +266,12 @@ const routes = [
     path: '/rider/payouts',
     name: 'rider-payouts',
     component: PayoutsPage,
+    meta: { requiresAuth: true, roles: ['rider'] }
+  },
+  {
+    path: '/rider/support',
+    name: 'rider-support',
+    component: RiderSupportPage,
     meta: { requiresAuth: true, roles: ['rider'] }
   },
 
@@ -286,6 +310,12 @@ const routes = [
     path: '/admin/payouts',
     name: 'payouts-management',
     component: PayoutsManagement,
+    meta: { requiresAuth: true, roles: ['admin'] }
+  },
+  {
+    path: '/admin/support',
+    name: 'support-management',
+    component: SupportManagement,
     meta: { requiresAuth: true, roles: ['admin'] }
   },
   {

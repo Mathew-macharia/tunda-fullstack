@@ -14,13 +14,14 @@ class OrderItemSerializer(serializers.ModelSerializer):
     """Serializer for order items"""
     listing_details = serializers.SerializerMethodField(read_only=True)
     order_details = serializers.SerializerMethodField(read_only=True)
+    farm_details = serializers.SerializerMethodField(read_only=True) # New field
     
     class Meta:
         model = OrderItem
         fields = [
             'order_item_id', 'order', 'listing', 'listing_details', 'order_details', 'farmer',
             'quantity', 'price_at_purchase', 'total_price', 'item_status',
-            'created_at', 'updated_at'
+            'created_at', 'updated_at', 'farm_details' # Add farm_details here
         ]
         read_only_fields = [
             'order_item_id', 'order', 'listing', 'farmer',
@@ -61,6 +62,16 @@ class OrderItemSerializer(serializers.ModelSerializer):
             }
         
         return order_data
+
+    def get_farm_details(self, obj):
+        """Get detailed information about the farm associated with the product listing"""
+        if obj.listing and obj.listing.farm:
+            return {
+                'farm_id': obj.listing.farm.farm_id,
+                'farm_name': obj.listing.farm.farm_name,
+                'location_name': obj.listing.farm.location_name
+            }
+        return None
 
 
 class AdminOrderItemSerializer(serializers.ModelSerializer):
@@ -250,8 +261,8 @@ class OrderCreateSerializer(serializers.Serializer):
             # Calculate total amount
             total_amount = sum(item.quantity * item.price_at_addition for item in cart_items)
             
-            # Default delivery fee
-            delivery_fee = Decimal('50.00')
+            # Calculate delivery fee using centralized logic
+            delivery_fee = Order.calculate_delivery_fee_for_cart(cart_items, delivery_location)
             
             # Determine order status based on payment method
             payment_method = validated_data.get('payment_method', 'mpesa')
@@ -302,6 +313,15 @@ class OrderCreateSerializer(serializers.Serializer):
 
 class OrderItemUpdateSerializer(serializers.ModelSerializer):
     """Serializer for updating order item status by farmers"""
+    # Restrict choices for farmers to exclude 'delivered'
+    item_status = serializers.ChoiceField(
+        choices=[
+            ('pending', 'Pending'),
+            ('harvested', 'Harvested'),
+            ('packed', 'Packed'),
+            # 'delivered' is intentionally excluded for farmers
+        ]
+    )
     
     class Meta:
         model = OrderItem
@@ -321,16 +341,19 @@ class OrderItemUpdateSerializer(serializers.ModelSerializer):
         # Get current status
         current_status = order_item.item_status
         
-        # Status progression validation
+        # Status progression validation for farmer-updatable statuses
         status_progression = {
             'pending': ['harvested'],
             'harvested': ['packed'],
-            'packed': ['delivered'],
-            'delivered': []  # Terminal state
+            'packed': [], # Farmers cannot set to 'delivered'
         }
         
         if item_status not in status_progression.get(current_status, []):
             valid_next = status_progression.get(current_status, [])
+            if not valid_next: # If current_status is 'packed' or 'delivered'
+                raise serializers.ValidationError(
+                    f"Cannot change status from '{current_status}'. This item is already packed or delivered."
+                )
             raise serializers.ValidationError(
                 f"Cannot change status from '{current_status}' to '{item_status}'. "
                 f"Valid next statuses: {valid_next}"
@@ -348,21 +371,10 @@ class OrderItemUpdateSerializer(serializers.ModelSerializer):
                     "Cannot update order item status until payment is confirmed. "
                     f"Current payment status: {order.payment_status}"
                 )
-        else:
-            # For cash on delivery, farmers can only update up to 'packed'
-            # They cannot mark as 'delivered' until delivery status is 'delivered'
-            if item_status == 'delivered':
-                # Check if delivery exists and status is 'delivered'
-                if not hasattr(order, 'delivery'):
-                    raise serializers.ValidationError(
-                        "Cannot mark item as delivered: No delivery record exists for this order."
-                    )
-                
-                if order.delivery.delivery_status != 'delivered':
-                    raise serializers.ValidationError(
-                        "Cannot mark item as delivered until the delivery status is 'delivered'. "
-                        f"Current delivery status: {order.delivery.delivery_status}"
-                    )
+        
+        # Farmers are explicitly prevented from setting 'delivered' status
+        if item_status == 'delivered':
+            raise serializers.ValidationError("Farmers cannot directly set item status to 'delivered'.")
             
         return data
 

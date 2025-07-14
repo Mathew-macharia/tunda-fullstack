@@ -621,11 +621,11 @@ export default {
 }
 
 .form-radio:checked {
-  @apply text-green-600;
+  color: #059669;
 }
 
 .form-checkbox:checked {
-  @apply text-green-600;
+  color: #059669;
 }
 
 .truncate {

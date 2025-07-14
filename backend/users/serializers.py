@@ -29,6 +29,74 @@ class UserCreateSerializer(BaseUserCreateSerializer):
             'email': {'required': False, 'allow_blank': True},
         }
 
+class AdminUserCreateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for admin user creation that properly handles password validation and hashing.
+    """
+    password = serializers.CharField(write_only=True, min_length=6)
+    re_password = serializers.CharField(write_only=True)
+    
+    class Meta:
+        model = User
+        fields = ['phone_number', 'email', 'first_name', 'last_name', 
+                 'user_role', 'password', 're_password', 'is_active']
+        extra_kwargs = {
+            'password': {'write_only': True},
+            're_password': {'write_only': True},
+            'email': {'required': False, 'allow_blank': True},
+        }
+    
+    def validate_password(self, value):
+        """Validate password using Django's built-in validators"""
+        validate_password(value)
+        return value
+    
+    def validate_user_role(self, value):
+        """Validate user role"""
+        valid_roles = ['customer', 'farmer', 'rider', 'admin']
+        if value not in valid_roles:
+            raise serializers.ValidationError(f'Invalid user role. Must be one of: {", ".join(valid_roles)}')
+        return value
+    
+    def validate_phone_number(self, value):
+        """Validate phone number uniqueness"""
+        if User.objects.filter(phone_number=value).exists():
+            raise serializers.ValidationError("A user with this phone number already exists.")
+        return value
+    
+    def validate_email(self, value):
+        """Validate email uniqueness if provided"""
+        if value and value.strip():
+            value = value.strip()
+            if User.objects.filter(email=value).exists():
+                raise serializers.ValidationError("A user with this email already exists.")
+            return value
+        return None
+    
+    def validate(self, attrs):
+        """Cross-field validation"""
+        if attrs['password'] != attrs['re_password']:
+            raise serializers.ValidationError({"password": "Password fields didn't match."})
+        return attrs
+    
+    def create(self, validated_data):
+        """Create user with proper password hashing"""
+        # Remove re_password before creating user
+        validated_data.pop('re_password', None)
+        password = validated_data.pop('password')
+        
+        # Clean email field
+        email = validated_data.get('email')
+        if email and not email.strip():
+            validated_data['email'] = None
+        
+        # Create user with proper password hashing using the custom user manager
+        user = User.objects.create_user(
+            password=password,
+            **validated_data
+        )
+        return user
+
 class UserSerializer(BaseUserSerializer):
     unread_notifications_count = serializers.ReadOnlyField()
     unread_messages_count = serializers.ReadOnlyField()

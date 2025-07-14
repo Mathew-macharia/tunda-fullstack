@@ -194,7 +194,11 @@ class DeliveryViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN
             )
         
-        deliveries = Delivery.objects.filter(rider=user)
+        deliveries = Delivery.objects.filter(rider=user).select_related('order').prefetch_related(
+            'order__items',
+            'order__items__listing__product',
+            'order__items__listing__farm'
+        )
         serializer = DeliverySerializer(deliveries, many=True)
         return Response(serializer.data)
     
@@ -208,7 +212,11 @@ class DeliveryViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN
             )
         
-        deliveries = Delivery.objects.filter(order__customer=user)
+        deliveries = Delivery.objects.filter(order__customer=user).select_related('order').prefetch_related(
+            'order__items',
+            'order__items__listing__product',
+            'order__items__listing__farm'
+        )
         serializer = DeliverySerializer(deliveries, many=True)
         return Response(serializer.data)
 

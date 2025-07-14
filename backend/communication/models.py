@@ -139,3 +139,28 @@ class SupportTicket(models.Model):
             self.resolved_at = timezone.now()
         
         super().save(*args, **kwargs)
+
+
+class FAQ(models.Model):
+    """Model for Frequently Asked Questions"""
+    faq_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    question = models.CharField(max_length=500)
+    answer = models.TextField()
+    target_role = models.CharField(max_length=10, choices=[
+        ('customer', 'Customer'),
+        ('farmer', 'Farmer'), 
+        ('rider', 'Rider'),
+        ('all', 'All Users')
+    ], default='all')
+    is_active = models.BooleanField(default=True)
+    order_index = models.IntegerField(default=0, help_text="Display order (lower numbers first)")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['order_index', 'created_at']
+        verbose_name = "FAQ"
+        verbose_name_plural = "FAQs"
+
+    def __str__(self):
+        return f"{self.question} ({self.target_role})"

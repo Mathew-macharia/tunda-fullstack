@@ -248,7 +248,8 @@ const getPaymentMethodDisplayName = (method) => {
 }
 
 const canAdvanceStatus = (order) => {
-  return order.item_status !== 'delivered'
+  // Farmers should not be able to mark an item as 'delivered'
+  return order.item_status !== 'delivered' && order.item_status !== 'packed'
 }
 
 const canUpdateStatus = (order) => {
@@ -256,30 +257,26 @@ const canUpdateStatus = (order) => {
   const paymentStatus = order.order_details?.payment_status
   const itemStatus = order.item_status
   
+  // Farmers can only update status if the item is not yet 'delivered'
+  if (itemStatus === 'delivered') {
+    return false
+  }
+
   // For non-cash orders, payment must be confirmed
   if (paymentMethod !== 'CashOnDelivery') {
     return paymentStatus === 'paid'
   }
   
-  // For cash on delivery orders
-  if (paymentMethod === 'CashOnDelivery') {
-    // Can update up to packed without payment confirmation
-    if (itemStatus === 'packed' && getNextStatus(itemStatus) === 'delivered') {
-      // To mark as delivered, need delivery status to be delivered
-      // The backend will validate this
-      return true
-    }
-    return true
-  }
-  
-  return false
+  // For cash on delivery orders, farmers can update up to 'packed'
+  // They cannot mark as 'delivered'
+  return true
 }
 
 const getNextStatus = (currentStatus) => {
   const statusFlow = {
     pending: 'harvested',
     harvested: 'packed',
-    packed: 'delivered'
+    // Farmers cannot set status to 'delivered'
   }
   return statusFlow[currentStatus]
 }
@@ -289,6 +286,10 @@ const getStatusUpdateTooltip = (order) => {
   const paymentStatus = order.order_details?.payment_status
   const itemStatus = order.item_status
   
+  if (itemStatus === 'delivered') {
+    return 'Item is already delivered'
+  }
+
   if (!canUpdateStatus(order)) {
     if (paymentMethod !== 'CashOnDelivery' && paymentStatus !== 'paid') {
       return 'Cannot update status until payment is confirmed'
@@ -322,4 +323,4 @@ const updateStatus = async () => {
     updating.value = false
   }
 }
-</script> 
+</script>

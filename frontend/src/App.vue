@@ -1,6 +1,6 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import logoImage from '@/assets/tunda_logo.jpg'
 import { 
@@ -14,11 +14,87 @@ import {
   logout,
   guestCartItems
 } from '@/stores/auth'
+import { cartAPI, communicationAPI } from '@/services/api'
 
 const router = useRouter()
 const showUserDropdown = ref(false)
 const showMobileMenu = ref(false)
 const searchQuery = ref('')
+const authenticatedCartCount = ref(0)
+const activeTicketsCount = ref(0)
+
+// Computed cart count for display
+const cartCount = computed(() => {
+  if (isAuthenticated.value && isCustomer.value) {
+    return authenticatedCartCount.value
+  } else {
+    return guestCartItems.value.length
+  }
+})
+
+// Load authenticated cart count
+const loadCartCount = async () => {
+  if (isAuthenticated.value && isCustomer.value) {
+    try {
+      const cart = await cartAPI.getCart()
+      authenticatedCartCount.value = cart.total_items || 0
+    } catch (error) {
+      console.error('Failed to load cart count:', error)
+      authenticatedCartCount.value = 0
+    }
+  }
+}
+
+// Load active tickets count for admin
+const loadActiveTicketsCount = async () => {
+  if (isAuthenticated.value && isAdmin.value) {
+    try {
+      const tickets = await communicationAPI.getUnassignedTickets()
+      activeTicketsCount.value = tickets.length || 0
+    } catch (error) {
+      console.error('Failed to load active tickets count:', error)
+      activeTicketsCount.value = 0
+    }
+  }
+}
+
+// Navigate to appropriate support page based on user role
+const navigateToSupport = () => {
+  if (isAdmin.value) {
+    router.push('/admin/support')
+  } else if (isFarmer.value) {
+    router.push('/farmer/support')
+  } else if (isRider.value) {
+    router.push('/rider/support')
+  } else if (isCustomer.value) {
+    router.push('/support')
+  }
+}
+
+// Listen for cart updates
+const handleCartUpdate = () => {
+  loadCartCount()
+}
+
+// Watch for authentication changes to load appropriate data
+watch(isAuthenticated, (newValue) => {
+  if (newValue) {
+    loadCartCount()
+    loadActiveTicketsCount()
+  } else {
+    authenticatedCartCount.value = 0
+    activeTicketsCount.value = 0
+  }
+})
+
+// Watch for admin role changes
+watch(isAdmin, (newValue) => {
+  if (newValue) {
+    loadActiveTicketsCount()
+  } else {
+    activeTicketsCount.value = 0
+  }
+})
 
 const handleLogout = async () => {
   try {
@@ -61,10 +137,14 @@ const closeDropdowns = (event) => {
 
 onMounted(() => {
   document.addEventListener('click', closeDropdowns)
+  window.addEventListener('cartUpdated', handleCartUpdate)
+  loadCartCount() // Load initial cart count
+  loadActiveTicketsCount() // Load initial tickets count for admin
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', closeDropdowns)
+  window.removeEventListener('cartUpdated', handleCartUpdate)
 })
 </script>
 
@@ -119,11 +199,27 @@ onUnmounted(() => {
               <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
-              <span v-if="guestCartItems && guestCartItems.length > 0" 
+              <span v-if="cartCount > 0" 
                     class="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                {{ guestCartItems.length }}
+                {{ cartCount }}
               </span>
             </RouterLink>
+
+            <!-- Support Button - For All Authenticated Users -->
+            <button v-if="isAuthenticated" 
+                    @click="navigateToSupport"
+                    class="text-gray-700 hover:text-gray-900 relative p-2 rounded-md hover:bg-gray-100 transition-colors duration-200"
+                    title="Support">
+              <span class="sr-only">Support</span>
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <!-- Alert Badge for Admin -->
+              <span v-if="isAdmin && activeTicketsCount > 0" 
+                    class="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
+                {{ activeTicketsCount > 99 ? '99+' : activeTicketsCount }}
+              </span>
+            </button>
 
             <!-- Desktop User Menu -->
             <div class="hidden md:block relative">
@@ -190,6 +286,11 @@ onUnmounted(() => {
                                @click="showUserDropdown = false"
                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                       Orders
+                    </RouterLink>
+                    <RouterLink to="/farmer/payouts"
+                               @click="showUserDropdown = false"
+                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                      Payouts
                     </RouterLink>
                   </template>
 
@@ -340,6 +441,10 @@ onUnmounted(() => {
                 <button @click="router.push('/farmer/orders'); showMobileMenu = false" 
                         class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                   Orders
+                </button>
+                <button @click="router.push('/farmer/payouts'); showMobileMenu = false" 
+                        class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                  Payouts
                 </button>
               </template>
               

@@ -3,10 +3,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db import models
-from .models import Notification, Message, SupportTicket
+from .models import Notification, Message, SupportTicket, FAQ
 from .serializers import (
     NotificationSerializer, MessageSerializer, 
-    SupportTicketSerializer, AdminTicketUpdateSerializer
+    SupportTicketSerializer, AdminTicketUpdateSerializer, FAQSerializer
 )
 from .permissions import IsOwnerOrAdmin, IsRecipientOrSenderOrAdmin, CanManageTickets
 
@@ -189,6 +189,17 @@ class SupportTicketViewSet(viewsets.ModelViewSet):
         # Users can only see their own tickets
         return SupportTicket.objects.filter(user=user)
     
+    def perform_create(self, serializer):
+        """Set the user field to the authenticated user when creating a ticket"""
+        user = self.request.user
+        
+        # For non-admin users, always set the user to the authenticated user
+        if user.user_role != 'admin':
+            serializer.save(user=user)
+        else:
+            # For admin users, use the user from serializer or default to themselves
+            serializer.save()
+    
     @action(detail=False, methods=['get'], permission_classes=[permissions.IsAdminUser])
     def unassigned(self, request):
         """Return all unassigned tickets"""
@@ -260,3 +271,37 @@ class SupportTicketViewSet(viewsets.ModelViewSet):
         
         serializer = self.get_serializer(ticket)
         return Response(serializer.data)
+
+
+class FAQViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet for the FAQ model - read-only for regular users"""
+    serializer_class = FAQSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['target_role', 'is_active']
+    search_fields = ['question', 'answer']
+    ordering_fields = ['order_index', 'created_at']
+    ordering = ['order_index', 'created_at']
+    
+    def get_queryset(self):
+        """Filter FAQs based on user role and active status"""
+        user = self.request.user
+        queryset = FAQ.objects.filter(is_active=True)
+        
+        # Filter by target role
+        if user.user_role in ['customer', 'farmer', 'rider']:
+            queryset = queryset.filter(target_role__in=[user.user_role, 'all'])
+        
+        return queryset
+
+
+class AdminFAQViewSet(viewsets.ModelViewSet):
+    """ViewSet for FAQ management by admins"""
+    serializer_class = FAQSerializer
+    permission_classes = [permissions.IsAdminUser]
+    queryset = FAQ.objects.all()
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['target_role', 'is_active']
+    search_fields = ['question', 'answer']
+    ordering_fields = ['order_index', 'created_at']
+    ordering = ['order_index', 'created_at']

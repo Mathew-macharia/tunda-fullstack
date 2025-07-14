@@ -5,6 +5,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
 from django.db.models import Sum, Count, Q
 from decimal import Decimal
+from datetime import date
 from .models import Payout
 from .serializers import PayoutSerializer
 from .permissions import IsAdminOrRecipientReadOnly
@@ -33,6 +34,60 @@ class PayoutViewSet(viewsets.ModelViewSet):
         
         # Farmers and riders can only see their own payouts
         return Payout.objects.filter(user=user)
+
+    def create(self, request, *args, **kwargs):
+        """Create a new payout request with minimum amount validation"""
+        user = request.user
+        requested_amount = Decimal(request.data.get('amount', '0.00'))
+
+        min_withdrawal_amount = SystemSettings.objects.get_setting('min_withdrawal_amount', Decimal('200.00'))
+        
+        if requested_amount < min_withdrawal_amount:
+            return Response(
+                {"detail": f"Minimum withdrawal amount is KES {min_withdrawal_amount}. Requested amount is too low."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Check for existing pending payouts
+        has_pending_payout = Payout.objects.filter(
+            user=user,
+            status='pending'
+        ).exists()
+
+        if has_pending_payout:
+            return Response(
+                {"detail": "You already have a pending payout request. Please wait for it to be processed before requesting another."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Fetch available balance based on user role
+        if user.user_role == 'farmer':
+            earnings_data = self.farmer_earnings(request).data
+        elif user.user_role == 'rider':
+            earnings_data = self.rider_earnings(request).data
+        else:
+            return Response(
+                {"detail": "User role not supported for payouts."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        available_balance = earnings_data.get('available_balance', Decimal('0.00'))
+
+        if requested_amount > available_balance:
+            return Response(
+                {"detail": f"Requested amount KES {requested_amount} exceeds available balance of KES {available_balance}."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Add user to the request data
+        data = request.data.copy()
+        data['user'] = user.user_id
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
     
     @action(detail=False, methods=['get'])
     def rider_earnings(self, request):
@@ -44,6 +99,10 @@ class PayoutViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN
             )
         
+        # Get system settings for withdrawal and clearance
+        min_withdrawal_amount = SystemSettings.objects.get_setting('min_withdrawal_amount', Decimal('200.00'))
+        clearance_threshold_amount = SystemSettings.objects.get_setting('clearance_threshold_amount', Decimal('20000.00'))
+
         # Get completed deliveries
         completed_deliveries = Delivery.objects.filter(
             rider=user,
@@ -52,32 +111,42 @@ class PayoutViewSet(viewsets.ModelViewSet):
         
         # Calculate total earnings
         total_earnings = completed_deliveries.aggregate(
-            Sum('delivery_fee')
-        )['delivery_fee__sum'] or Decimal('0.00')
+            Sum('order__delivery_fee')
+        )['order__delivery_fee__sum'] or Decimal('0.00')
         
-        # Get pending deliveries (delivered but not yet cleared for payout)
-        pending_deliveries = completed_deliveries.filter(
-            created_at__gte=timezone.now() - timezone.timedelta(hours=48)
-        )
-        pending_balance = pending_deliveries.aggregate(
-            Sum('delivery_fee')
-        )['delivery_fee__sum'] or Decimal('0.00')
+        # Calculate Withholding Tax (WHT)
+        wht_rate = SystemSettings.objects.get_setting('wht_rate', Decimal('0.03'))
+        wht_threshold = SystemSettings.objects.get_setting('wht_threshold', Decimal('24000.00'))
         
-        # Calculate available balance (completed deliveries older than 48 hours)
-        available_deliveries = completed_deliveries.filter(
-            created_at__lt=timezone.now() - timezone.timedelta(hours=48)
-        )
-        available_balance = available_deliveries.aggregate(
-            Sum('delivery_fee')
-        )['delivery_fee__sum'] or Decimal('0.00')
+        # Get cumulative gross delivery earnings for the current month
+        current_month_start = date.today().replace(day=1)
+        monthly_gross_earnings = Delivery.objects.filter(
+            rider=user,
+            delivery_status='delivered',
+            created_at__gte=current_month_start
+        ).aggregate(Sum('order__delivery_fee'))['order__delivery_fee__sum'] or Decimal('0.00')
         
-        # Subtract processed payouts
+        withholding_tax = Decimal('0.00')
+        if monthly_gross_earnings > wht_threshold:
+            withholding_tax = (total_earnings * wht_rate).quantize(Decimal('0.01')) # Apply WHT to total earnings if threshold met
+        
+        net_total_earnings = total_earnings - withholding_tax
+
+        # Sum of pending payouts that require clearance
+        pending_payouts_for_clearance = Payout.objects.filter(
+            user=user,
+            status='pending',
+            amount__gte=clearance_threshold_amount
+        ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
+        
+        # Sum of processed payouts
         processed_payouts = Payout.objects.filter(
             user=user,
             status='processed'
         ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
         
-        available_balance = max(Decimal('0.00'), available_balance - processed_payouts)
+        # Available balance: total net earnings minus pending payouts for clearance and processed payouts
+        available_balance = max(Decimal('0.00'), net_total_earnings - pending_payouts_for_clearance - processed_payouts)
         
         # Get recent transactions
         recent_transactions = PaymentTransaction.objects.filter(
@@ -92,18 +161,53 @@ class PayoutViewSet(viewsets.ModelViewSet):
                 rider=user,
                 delivery_status__in=['assigned', 'picked_up']
             ).count(),
-            'pending_balance': pending_balance,
+            'pending_balance': pending_payouts_for_clearance, # This now reflects only requested payouts pending clearance
             'available_balance': available_balance,
+            'withholding_tax': withholding_tax,
+            'min_withdrawal_amount': min_withdrawal_amount,
+            'clearance_threshold_amount': clearance_threshold_amount,
             'recent_transactions': [
                 {
                     'date': txn.payment_date,
-                    'amount': txn.order.delivery.delivery_fee,
+                    'amount': txn.order.delivery_fee,
                     'description': f"Delivery fee for Order #{txn.order.order_number}",
                     'type': 'credit'
                 } for txn in recent_transactions
             ]
         })
     
+    @action(detail=False, methods=['get'])
+    def rider_transactions(self, request):
+        """Get rider's recent payment transactions related to deliveries"""
+        user = request.user
+        if user.user_role != 'rider':
+            return Response(
+                {"detail": "Only riders can access rider transactions"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Get recent transactions related to deliveries assigned to the rider
+        recent_transactions = PaymentTransaction.objects.filter(
+            order__delivery__rider=user,
+            payment_status='completed'
+        ).order_by('-payment_date')[:10] # Limit to 10 recent transactions
+
+        # Format transactions for response
+        formatted_transactions = [
+            {
+                'id': txn.payment_transaction_id,
+                'date': txn.payment_date,
+                'amount': txn.order.delivery_fee, # Assuming delivery_fee is the relevant amount for rider transactions
+                'description': f"Delivery fee for Order #{txn.order.order_number}",
+                'type': 'credit' # Assuming all these are credits to the rider
+            }
+            for txn in recent_transactions
+        ]
+        return Response({
+            'results': formatted_transactions,
+            'count': len(formatted_transactions)
+        })
+
     @action(detail=False, methods=['get'])
     def farmer_earnings(self, request):
         """Get farmer earnings statistics"""
@@ -114,10 +218,14 @@ class PayoutViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN
             )
         
+        # Get system settings for withdrawal and clearance
+        min_withdrawal_amount = SystemSettings.objects.get_setting('min_withdrawal_amount', Decimal('200.00'))
+        clearance_threshold_amount = SystemSettings.objects.get_setting('clearance_threshold_amount', Decimal('20000.00'))
+
         # Get fee rates from system settings
-        vat_rate = Decimal('0.16')  # 16% VAT
-        transaction_fee_rate = Decimal('0.02')  # 2% transaction fee
-        platform_fee_rate = Decimal('0.10')  # 10% platform fee
+        vat_rate = SystemSettings.objects.get_setting('vat_rate', Decimal('0.16'))
+        transaction_fee_rate = SystemSettings.objects.get_setting('transaction_fee_rate', Decimal('0.015'))
+        platform_fee_rate = SystemSettings.objects.get_setting('platform_fee_rate', Decimal('0.10'))
         
         # Get completed and paid order items
         completed_items = OrderItem.objects.filter(
@@ -131,42 +239,30 @@ class PayoutViewSet(viewsets.ModelViewSet):
             Sum('total_price')
         )['total_price__sum'] or Decimal('0.00')
         
-        # Calculate fees
-        vat = (gross_revenue * vat_rate).quantize(Decimal('0.01'))
+        # Calculate fees based on the new model
+        platform_fee_amount = (gross_revenue * platform_fee_rate).quantize(Decimal('0.01'))
+        vat = (platform_fee_amount * vat_rate).quantize(Decimal('0.01')) # VAT is 16% of the 10% Platform Fee
         transaction_fee = (gross_revenue * transaction_fee_rate).quantize(Decimal('0.01'))
-        platform_fee = (gross_revenue * platform_fee_rate).quantize(Decimal('0.01'))
-        total_fees = vat + transaction_fee + platform_fee
+        total_fees = platform_fee_amount + vat + transaction_fee
         
         # Calculate net revenue
         net_revenue = gross_revenue - total_fees
         
-        # Get pending items (delivered but not yet cleared for payout)
-        pending_items = completed_items.filter(
-            created_at__gte=timezone.now() - timezone.timedelta(hours=48)
-        )
-        pending_gross = pending_items.aggregate(
-            Sum('total_price')
-        )['total_price__sum'] or Decimal('0.00')
-        pending_fees = (pending_gross * (vat_rate + transaction_fee_rate + platform_fee_rate)).quantize(Decimal('0.01'))
-        pending_balance = pending_gross - pending_fees
+        # Sum of pending payouts that require clearance
+        pending_payouts_for_clearance = Payout.objects.filter(
+            user=user,
+            status='pending',
+            amount__gte=clearance_threshold_amount
+        ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
         
-        # Calculate available balance (completed items older than 48 hours)
-        available_items = completed_items.filter(
-            created_at__lt=timezone.now() - timezone.timedelta(hours=48)
-        )
-        available_gross = available_items.aggregate(
-            Sum('total_price')
-        )['total_price__sum'] or Decimal('0.00')
-        available_fees = (available_gross * (vat_rate + transaction_fee_rate + platform_fee_rate)).quantize(Decimal('0.01'))
-        available_balance = available_gross - available_fees
-        
-        # Subtract processed payouts
+        # Sum of processed payouts
         processed_payouts = Payout.objects.filter(
             user=user,
             status='processed'
         ).aggregate(Sum('amount'))['amount__sum'] or Decimal('0.00')
         
-        available_balance = max(Decimal('0.00'), available_balance - processed_payouts)
+        # Available balance: total net revenue minus pending payouts for clearance and processed payouts
+        available_balance = max(Decimal('0.00'), net_revenue - pending_payouts_for_clearance - processed_payouts)
         
         # Get recent transactions
         recent_transactions = PaymentTransaction.objects.filter(
@@ -179,7 +275,7 @@ class PayoutViewSet(viewsets.ModelViewSet):
             'fees': {
                 'vat': vat,
                 'transaction_fee': transaction_fee,
-                'platform_fee': platform_fee,
+                'platform_fee': platform_fee_amount,
                 'total_fees': total_fees
             },
             'net_revenue': net_revenue,
@@ -189,16 +285,18 @@ class PayoutViewSet(viewsets.ModelViewSet):
                 order__payment_status='paid',
                 item_status__in=['pending', 'harvested', 'packed']
             ).values('order').distinct().count(),
-            'pending_balance': pending_balance,
+            'pending_balance': pending_payouts_for_clearance, # This now reflects only requested payouts pending clearance
             'available_balance': available_balance,
+            'min_withdrawal_amount': min_withdrawal_amount,
+            'clearance_threshold_amount': clearance_threshold_amount,
             'recent_transactions': [
                 {
                     'date': txn.payment_date,
                     'amount': sum(item.total_price for item in txn.order.items.filter(farmer=user)),
-                    'vat': sum(item.total_price * vat_rate for item in txn.order.items.filter(farmer=user)).quantize(Decimal('0.01')),
+                    'vat': sum((item.total_price * platform_fee_rate) * vat_rate for item in txn.order.items.filter(farmer=user)).quantize(Decimal('0.01')),
                     'transaction_fee': sum(item.total_price * transaction_fee_rate for item in txn.order.items.filter(farmer=user)).quantize(Decimal('0.01')),
                     'platform_fee': sum(item.total_price * platform_fee_rate for item in txn.order.items.filter(farmer=user)).quantize(Decimal('0.01')),
-                    'net_amount': sum(item.total_price * (1 - (vat_rate + transaction_fee_rate + platform_fee_rate)) for item in txn.order.items.filter(farmer=user)).quantize(Decimal('0.01')),
+                    'net_amount': sum(item.total_price - ((item.total_price * platform_fee_rate) + ((item.total_price * platform_fee_rate) * vat_rate) + (item.total_price * transaction_fee_rate)) for item in txn.order.items.filter(farmer=user)).quantize(Decimal('0.01')),
                     'description': f"Payment for Order #{txn.order.order_number}",
                     'type': 'credit'
                 } for txn in recent_transactions

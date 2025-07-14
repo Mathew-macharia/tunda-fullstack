@@ -169,6 +169,27 @@
                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
               </div>
+              <div class="space-y-1">
+                <label class="block text-sm font-medium text-gray-700">Withholding Tax Rate (%)</label>
+                <input
+                  v-model.number="settings.payments.wht_rate"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
+              <div class="space-y-1">
+                <label class="block text-sm font-medium text-gray-700">Withholding Tax Threshold (KES)</label>
+                <input
+                  v-model.number="settings.payments.wht_threshold"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -410,7 +431,9 @@ const settings = ref({
     enable_cash_on_delivery: true,
     enable_bank_transfer: true,
     payment_timeout_minutes: 15,
-    transaction_fee_percentage: 2.5
+    transaction_fee_percentage: 1.5, // Updated to 1.5%
+    wht_rate: 3.0, // New setting for WHT rate (3%)
+    wht_threshold: 24000.00 // New setting for WHT threshold (KES 24,000)
   },
   notifications: {
     sms_enabled: true,
@@ -428,17 +451,59 @@ const settings = ref({
 })
 
 // Methods
+import { settingsAPI } from '@/services/api'
+
 const loadSettings = async () => {
   loading.value = true
   error.value = null
   
   try {
-    // In a real implementation, this would load from API
-    // const response = await settingsAPI.getSettings()
-    // settings.value = response
-    
-    // For now, using default values
-    console.log('Settings loaded')
+    const response = await settingsAPI.getSettings()
+    settings.value = {
+      general: {
+        platform_name: response.platform_name || 'Vegas Agricultural Marketplace',
+        support_email: response.support_email || 'support@vegas.co.ke',
+        description: response.description || 'Connecting farmers directly with customers for fresh, quality produce',
+        maintenance_mode: response.maintenance_mode || false
+      },
+      orders: {
+        minimum_order_amount: response.minimum_order_amount || 100,
+        order_timeout_hours: response.order_timeout_hours || 24,
+        auto_cancel_days: response.auto_cancel_days || 7,
+        allow_pre_orders: response.allow_pre_orders || true,
+        require_phone_verification: response.require_phone_verification || true
+      },
+      delivery: {
+        base_delivery_fee: response.base_delivery_fee || 50,
+        free_delivery_threshold: response.free_delivery_threshold || 500,
+        max_delivery_distance: response.max_delivery_distance_km || 50,
+        standard_delivery_hours: response.standard_delivery_hours || 24,
+        express_delivery_hours: response.express_delivery_hours || 6
+      },
+      payments: {
+        enable_mpesa: response.supported_payment_methods?.includes('Mpesa') || false,
+        enable_cash_on_delivery: response.supported_payment_methods?.includes('CashOnDelivery') || false,
+        enable_bank_transfer: response.supported_payment_methods?.includes('BankTransfer') || false,
+        payment_timeout_minutes: response.payment_timeout_minutes || 15,
+        transaction_fee_percentage: (response.transaction_fee_rate * 100) || 0, // Convert decimal to percentage
+        wht_rate: (response.wht_rate * 100) || 0, // Convert decimal to percentage
+        wht_threshold: response.wht_threshold || 0
+      },
+      notifications: {
+        sms_enabled: response.sms_notifications_enabled || false,
+        email_enabled: response.email_notifications_enabled || false,
+        push_enabled: response.push_notifications_enabled || false, // Assuming a push_notifications_enabled setting
+        sms_provider: response.sms_provider || 'africa_talking', // Assuming an sms_provider setting
+        email_provider: response.email_provider || 'sendgrid' // Assuming an email_provider setting
+      },
+      security: {
+        session_timeout_minutes: response.session_timeout_minutes || 120, // Assuming a session_timeout_minutes setting
+        max_login_attempts: response.max_login_attempts || 5, // Assuming a max_login_attempts setting
+        two_factor_required: response.two_factor_required || false, // Assuming a two_factor_required setting
+        password_complexity: response.password_complexity || true // Assuming a password_complexity setting
+      }
+    }
+    console.log('Settings loaded:', settings.value)
   } catch (err) {
     console.error('Error loading settings:', err)
     error.value = 'Failed to load settings'
@@ -453,11 +518,42 @@ const saveSettings = async () => {
   success.value = false
   
   try {
-    // In a real implementation, this would save to API
-    // await settingsAPI.updateSettings(settings.value)
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    const payload = {
+      platform_name: settings.value.general.platform_name,
+      support_email: settings.value.general.support_email,
+      description: settings.value.general.description,
+      maintenance_mode: settings.value.general.maintenance_mode,
+      minimum_order_amount: settings.value.orders.minimum_order_amount,
+      order_timeout_hours: settings.value.orders.order_timeout_hours,
+      auto_cancel_days: settings.value.orders.auto_cancel_days,
+      allow_pre_orders: settings.value.orders.allow_pre_orders,
+      require_phone_verification: settings.value.orders.require_phone_verification,
+      base_delivery_fee: settings.value.delivery.base_delivery_fee,
+      free_delivery_threshold: settings.value.delivery.free_delivery_threshold,
+      max_delivery_distance_km: settings.value.delivery.max_delivery_distance,
+      standard_delivery_hours: settings.value.delivery.standard_delivery_hours,
+      express_delivery_hours: settings.value.delivery.express_delivery_hours,
+      supported_payment_methods: [],
+      payment_timeout_minutes: settings.value.payments.payment_timeout_minutes,
+      transaction_fee_rate: settings.value.payments.transaction_fee_percentage / 100, // Convert percentage to decimal
+      wht_rate: settings.value.payments.wht_rate / 100, // Convert percentage to decimal
+      wht_threshold: settings.value.payments.wht_threshold,
+      sms_notifications_enabled: settings.value.notifications.sms_enabled,
+      email_notifications_enabled: settings.value.notifications.email_enabled,
+      push_notifications_enabled: settings.value.notifications.push_enabled,
+      sms_provider: settings.value.notifications.sms_provider,
+      email_provider: settings.value.notifications.email_provider,
+      session_timeout_minutes: settings.value.security.session_timeout_minutes,
+      max_login_attempts: settings.value.security.max_login_attempts,
+      two_factor_required: settings.value.security.two_factor_required,
+      password_complexity: settings.value.security.password_complexity,
+    }
+
+    if (settings.value.payments.enable_mpesa) payload.supported_payment_methods.push('Mpesa')
+    if (settings.value.payments.enable_cash_on_delivery) payload.supported_payment_methods.push('CashOnDelivery')
+    if (settings.value.payments.enable_bank_transfer) payload.supported_payment_methods.push('BankTransfer')
+
+    await settingsAPI.updateSettings(payload)
     
     success.value = true
     setTimeout(() => {
