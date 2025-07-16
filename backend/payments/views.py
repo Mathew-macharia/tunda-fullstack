@@ -1,4 +1,5 @@
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -76,18 +77,6 @@ class PaymentTransactionViewSet(viewsets.ModelViewSet):
     """
     serializer_class = PaymentTransactionSerializer
     
-    def get_permissions(self):
-        """
-        Return different permissions depending on the action
-        """
-        if self.action == 'callback':
-            # Allow unauthenticated access to the callback endpoint
-            # In production, this should be secured with API keys or signatures
-            return [permissions.AllowAny()]
-        elif self.action in ['list', 'retrieve'] and self.request.user.user_role == 'admin':
-            return [IsAdminUser()]
-        else:
-            return [IsCustomerUser()]
     
     def get_queryset(self):
         """
@@ -238,7 +227,8 @@ class PaymentTransactionViewSet(viewsets.ModelViewSet):
                 'message': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
-    @action(detail=False, methods=['post'], permission_classes=[permissions.AllowAny])
+    @action(detail=False, methods=['post'], permission_classes=[], authentication_classes=[])
+    @csrf_exempt
     def mpesa_callback(self, request):
         """
         Handle M-Pesa STK Push callback

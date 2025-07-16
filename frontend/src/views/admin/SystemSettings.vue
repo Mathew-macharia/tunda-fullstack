@@ -249,6 +249,14 @@
                 />
               </div>
             </div>
+            <div class="space-y-1">
+                <label class="block text-sm font-medium text-gray-700">M-Pesa Callback URL</label>
+                <input
+                  v-model="settings.payments.mpesa_callback_url"
+                  type="text"
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
           </div>
         </div>
 
@@ -433,7 +441,8 @@ const settings = ref({
     payment_timeout_minutes: 15,
     transaction_fee_percentage: 1.5, // Updated to 1.5%
     wht_rate: 3.0, // New setting for WHT rate (3%)
-    wht_threshold: 24000.00 // New setting for WHT threshold (KES 24,000)
+    wht_threshold: 24000.00, // New setting for WHT threshold (KES 24,000)
+    mpesa_callback_url: ''
   },
   notifications: {
     sms_enabled: true,
@@ -487,7 +496,8 @@ const loadSettings = async () => {
         payment_timeout_minutes: response.payment_timeout_minutes || 15,
         transaction_fee_percentage: (response.transaction_fee_rate * 100) || 0, // Convert decimal to percentage
         wht_rate: (response.wht_rate * 100) || 0, // Convert decimal to percentage
-        wht_threshold: response.wht_threshold || 0
+        wht_threshold: response.wht_threshold || 0,
+        mpesa_callback_url: response.mpesa_callback_url || ''
       },
       notifications: {
         sms_enabled: response.sms_notifications_enabled || false,
@@ -538,6 +548,7 @@ const saveSettings = async () => {
       transaction_fee_rate: settings.value.payments.transaction_fee_percentage / 100, // Convert percentage to decimal
       wht_rate: settings.value.payments.wht_rate / 100, // Convert percentage to decimal
       wht_threshold: settings.value.payments.wht_threshold,
+      mpesa_callback_url: settings.value.payments.mpesa_callback_url,
       sms_notifications_enabled: settings.value.notifications.sms_enabled,
       email_notifications_enabled: settings.value.notifications.email_enabled,
       push_notifications_enabled: settings.value.notifications.push_enabled,

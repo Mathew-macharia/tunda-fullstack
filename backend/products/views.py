@@ -213,10 +213,15 @@ class ProductListingViewSet(viewsets.ModelViewSet):
         if farm_id:
             queryset = queryset.filter(farm_id=farm_id)
         
-        # Filter by product_id
+        # Filter by product_id (for specific product filtering)
         product_id = self.request.query_params.get('product_id')
         if product_id:
             queryset = queryset.filter(product_id=product_id)
+
+        # Filter by product category
+        category_id = self.request.query_params.get('category') # Changed parameter name to 'category'
+        if category_id:
+            queryset = queryset.filter(product__category_id=category_id)
         
         # Filter by listing_status
         status = self.request.query_params.get('status')

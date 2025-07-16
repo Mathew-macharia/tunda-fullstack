@@ -912,11 +912,11 @@ export const financeAPI = {
 // System Settings API
 export const settingsAPI = {
   async getSettings() {
-    const response = await api.get('/core/system-settings/')
+    const response = await api.get('/core/settings/')
     return response.data
   },
   async updateSettings(settingsData) {
-    const response = await api.patch('/core/system-settings/', settingsData)
+    const response = await api.post('/core/settings/update_bulk/', settingsData)
     return response.data
   }
 }

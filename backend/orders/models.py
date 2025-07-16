@@ -305,6 +305,9 @@ class Order(models.Model):
             return total_fee
             
         except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.exception("Error during delivery fee calculation in Order.calculate_delivery_fee_for_cart. Falling back to 50.00 KES.")
             # Fallback to base fee
             return Decimal('50.00')
 

@@ -55,6 +55,10 @@ const routes = [
     path: '/',
     name: 'home',
     component: HomePage,
+    meta: { 
+      title: 'Tunda - Eat fresh, live healthy!', 
+      description: 'Your one-stop shop for fresh, locally sourced produce. Connecting farmers directly to consumers for quality and convenience.' 
+    },
     beforeEnter: (to, from, next) => {
       // Redirect non-customer users to their respective dashboards
       if (isAuthenticated.value) {
@@ -76,27 +80,56 @@ const routes = [
     path: '/login',
     name: 'login',
     component: LoginPage,
-    meta: { requiresGuest: true }
+    meta: { 
+      requiresGuest: true,
+      title: 'Login to Tunda App',
+      description: 'Log in to your Tunda App account to manage orders, products, and more.'
+    }
   },
   {
     path: '/register',
     name: 'register',
     component: RegisterPage,
-    meta: { requiresGuest: true }
+    meta: { 
+      requiresGuest: true,
+      title: 'Register for Tunda App',
+      description: 'Create a new account on Tunda App to start buying or selling fresh produce.'
+    }
   },
   {
     path: '/profile',
     name: 'profile',
     component: ProfilePage,
-    meta: { requiresAuth: true }
+    meta: { 
+      requiresAuth: true,
+      title: 'User Profile - Tunda App',
+      description: 'Manage your Tunda App profile, update personal information, and view account details.'
+    }
   },
 
-  // Common routes (accessible by all authenticated users)
+  // Common pages
   {
     path: '/notifications',
     name: 'notifications',
     component: NotificationsPage,
-    meta: { requiresAuth: true }
+    meta: { 
+      requiresAuth: true,
+      title: 'Notifications - Tunda App',
+      description: 'View your latest notifications and alerts from Tunda App.'
+    }
+  },
+
+  // Support pages
+  {
+    path: '/support',
+    name: 'customer-support',
+    component: CustomerSupportPage,
+    meta: { 
+      requiresAuth: true, 
+      roles: ['customer'],
+      title: 'Customer Support - Tunda App',
+      description: 'Get help and support for your Tunda App customer account.'
+    }
   },
 
   // Customer routes
@@ -104,12 +137,21 @@ const routes = [
     path: '/customer',
     name: 'customer-dashboard',
     component: CustomerDashboard,
-    meta: { requiresAuth: true, roles: ['customer'] }
+    meta: { 
+      requiresAuth: true, 
+      roles: ['customer'],
+      title: 'Customer Dashboard - Tunda App',
+      description: 'Access your personalized customer dashboard on Tunda App.'
+    }
   },
   {
     path: '/products',
     name: 'products',
     component: ProductsPage,
+    meta: {
+      title: 'Products - Tunda App',
+      description: 'Browse a wide range of fresh produce available on Tunda App.'
+    },
     beforeEnter: (to, from, next) => {
       // Block access for non-customer authenticated users
       if (isAuthenticated.value && (!isCustomer.value || isFarmer.value || isRider.value || isAdmin.value)) {
@@ -135,6 +177,10 @@ const routes = [
     path: '/products/:id',
     name: 'product-detail',
     component: ProductDetail,
+    meta: {
+      title: 'Product Details - Tunda App',
+      description: 'View detailed information about a specific product on Tunda App.'
+    },
     beforeEnter: (to, from, next) => {
       // Block access for non-customer authenticated users
       if (isAuthenticated.value && (!isCustomer.value || isFarmer.value || isRider.value || isAdmin.value)) {
@@ -153,38 +199,56 @@ const routes = [
   {
     path: '/cart',
     name: 'cart',
-    component: CartPage
+    component: CartPage,
+    meta: {
+      title: 'Shopping Cart - Tunda App',
+      description: 'Review items in your Tunda App shopping cart before checkout.'
+    }
     // Removed meta: { requiresAuth: true, roles: ['customer'] } to allow guest access
   },
   {
     path: '/checkout',
     name: 'checkout',
     component: CheckoutPage,
-    meta: { requiresAuth: true, roles: ['customer'] }
+    meta: { 
+      requiresAuth: true, 
+      roles: ['customer'],
+      title: 'Checkout - Tunda App',
+      description: 'Complete your purchase on Tunda App with secure checkout.'
+    }
   },
   {
     path: '/orders',
     name: 'orders',
     component: OrdersPage,
-    meta: { requiresAuth: true, roles: ['customer'] }
+    meta: { 
+      requiresAuth: true, 
+      roles: ['customer'],
+      title: 'My Orders - Tunda App',
+      description: 'View your past and current orders on Tunda App.'
+    }
   },
   {
     path: '/orders/:id',
     name: 'order-detail',
     component: OrderDetail,
-    meta: { requiresAuth: true, roles: ['customer'] }
+    meta: { 
+      requiresAuth: true, 
+      roles: ['customer'],
+      title: 'Order Details - Tunda App',
+      description: 'View detailed information about a specific order on Tunda App.'
+    }
   },
   {
     path: '/reviews',
     name: 'reviews',
     component: ReviewsPage,
-    meta: { requiresAuth: true, roles: ['customer'] }
-  },
-  {
-    path: '/support',
-    name: 'customer-support',
-    component: CustomerSupportPage,
-    meta: { requiresAuth: true, roles: ['customer'] }
+    meta: { 
+      requiresAuth: true, 
+      roles: ['customer'],
+      title: 'My Reviews - Tunda App',
+      description: 'Manage and view your product reviews on Tunda App.'
+    }
   },
 
   // Farmer routes
@@ -192,55 +256,100 @@ const routes = [
     path: '/farmer',
     name: 'farmer-dashboard',
     component: FarmerDashboard,
-    meta: { requiresAuth: true, roles: ['farmer'] }
+    meta: { 
+      requiresAuth: true, 
+      roles: ['farmer'],
+      title: 'Farmer Dashboard - Tunda App',
+      description: 'Access your personalized farmer dashboard on Tunda App.'
+    }
   },
   {
     path: '/farmer/farms',
     name: 'farms',
     component: FarmsPage,
-    meta: { requiresAuth: true, roles: ['farmer'] }
+    meta: { 
+      requiresAuth: true, 
+      roles: ['farmer'],
+      title: 'My Farms - Tunda App',
+      description: 'Manage your farm details and locations on Tunda App.'
+    }
   },
   {
     path: '/farmer/farms/:id',
     name: 'farm-detail',
     component: FarmDetail,
-    meta: { requiresAuth: true, roles: ['farmer'] }
+    meta: { 
+      requiresAuth: true, 
+      roles: ['farmer'],
+      title: 'Farm Details - Tunda App',
+      description: 'View detailed information about a specific farm on Tunda App.'
+    }
   },
   {
     path: '/farmer/listings',
     name: 'product-listings',
     component: ProductListingsPage,
-    meta: { requiresAuth: true, roles: ['farmer'] }
+    meta: { 
+      requiresAuth: true, 
+      roles: ['farmer'],
+      title: 'Product Listings - Tunda App',
+      description: 'Manage your product listings and inventory on Tunda App.'
+    }
   },
   {
     path: '/farmer/listings/create',
     name: 'product-listing-create',
     component: ProductListingCreatePage,
-    meta: { requiresAuth: true, roles: ['farmer'] }
+    meta: { 
+      requiresAuth: true, 
+      roles: ['farmer'],
+      title: 'Create Product Listing - Tunda App',
+      description: 'Create a new product listing to sell your produce on Tunda App.'
+    }
   },
   {
     path: '/farmer/orders',
     name: 'farmer-orders',
     component: FarmerOrdersPage,
-    meta: { requiresAuth: true, roles: ['farmer'] }
+    meta: { 
+      requiresAuth: true, 
+      roles: ['farmer'],
+      title: 'Farmer Orders - Tunda App',
+      description: 'View and manage orders for your farm on Tunda App.'
+    }
   },
   {
     path: '/farmer/insights',
     name: 'market-insights',
     component: MarketInsightsPage,
-    meta: { requiresAuth: true, roles: ['farmer'] }
+    meta: { 
+      requiresAuth: true, 
+      roles: ['farmer'],
+      title: 'Market Insights - Tunda App',
+      description: 'Access market trends and insights to optimize your farming on Tunda App.'
+    }
   },
   {
     path: '/farmer/payouts',
     name: 'farmer-payouts',
     component: PayoutsPage,
-    meta: { requiresAuth: true, roles: ['farmer'] }
+    meta: { 
+      requiresAuth: true, 
+      roles: ['farmer'],
+      title: 'Farmer Payouts - Tunda App',
+      description: 'Manage your payout requests and history on Tunda App.'
+    }
   },
   {
     path: '/farmer/support',
     name: 'farmer-support',
     component: FarmerSupportPage,
-    meta: { requiresAuth: true, roles: ['farmer'] }
+    meta: { 
+      requiresAuth: true, 
+      roles: ['farmer'],
+      title: 'Farmer Support - Tunda App',
+      description: 'Get help and support for your Tunda App farmer account.'
+    }
   },
 
   // Rider routes
@@ -248,31 +357,56 @@ const routes = [
     path: '/rider',
     name: 'rider-dashboard',
     component: RiderDashboard,
-    meta: { requiresAuth: true, roles: ['rider'] }
+    meta: { 
+      requiresAuth: true, 
+      roles: ['rider'],
+      title: 'Rider Dashboard - Tunda App',
+      description: 'Access your personalized rider dashboard on Tunda App.'
+    }
   },
   {
     path: '/rider/deliveries',
     name: 'deliveries',
     component: DeliveriesPage,
-    meta: { requiresAuth: true, roles: ['rider'] }
+    meta: { 
+      requiresAuth: true, 
+      roles: ['rider'],
+      title: 'My Deliveries - Tunda App',
+      description: 'View and manage your assigned deliveries on Tunda App.'
+    }
   },
   {
     path: '/rider/deliveries/:id',
     name: 'delivery-detail',
     component: DeliveryDetail,
-    meta: { requiresAuth: true, roles: ['rider'] }
+    meta: { 
+      requiresAuth: true, 
+      roles: ['rider'],
+      title: 'Delivery Details - Tunda App',
+      description: 'View detailed information about a specific delivery on Tunda App.'
+    }
   },
   {
     path: '/rider/payouts',
     name: 'rider-payouts',
     component: PayoutsPage,
-    meta: { requiresAuth: true, roles: ['rider'] }
+    meta: { 
+      requiresAuth: true, 
+      roles: ['rider'],
+      title: 'Rider Payouts - Tunda App',
+      description: 'Manage your payout requests and history as a rider on Tunda App.'
+    }
   },
   {
     path: '/rider/support',
     name: 'rider-support',
     component: RiderSupportPage,
-    meta: { requiresAuth: true, roles: ['rider'] }
+    meta: { 
+      requiresAuth: true, 
+      roles: ['rider'],
+      title: 'Rider Support - Tunda App',
+      description: 'Get help and support for your Tunda App rider account.'
+    }
   },
 
   // Admin routes
@@ -280,56 +414,100 @@ const routes = [
     path: '/admin',
     name: 'admin-dashboard',
     component: AdminDashboard,
-    meta: { requiresAuth: true, roles: ['admin'] }
+    meta: { 
+      requiresAuth: true, 
+      roles: ['admin'],
+      title: 'Admin Dashboard - Tunda App',
+      description: 'Access the administrative dashboard for Tunda App management.'
+    }
   },
   {
     path: '/admin/users',
     name: 'users-management',
     component: UsersManagement,
-    meta: { requiresAuth: true, roles: ['admin'] }
+    meta: { 
+      requiresAuth: true, 
+      roles: ['admin'],
+      title: 'User Management - Tunda App',
+      description: 'Manage user accounts and roles within the Tunda App system.'
+    }
   },
   {
     path: '/admin/orders',
     name: 'orders-management',
     component: OrdersManagement,
-    meta: { requiresAuth: true, roles: ['admin'] }
+    meta: { 
+      requiresAuth: true, 
+      roles: ['admin'],
+      title: 'Order Management - Tunda App',
+      description: 'Manage all customer and farmer orders on Tunda App.'
+    }
   },
   {
     path: '/admin/deliveries',
     name: 'deliveries-management',
     component: DeliveriesManagement,
-    meta: { requiresAuth: true, roles: ['admin'] }
+    meta: { 
+      requiresAuth: true, 
+      roles: ['admin'],
+      title: 'Delivery Management - Tunda App',
+      description: 'Oversee and manage all deliveries within the Tunda App system.'
+    }
   },
   {
     path: '/admin/reviews',
     name: 'reviews-management',
     component: ReviewsManagement,
-    meta: { requiresAuth: true, roles: ['admin'] }
+    meta: { 
+      requiresAuth: true, 
+      roles: ['admin'],
+      title: 'Review Management - Tunda App',
+      description: 'Manage product and service reviews on Tunda App.'
+    }
   },
   {
     path: '/admin/payouts',
     name: 'payouts-management',
     component: PayoutsManagement,
-    meta: { requiresAuth: true, roles: ['admin'] }
+    meta: { 
+      requiresAuth: true, 
+      roles: ['admin'],
+      title: 'Payout Management - Tunda App',
+      description: 'Manage farmer and rider payout requests on Tunda App.'
+    }
   },
   {
     path: '/admin/support',
     name: 'support-management',
     component: SupportManagement,
-    meta: { requiresAuth: true, roles: ['admin'] }
+    meta: { 
+      requiresAuth: true, 
+      roles: ['admin'],
+      title: 'Support Ticket Management - Tunda App',
+      description: 'Manage customer, farmer, and rider support tickets on Tunda App.'
+    }
   },
   {
     path: '/admin/settings',
     name: 'system-settings',
     component: SystemSettings,
-    meta: { requiresAuth: true, roles: ['admin'] }
+    meta: { 
+      requiresAuth: true, 
+      roles: ['admin'],
+      title: 'System Settings - Tunda App',
+      description: 'Configure global system settings for the Tunda App.'
+    }
   },
 
   // Catch all route
   {
     path: '/:pathMatch(.*)*',
     name: 'not-found',
-    redirect: '/'
+    redirect: '/',
+    meta: {
+      title: 'Page Not Found - Tunda App',
+      description: 'The page you are looking for does not exist on Tunda App.'
+    }
   }
 ]
 
@@ -383,6 +561,16 @@ router.beforeEach(async (to, from, next) => {
         return next('/')
     }
   }
+
+  // Update meta tags
+  document.title = to.meta.title || 'Tunda App';
+  let metaDescriptionTag = document.querySelector('meta[name="description"]');
+  if (!metaDescriptionTag) {
+    metaDescriptionTag = document.createElement('meta');
+    metaDescriptionTag.setAttribute('name', 'description');
+    document.head.appendChild(metaDescriptionTag);
+  }
+  metaDescriptionTag.setAttribute('content', to.meta.description || 'Tunda: Eat fresh, live healthy!');
 
   next()
 })

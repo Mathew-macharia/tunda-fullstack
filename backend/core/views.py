@@ -1,3 +1,4 @@
+import json
 from rest_framework import viewsets, permissions, status, generics
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -64,3 +65,45 @@ class SystemSettingsViewSet(viewsets.ModelViewSet):
         settings = SystemSettings.objects.filter(setting_key__in=public_keys)
         serializer = self.get_serializer(settings, many=True)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['post'], permission_classes=[IsAdminUser])
+    def update_bulk(self, request):
+        """
+        Update multiple system settings at once
+        """
+        settings_data = request.data
+        for key, value in settings_data.items():
+            try:
+                setting = SystemSettings.objects.get(setting_key=key)
+                # Determine setting_type based on Python type
+                if isinstance(value, bool):
+                    setting.setting_type = 'boolean'
+                    setting.setting_value = str(value).lower()
+                elif isinstance(value, (int, float)):
+                    setting.setting_type = 'number'
+                    setting.setting_value = str(value)
+                elif isinstance(value, list) or isinstance(value, dict):
+                    setting.setting_type = 'json'
+                    setting.setting_value = json.dumps(value)
+                else:
+                    setting.setting_type = 'string'
+                    setting.setting_value = str(value)
+                setting.save()
+            except SystemSettings.DoesNotExist:
+                # Create new setting if it doesn't exist
+                setting_type = 'string' # Default type
+                if isinstance(value, bool):
+                    setting_type = 'boolean'
+                    value = str(value).lower()
+                elif isinstance(value, (int, float)):
+                    setting_type = 'number'
+                elif isinstance(value, list) or isinstance(value, dict):
+                    setting_type = 'json'
+                    value = json.dumps(value)
+                
+                SystemSettings.objects.create(
+                    setting_key=key,
+                    setting_value=str(value),
+                    setting_type=setting_type
+                )
+        return Response({'status': 'success'}, status=status.HTTP_200_OK)

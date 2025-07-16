@@ -12,8 +12,8 @@ SECRET_KEY = 'your-secret-key'  # Replace with a secure key in production
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'https://c35b75b61394.ngrok-free.app',
-    'https://d84e3ed37cc4.ngrok-free.app',
+    'https://97c353835b46.ngrok-free.app',
+    '97c353835b46.ngrok-free.app',
     'http://localhost:8000',
     'localhost',
 ]

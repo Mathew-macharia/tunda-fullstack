@@ -207,13 +207,38 @@
         </div>
       </div>
     </div>
+
+    <!-- Notification Message -->
+    <transition
+      enter-active-class="transition ease-out duration-300"
+      enter-from-class="transform opacity-0 translate-y-full sm:translate-y-0 sm:translate-x-full"
+      enter-to-class="transform opacity-100 translate-y-0 sm:translate-x-0"
+      leave-active-class="transition ease-in duration-200"
+      leave-from-class="transform opacity-100 translate-y-0 sm:translate-x-0"
+      leave-to-class="transform opacity-0 translate-y-full sm:translate-y-0 sm:translate-x-full"
+    >
+      <div
+        v-if="showNotification"
+        class="fixed bottom-4 right-4 sm:top-4 sm:right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-3"
+      >
+        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <p class="font-medium">{{ notificationMessage }}</p>
+        <button @click="showNotification = false" class="ml-auto -mr-1 p-1 rounded-full hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { isAuthenticated, isCustomer, addGuestCartItem } from '@/stores/auth' // Import addGuestCartItem
+import { isAuthenticated, isCustomer, addGuestCartItem } from '@/stores/auth'
 import { productsAPI, cartAPI, reviewsAPI } from '@/services/api'
 import ReviewCard from '@/components/common/ReviewCard.vue'
 
@@ -230,6 +255,8 @@ export default {
     const quantity = ref(1)
     const addingToCart = ref(false)
     const reviews = ref([])
+    const showNotification = ref(false)
+    const notificationMessage = ref('')
     
     const loadProduct = async () => {
       try {
@@ -287,14 +314,22 @@ export default {
         window.dispatchEvent(new CustomEvent('cartUpdated'))
         
         // Show success message
-        alert(`${product.value.product_name} added to cart!`)
+        notificationMessage.value = `${product.value.product_name} added to cart!`
+        showNotification.value = true
+        setTimeout(() => {
+          showNotification.value = false
+        }, 3000) // Hide after 3 seconds
         
         // Redirect to cart or stay on page
         // router.push('/cart')
         
       } catch (error) {
         console.error('Failed to add to cart:', error)
-        alert('Failed to add item to cart. Please try again.')
+        notificationMessage.value = 'Failed to add item to cart. Please try again.'
+        showNotification.value = true
+        setTimeout(() => {
+          showNotification.value = false
+        }, 3000) // Hide after 3 seconds
       } finally {
         addingToCart.value = false
       }
@@ -314,7 +349,9 @@ export default {
       reviews,
       getStatusDisplay,
       formatDate,
-      addToCart
+      addToCart,
+      showNotification,
+      notificationMessage
     }
   }
 }

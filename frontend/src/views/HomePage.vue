@@ -1,29 +1,5 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-    <!-- Quick Search Bar -->
-    <div class="bg-white shadow-sm border-b sticky top-0 z-10">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div class="flex items-center justify-center">
-          <div class="w-full max-w-2xl">
-            <div class="relative">
-              <input
-                type="text"
-                v-model="searchQuery"
-                @input="debouncedSearch"
-                class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 text-lg shadow-sm"
-                placeholder="Search for fresh produce..."
-              />
-              <div class="absolute inset-y-0 left-0 pl-4 flex items-center">
-                <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                </svg>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <!-- Shop by Categories -->
       <div class="mb-8 sm:mb-12">
@@ -48,24 +24,26 @@
           </div>
         </div>
         
-        <!-- Categories Grid -->
-        <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-          <div
-            v-for="category in categories.slice(0, 8)"
-            :key="category.category_id"
-            @click="filterByCategory(category.category_id)"
-            class="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer text-center border border-gray-100 hover:border-green-200 transform hover:-translate-y-1"
-          >
-            <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden mx-auto mb-4 shadow-md">
-              <img 
-                :src="getCategoryImage(category.category_name)"
-                :alt="category.category_name"
-                class="w-full h-full object-cover"
-              />
+        <!-- Categories Scrollable List -->
+        <div v-else class="relative">
+          <div class="flex space-x-4 overflow-x-auto pb-2 -mb-2 scrollbar-hide scroll-fade">
+            <div
+              v-for="category in categories"
+              :key="category.category_id"
+              @click="filterByCategory(category.category_id)"
+              class="flex-shrink-0 w-32 sm:w-40 bg-white rounded-2xl p-4 sm:p-6 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer text-center border border-gray-100 hover:border-green-200 transform hover:-translate-y-1"
+            >
+              <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden mx-auto mb-3 sm:mb-4 shadow-md">
+                <img 
+                  :src="getCategoryImage(category.category_name)"
+                  :alt="category.category_name"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+              <h3 class="text-sm sm:text-base font-semibold text-gray-900 line-clamp-2">
+                {{ category.category_name }}
+              </h3>
             </div>
-            <h3 class="text-sm sm:text-base font-semibold text-gray-900 line-clamp-2">
-              {{ category.category_name }}
-            </h3>
           </div>
         </div>
       </div>
@@ -221,13 +199,38 @@
         </div>
       </div>
     </div>
+
+    <!-- Notification Message -->
+    <transition
+      enter-active-class="transition ease-out duration-300"
+      enter-from-class="transform opacity-0 translate-y-full sm:translate-y-0 sm:translate-x-full"
+      enter-to-class="transform opacity-100 translate-y-0 sm:translate-x-0"
+      leave-active-class="transition ease-in duration-200"
+      leave-from-class="transform opacity-100 translate-y-0 sm:translate-x-0"
+      leave-to-class="transform opacity-0 translate-y-full sm:translate-y-0 sm:translate-x-full"
+    >
+      <div
+        v-if="showNotification"
+        class="fixed bottom-4 right-4 sm:top-4 sm:right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-3"
+      >
+        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <p class="font-medium">{{ notificationMessage }}</p>
+        <button @click="showNotification = false" class="ml-auto -mr-1 p-1 rounded-full hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { isAuthenticated, isCustomer, addGuestCartItem } from '@/stores/auth' // Import addGuestCartItem
+import { isAuthenticated, isCustomer, addGuestCartItem } from '@/stores/auth'
 import { productsAPI, cartAPI } from '@/services/api'
 
 export default {
@@ -240,6 +243,8 @@ export default {
     const freshPicks = ref([])
     const searchQuery = ref('')
     const addingToCart = ref(null)
+    const showNotification = ref(false)
+    const notificationMessage = ref('')
     
     // Loading states
     const loadingCategories = ref(false)
@@ -363,9 +368,19 @@ export default {
         
         window.dispatchEvent(new CustomEvent('cartUpdated'))
         
+        notificationMessage.value = `${listing.product_name} added to cart!`
+        showNotification.value = true
+        setTimeout(() => {
+          showNotification.value = false
+        }, 3000) // Hide after 3 seconds
+        
       } catch (error) {
         console.error('Failed to add to cart:', error)
-        alert('Failed to add item to cart. Please try again.')
+        notificationMessage.value = 'Failed to add item to cart. Please try again.'
+        showNotification.value = true
+        setTimeout(() => {
+          showNotification.value = false
+        }, 3000) // Hide after 3 seconds
       } finally {
         addingToCart.value = null
       }
@@ -392,6 +407,8 @@ export default {
       isAuthenticated,
       isCustomer,
       currentHealthTip,
+      showNotification,
+      notificationMessage,
       
       // Methods
       getCategoryImage,
@@ -426,5 +443,21 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+.scroll-fade {
+  mask-image: linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent);
 }
 </style>

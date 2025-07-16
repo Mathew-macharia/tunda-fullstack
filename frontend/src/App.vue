@@ -112,7 +112,7 @@ const handleSearch = () => {
     path: '/products',
     query: { search: searchQuery.value }
   })
-  searchQuery.value = ''
+  // Removed: searchQuery.value = '' to keep the search term in the input
 }
 
 const closeDropdowns = (event) => {
@@ -153,9 +153,9 @@ onUnmounted(() => {
     <!-- Navigation Bar -->
     <nav class="bg-white shadow-sm sticky top-0 z-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
+        <div class="flex items-center justify-between h-16">
           <!-- Left side - Logo and Navigation -->
-          <div class="flex items-center">
+          <div class="flex items-center shrink-0">
               <!-- Logo -->
             <RouterLink to="/" class="flex items-center">
               <img src="@/assets/tunda_logo.jpg" alt="Tunda Logo" class="h-8 w-auto mr-2">
@@ -172,8 +172,25 @@ onUnmounted(() => {
             </div>
           </div>
           
+          <!-- Mobile Search Bar - Centered -->
+          <div v-if="!isAuthenticated || isCustomer" class="flex-grow flex justify-center md:hidden mx-1">
+            <div class="relative w-full max-w-[120px]">
+              <input type="text" 
+                     v-model="searchQuery"
+                     @keyup.enter="handleSearch"
+                     placeholder="Search products..." 
+                     class="w-full px-1.5 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-xs min-w-0">
+              <button @click="handleSearch" 
+                      class="absolute right-0.5 top-1 text-gray-400 hover:text-gray-600">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
           <!-- Right Side Navigation -->
-          <div class="flex items-center space-x-4">
+          <div class="flex items-center space-x-0.5 shrink-0">
             <!-- Search Bar - Desktop Only -->
             <div v-if="!isAuthenticated || isCustomer" class="hidden md:flex items-center">
               <div class="relative">

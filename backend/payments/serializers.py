@@ -225,8 +225,41 @@ class PaymentSessionCreateSerializer(serializers.Serializer):
         cart_snapshot['total_items'] = total_items
         cart_snapshot['total_cost'] = float(total_cost)
         
-        # Estimate delivery fee (simplified for now)
-        delivery_fee = Decimal('50.00')  # Default delivery fee
+        # Estimate delivery fee using the centralized logic
+        from orders.models import Order
+        from locations.models import Location # Import Location model
+        
+        # Create a temporary Location object for delivery fee calculation
+        # This mimics the structure expected by calculate_delivery_fee_for_cart
+        delivery_details_data = validated_data['delivery_details']
+        
+        # Retrieve SubCounty and County objects
+        subcounty_obj = SubCounty.objects.get(sub_county_id=delivery_details_data['subcounty_id'])
+        county_obj = County.objects.get(county_id=delivery_details_data['county_id'])
+
+        # Create a dummy Location object for calculation
+        # This is a simplified representation, as we don't need to save it to DB
+        class TempLocation:
+            def __init__(self, subcounty, county, detailed_address, full_name, phone_number):
+                self.sub_county = subcounty
+                self.county = county
+                self.detailed_address = detailed_address
+                self.location_name = f"{subcounty.sub_county_name}, {county.county_name}"
+                self.full_name = full_name
+                self.phone_number = phone_number
+                # Add dummy latitude/longitude if needed by AddressService, though it should handle geocoding
+                self.latitude = Decimal('0.0') 
+                self.longitude = Decimal('0.0')
+
+        temp_delivery_location = TempLocation(
+            subcounty_obj,
+            county_obj,
+            delivery_details_data['detailed_address'],
+            delivery_details_data['full_name'],
+            delivery_details_data['phone_number']
+        )
+
+        delivery_fee = Order.calculate_delivery_fee_for_cart(cart_items, temp_delivery_location)
         
         # Prepare delivery details
         delivery_details = {

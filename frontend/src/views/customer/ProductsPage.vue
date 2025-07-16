@@ -56,16 +56,22 @@
                     id="mobile-search"
                     type="text"
                     v-model="filters.search"
-                    @input="debouncedSearch"
+                    @input.stop="debouncedSearch"
+                    @click.stop
                     class="form-input"
                     placeholder="Search for products..."
                   />
+                  <button @click.stop="debouncedSearch" class="absolute right-2 top-2.5 text-gray-400 hover:text-gray-600">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </button>
                 </div>
                 
                 <div>
                   <label class="form-label">Categories</label>
                   <div class="space-y-2 mt-2">
-                    <label class="flex items-center">
+                    <label class="flex items-center" @click.stop>
                       <input
                         type="radio"
                         value=""
@@ -75,7 +81,7 @@
                       />
                       <span class="ml-2 text-sm text-gray-700">All Categories</span>
                     </label>
-                    <label v-for="category in categories" :key="category.category_id" class="flex items-center">
+                    <label v-for="category in categories" :key="category.category_id" class="flex items-center" @click.stop>
                       <input
                         type="radio"
                         :value="category.category_id"
@@ -91,7 +97,7 @@
                 <div>
                   <label class="form-label">Availability</label>
                   <div class="space-y-2 mt-2">
-                    <label class="flex items-center">
+                    <label class="flex items-center" @click.stop>
                       <input
                         type="checkbox"
                         v-model="filters.availableOnly"
@@ -100,7 +106,7 @@
                       />
                       <span class="ml-2 text-sm text-gray-700">Available Now</span>
                     </label>
-                    <label class="flex items-center">
+                    <label class="flex items-center" @click.stop>
                       <input
                         type="checkbox"
                         v-model="filters.organicOnly"
@@ -118,6 +124,7 @@
                     id="mobile-sort"
                     v-model="filters.sortBy"
                     @change="resetAndLoadProducts"
+                    @click.stop
                     class="form-input"
                   >
                     <option value="">Default</option>
@@ -399,19 +406,45 @@
         </div>
       </div>
     </div>
+
+    <!-- Notification Message -->
+    <transition
+      enter-active-class="transition ease-out duration-300"
+      enter-from-class="transform opacity-0 translate-y-full sm:translate-y-0 sm:translate-x-full"
+      enter-to-class="transform opacity-100 translate-y-0 sm:translate-x-0"
+      leave-active-class="transition ease-in duration-200"
+      leave-from-class="transform opacity-100 translate-y-0 sm:translate-x-0"
+      leave-to-class="transform opacity-0 translate-y-full sm:translate-y-0 sm:translate-x-full"
+    >
+      <div
+        v-if="showNotification"
+        class="fixed bottom-4 right-4 sm:top-4 sm:right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-3"
+      >
+        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <p class="font-medium">{{ notificationMessage }}</p>
+        <button @click="showNotification = false" class="ml-auto -mr-1 p-1 rounded-full hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script>
-import { ref, reactive, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { isAuthenticated, isCustomer, addGuestCartItem } from '@/stores/auth' // Import addGuestCartItem
+import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { isAuthenticated, isCustomer, addGuestCartItem } from '@/stores/auth'
 import { productsAPI, cartAPI } from '@/services/api'
 
 export default {
   name: 'ProductsPage',
   setup() {
     const router = useRouter()
+    const route = useRoute() // Initialize useRoute
     const loading = ref(false)
     const products = ref([])
     const categories = ref([])
@@ -419,9 +452,11 @@ export default {
     const totalPages = ref(1)
     const addingToCart = ref(null)
     const showFilters = ref(false)
+    const showNotification = ref(false)
+    const notificationMessage = ref('')
     
     const filters = reactive({
-      search: '',
+      search: route.query.search || '', // Initialize search from URL query
       category: '',
       availableOnly: false,
       organicOnly: false,
@@ -485,9 +520,9 @@ export default {
           page,
           page_size: 12,
           ...(filters.search && { search: filters.search }),
-          ...(filters.category && { product__category: filters.category }),
-          ...(filters.availableOnly ? { listing_status: 'available' } : {}),
-          ...(filters.organicOnly && { is_organic_certified: 'true' }),
+          ...(filters.category && { category: filters.category }), // Corrected to 'category'
+          ...(filters.availableOnly ? { status: 'available' } : {}),
+          ...(filters.organicOnly && { organic: 'true' }),
           ...(filters.sortBy && { ordering: getSortOrder(filters.sortBy) })
         }
         
@@ -556,12 +591,19 @@ export default {
         // Dispatch cart updated event
         window.dispatchEvent(new CustomEvent('cartUpdated'))
         
-        // Show success message (you could use a toast notification here)
-        alert(`${listing.product_name} added to cart!`)
+        notificationMessage.value = `${listing.product_name} added to cart!`
+        showNotification.value = true
+        setTimeout(() => {
+          showNotification.value = false
+        }, 3000) // Hide after 3 seconds
         
       } catch (error) {
         console.error('Failed to add to cart:', error)
-        alert('Failed to add item to cart. Please try again.')
+        notificationMessage.value = 'Failed to add item to cart. Please try again.'
+        showNotification.value = true
+        setTimeout(() => {
+          showNotification.value = false
+        }, 3000) // Hide after 3 seconds
       } finally {
         addingToCart.value = null
       }
@@ -574,6 +616,7 @@ export default {
     }
 
     const resetAndLoadProducts = () => {
+      console.log('resetAndLoadProducts called. Current filters:', JSON.parse(JSON.stringify(filters))); // Debug log
       currentPage.value = 1
       loadProducts(1)
       showFilters.value = false // Close mobile filters after applying
@@ -584,6 +627,12 @@ export default {
       loadCategories()
       loadProducts()
     })
+
+    // Watch for changes in the route's search query
+    watch(() => route.query.search, (newSearchQuery) => {
+      filters.search = newSearchQuery || '';
+      resetAndLoadProducts();
+    });
     
     return {
       loading,
@@ -597,6 +646,8 @@ export default {
       showFilters,
       isAuthenticated,
       isCustomer,
+      showNotification,
+      notificationMessage,
       
       // Methods
       debouncedSearch,
