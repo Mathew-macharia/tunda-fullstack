@@ -38,8 +38,8 @@
                 <CurrencyDollarIcon class="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
               </div>
               <div class="ml-3 sm:ml-4">
-                <p class="text-xs sm:text-sm font-medium text-gray-500">Total Revenue</p>
-                <p class="text-lg sm:text-2xl font-semibold text-gray-900">KES {{ formatCurrency(dashboardStats.totalRevenue) }}</p>
+                <p class="text-xs sm:text-sm font-medium text-gray-500">Gross Revenue</p>
+                <p class="text-lg sm:text-2xl font-semibold text-gray-900">KES {{ formatCurrency(earnings.gross_revenue) }}</p>
               </div>
             </div>
           </div>
@@ -314,75 +314,6 @@
               <div class="p-6">
                 <h2 class="text-xl font-semibold text-gray-900 mb-6">Financial Overview</h2>
                 
-                <!-- Revenue Breakdown -->
-                <div class="mb-8">
-                  <h3 class="text-sm font-medium text-gray-500 mb-4">Revenue Breakdown</h3>
-                  
-                  <div class="space-y-3">
-                    <div class="flex justify-between">
-                      <div class="flex items-center">
-                        <span class="text-gray-900">Gross Revenue</span>
-                        <QuestionMarkCircleIcon
-                          class="h-4 w-4 text-gray-400 ml-1.5 cursor-help"
-                          @mouseenter="showTooltip('grossRevenue')"
-                          @mouseleave="hideTooltip"
-                        />
-                      </div>
-                      <span class="text-gray-900 font-medium">KES {{ formatCurrency(earnings.gross_revenue) }}</span>
-                    </div>
-
-                    <div class="flex justify-between text-gray-500">
-                      <div class="flex items-center">
-                        <span>VAT (16%)</span>
-                        <QuestionMarkCircleIcon
-                          class="h-4 w-4 text-gray-400 ml-1.5 cursor-help"
-                          @mouseenter="showTooltip('vat')"
-                          @mouseleave="hideTooltip"
-                        />
-                      </div>
-                      <span class="text-red-600">-KES {{ formatCurrency(earnings.fees.vat) }}</span>
-                    </div>
-
-                    <div class="flex justify-between text-gray-500">
-                      <div class="flex items-center">
-                        <span>Transaction Fee (2%)</span>
-                        <QuestionMarkCircleIcon
-                          class="h-4 w-4 text-gray-400 ml-1.5 cursor-help"
-                          @mouseenter="showTooltip('transactionFee')"
-                          @mouseleave="hideTooltip"
-                        />
-                      </div>
-                      <span class="text-red-600">-KES {{ formatCurrency(earnings.fees.transaction_fee) }}</span>
-                    </div>
-
-                    <div class="flex justify-between text-gray-500">
-                      <div class="flex items-center">
-                        <span>Platform Fee (10%)</span>
-                        <QuestionMarkCircleIcon
-                          class="h-4 w-4 text-gray-400 ml-1.5 cursor-help"
-                          @mouseenter="showTooltip('platformFee')"
-                          @mouseleave="hideTooltip"
-                        />
-                      </div>
-                      <span class="text-red-600">-KES {{ formatCurrency(earnings.fees.platform_fee) }}</span>
-                    </div>
-
-                    <div class="pt-3 border-t">
-                      <div class="flex justify-between">
-                        <div class="flex items-center">
-                          <span class="font-medium text-gray-900">Net Proceeds</span>
-                          <QuestionMarkCircleIcon
-                            class="h-4 w-4 text-gray-400 ml-1.5 cursor-help"
-                            @mouseenter="showTooltip('netProceeds')"
-                            @mouseleave="hideTooltip"
-                          />
-                        </div>
-                        <span class="text-green-600 font-medium">KES {{ formatCurrency(earnings.net_revenue) }}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
                 <!-- Balance Information -->
                 <div>
                   <h3 class="text-sm font-medium text-gray-500 mb-4">Balance Information</h3>
@@ -425,6 +356,75 @@
                 <p v-else class="mt-6 text-sm text-center text-gray-500">
                   No funds available for payout
                 </p>
+
+                <!-- Revenue Breakdown -->
+                <div class="mt-8">
+                  <h3 class="text-sm font-medium text-gray-500 mb-4">Revenue Breakdown</h3>
+                  
+                  <div class="space-y-3">
+                    <div class="flex justify-between">
+                      <div class="flex items-center">
+                        <span class="font-medium text-gray-900">Net Proceeds</span>
+                        <QuestionMarkCircleIcon
+                          class="h-4 w-4 text-gray-400 ml-1.5 cursor-help"
+                          @mouseenter="showTooltip('netProceeds')"
+                          @mouseleave="hideTooltip"
+                        />
+                      </div>
+                      <span class="text-green-600 font-medium">KES {{ formatCurrency(earnings.net_revenue) }}</span>
+                    </div>
+
+                    <div class="pt-3 border-t">
+                      <div class="flex justify-between">
+                        <div class="flex items-center">
+                          <span class="text-gray-900">Gross Revenue</span>
+                          <QuestionMarkCircleIcon
+                            class="h-4 w-4 text-gray-400 ml-1.5 cursor-help"
+                            @mouseenter="showTooltip('grossRevenue')"
+                            @mouseleave="hideTooltip"
+                          />
+                        </div>
+                        <span class="text-gray-900 font-medium">KES {{ formatCurrency(earnings.gross_revenue) }}</span>
+                      </div>
+                    </div>
+
+                    <div class="flex justify-between text-gray-500">
+                      <div class="flex items-center">
+                        <span>Service Fee</span>
+                        <QuestionMarkCircleIcon
+                          class="h-4 w-4 text-gray-400 ml-1.5 cursor-help"
+                          @mouseenter="showTooltip('platformFee')"
+                          @mouseleave="hideTooltip"
+                        />
+                      </div>
+                      <span class="text-red-600">-KES {{ formatCurrency(earnings.fees.platform_fee) }}</span>
+                    </div>
+
+                    <div class="flex justify-between text-gray-500">
+                      <div class="flex items-center">
+                        <span>VAT on Service Fee</span>
+                        <QuestionMarkCircleIcon
+                          class="h-4 w-4 text-gray-400 ml-1.5 cursor-help"
+                          @mouseenter="showTooltip('vat')"
+                          @mouseleave="hideTooltip"
+                        />
+                      </div>
+                      <span class="text-red-600">-KES {{ formatCurrency(earnings.fees.vat) }}</span>
+                    </div>
+
+                    <div class="flex justify-between text-gray-500">
+                      <div class="flex items-center">
+                        <span>Transaction Fee</span>
+                        <QuestionMarkCircleIcon
+                          class="h-4 w-4 text-gray-400 ml-1.5 cursor-help"
+                          @mouseenter="showTooltip('transactionFee')"
+                          @mouseleave="hideTooltip"
+                        />
+                      </div>
+                      <span class="text-red-600">-KES {{ formatCurrency(earnings.fees.transaction_fee) }}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 

@@ -1,7 +1,7 @@
 import axios from 'axios'
 
-const API_BASE_URL = 'http://localhost:8000/api'
-const BACKEND_BASE_URL = 'http://localhost:8000'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
+const BACKEND_BASE_URL = import.meta.env.VITE_BACKEND_BASE_URL || 'http://localhost:8000'
 
 // Helper function to convert relative media URLs to absolute URLs
 const getAbsoluteMediaUrl = (relativeUrl) => {
@@ -158,9 +158,24 @@ export const authAPI = {
 
 // Products API
 export const productsAPI = {
-  async getCategories() {
-    const response = await api.get('/products/categories/')
-    return response.data
+  async getCategories(params = {}) {
+    const response = await api.get('/products/categories/', { params });
+    return response.data;
+  },
+
+  async createCategory(categoryData) {
+    const response = await api.post('/products/categories/', categoryData);
+    return response.data;
+  },
+
+  async updateCategory(id, categoryData) {
+    const response = await api.patch(`/products/categories/${id}/`, categoryData);
+    return response.data;
+  },
+
+  async deleteCategory(id) {
+    const response = await api.delete(`/products/categories/${id}/`);
+    return response.data;
   },
 
   async getProducts(params = {}) {
@@ -962,8 +977,8 @@ export const adminAPI = {
     
     // Map the API responses to what the frontend expects
     const users = userStats.data || {}
-    const orders = orderStats.data || {}
-    const finance = financeStats.data || {}
+    const orders = orderStats.data || {};
+    const finance = financeStats.data || {};
     
     return {
       total_users: users.total || 0,
@@ -972,23 +987,41 @@ export const adminAPI = {
       riders_count: users.riders || 0,
       admins_count: users.admins || 0,
       
-      total_orders: orders.total || 0,
-      orders_pending_payment: orders.pending_payment || 0,
-      orders_confirmed: orders.confirmed || 0,
-      orders_processing: orders.processing || 0,
-      orders_out_for_delivery: orders.out_for_delivery || 0,
-      orders_delivered: orders.delivered || 0,
-      orders_cancelled: orders.cancelled || 0,
+      total_orders: orders.orders.total || 0,
+      orders_pending_payment: orders.payments.pending || 0,
+      orders_confirmed: orders.orders.confirmed || 0,
+      orders_processing: orders.orders.processing || 0,
+      orders_out_for_delivery: orders.orders.out_for_delivery || 0,
+      orders_delivered: orders.orders.delivered || 0,
+      orders_cancelled: orders.orders.cancelled || 0,
       
-      total_revenue: orders.total_revenue || 0,
-      monthly_revenue: orders.monthly_revenue || 0,
+      // Gross Revenue (Total Sales)
+      total_gross_revenue: orders.gross_revenue.total || 0,
+      monthly_gross_revenue: orders.gross_revenue.monthly || 0,
+
+      // Platform Revenue (Net Revenue from Fees)
+      total_platform_revenue: orders.platform_revenue.total || 0,
+      monthly_platform_revenue: orders.platform_revenue.monthly || 0,
+      total_platform_fees: orders.platform_revenue.total_platform_fees || 0,
+      total_vat_on_platform_fees: orders.platform_revenue.total_vat_on_platform_fees || 0,
+      total_transaction_fees: orders.platform_revenue.total_transaction_fees || 0,
+      monthly_platform_fees: orders.platform_revenue.monthly_platform_fees || 0,
+      monthly_vat_on_platform_fees: orders.platform_revenue.monthly_vat_on_platform_fees || 0,
+      monthly_transaction_fees: orders.platform_revenue.monthly_transaction_fees || 0,
       
+      // Delivery Fees Collected (Pass-through)
+      total_delivery_fees_collected: orders.delivery_fees.total_collected || 0,
+      monthly_delivery_fees_collected: orders.delivery_fees.monthly_collected || 0,
+      
+      total_deliveries: orders.orders.delivered || 0,
+      active_deliveries: orders.orders.out_for_delivery || 0,
+
       total_payouts: finance.total_processed || 0,
       pending_payouts: finance.total_pending || 0,
       
-      pending_orders: orders.pending || 0,
+      pending_orders: orders.orders.pending || 0,
       active_users: users.active || 0
-    }
+    };
   },
 
   async getRecentOrders(limit = 5) {

@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, status, permissions
+from rest_framework import viewsets, status, permissions, filters
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Q
@@ -101,6 +102,10 @@ class VehicleViewSet(viewsets.ModelViewSet):
 class DeliveryViewSet(viewsets.ModelViewSet):
     """ViewSet for Delivery model"""
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ['delivery_status']
+    ordering_fields = ['created_at', 'pickup_time', 'delivery_time']
+    ordering = ['-created_at']
     
     def get_serializer_class(self):
         if self.action == 'update' or self.action == 'partial_update':
@@ -110,7 +115,8 @@ class DeliveryViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if user.user_role == 'admin':
-            return Delivery.objects.all()
+            # For admin, fetch all deliveries, but ensure rider and order customer exist
+            return Delivery.objects.select_related('rider', 'order__customer').filter(rider__isnull=False, order__customer__isnull=False)
         elif user.user_role == 'rider':
             return Delivery.objects.filter(rider=user)
         elif user.user_role == 'customer':
@@ -194,12 +200,19 @@ class DeliveryViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN
             )
         
-        deliveries = Delivery.objects.filter(rider=user).select_related('order').prefetch_related(
+        queryset = Delivery.objects.filter(
+            rider=user,
+            order__customer__isnull=False
+        ).select_related('order', 'order__customer').prefetch_related(
             'order__items',
             'order__items__listing__product',
             'order__items__listing__farm'
         )
-        serializer = DeliverySerializer(deliveries, many=True)
+        
+        # Manually apply filtering and ordering for custom action
+        filtered_queryset = self.filter_queryset(queryset)
+        
+        serializer = DeliverySerializer(filtered_queryset, many=True)
         return Response(serializer.data)
     
     @action(detail=False, methods=['get'])

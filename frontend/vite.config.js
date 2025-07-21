@@ -18,7 +18,7 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
-    allowedHosts: ['c35b75b61394.ngrok-free.app'],
+    allowedHosts: ['c35b75b61394.ngrok-free.app', 'gotunda.com', 'www.gotunda.com'],
     fs: {
       allow: ['..'] // Allow serving files from one level up (for backend access)
     }

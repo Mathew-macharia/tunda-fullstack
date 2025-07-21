@@ -8,6 +8,7 @@ from django.http import HttpResponse
 from datetime import datetime, timedelta
 from django.utils import timezone
 import csv
+from decimal import Decimal # Import Decimal
 
 from .models import Order, OrderItem
 from .serializers import (
@@ -16,6 +17,7 @@ from .serializers import (
     AdminOrderSerializer
 )
 from products.models import ProductListing
+from core.models import SystemSettings # Import SystemSettings
 
 
 class IsCustomer(permissions.BasePermission):
@@ -144,7 +146,7 @@ class AdminOrderViewSet(viewsets.ModelViewSet):
     ordering = ['-created_at']
 
     def get_queryset(self):
-        queryset = Order.objects.all()
+        queryset = Order.objects.select_related('customer').filter(customer__isnull=False)
         
         # Filter by status
         order_status = self.request.query_params.get('order_status', None)
@@ -217,24 +219,104 @@ class AdminOrderViewSet(viewsets.ModelViewSet):
             if stat['payment_status'] in payment_counts:
                 payment_counts[stat['payment_status']] = stat['count']
         
-        # Revenue stats
-        total_revenue = Order.objects.filter(payment_status='paid').aggregate(
+        # Gross Revenue (Total Sales)
+        total_gross_revenue = Order.objects.filter(payment_status='paid').aggregate(
             total=Sum('total_amount')
-        )['total'] or 0
+        )['total'] or Decimal('0.00')
         
-        # Monthly revenue
+        # Monthly Gross Revenue
         current_month_start = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        monthly_revenue = Order.objects.filter(
+        monthly_gross_revenue = Order.objects.filter(
             payment_status='paid',
             created_at__gte=current_month_start
-        ).aggregate(total=Sum('total_amount'))['total'] or 0
+        ).aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
+
+        # Platform Revenue (Net Revenue from Fees)
+        # Get fee rates from system settings
+        vat_rate = SystemSettings.objects.get_setting('vat_rate', Decimal('0.16'))
+        transaction_fee_rate = SystemSettings.objects.get_setting('transaction_fee_rate', Decimal('0.015'))
+        platform_fee_rate = SystemSettings.objects.get_setting('platform_fee_rate', Decimal('0.10'))
+
+        # Calculate total fees from all paid and delivered order items
+        paid_delivered_items = OrderItem.objects.filter(
+            order__payment_status='paid',
+            item_status='delivered'
+        )
+
+        total_platform_fees = Decimal('0.00')
+        total_vat_on_platform_fees = Decimal('0.00')
+        total_transaction_fees = Decimal('0.00')
+        total_delivery_fees_collected = Decimal('0.00') # Total delivery fees collected from customers
+
+        for item in paid_delivered_items:
+            item_gross_revenue = item.total_price
+            
+            platform_fee = (item_gross_revenue * platform_fee_rate).quantize(Decimal('0.01'))
+            vat_on_platform_fee = (platform_fee * vat_rate).quantize(Decimal('0.01'))
+            transaction_fee = (item_gross_revenue * transaction_fee_rate).quantize(Decimal('0.01'))
+            
+            total_platform_fees += platform_fee
+            total_vat_on_platform_fees += vat_on_platform_fee
+            total_transaction_fees += transaction_fee
+        
+        # Sum all delivery fees from paid orders (these are passed to riders, not platform revenue)
+        total_delivery_fees_collected = Order.objects.filter(payment_status='paid').aggregate(
+            total=Sum('delivery_fee')
+        )['total'] or Decimal('0.00')
+
+        # Sum of all fees that are platform revenue
+        net_platform_revenue = (total_platform_fees + total_vat_on_platform_fees + total_transaction_fees).quantize(Decimal('0.01'))
+
+        # Monthly platform revenue
+        monthly_paid_delivered_items = OrderItem.objects.filter(
+            order__payment_status='paid',
+            item_status='delivered',
+            order__created_at__gte=current_month_start
+        )
+
+        monthly_platform_fees = Decimal('0.00')
+        monthly_vat_on_platform_fees = Decimal('0.00')
+        monthly_transaction_fees = Decimal('0.00')
+        monthly_delivery_fees_collected = Decimal('0.00')
+
+        for item in monthly_paid_delivered_items:
+            item_gross_revenue = item.total_price
+            
+            platform_fee = (item_gross_revenue * platform_fee_rate).quantize(Decimal('0.01'))
+            vat_on_platform_fee = (platform_fee * vat_rate).quantize(Decimal('0.01'))
+            transaction_fee = (item_gross_revenue * transaction_fee_rate).quantize(Decimal('0.01'))
+            
+            monthly_platform_fees += platform_fee
+            monthly_vat_on_platform_fees += vat_on_platform_fee
+            monthly_transaction_fees += transaction_fee
+        
+        monthly_delivery_fees_collected = Order.objects.filter(
+            payment_status='paid',
+            created_at__gte=current_month_start
+        ).aggregate(total=Sum('delivery_fee'))['total'] or Decimal('0.00')
+
+        monthly_net_platform_revenue = (monthly_platform_fees + monthly_vat_on_platform_fees + monthly_transaction_fees).quantize(Decimal('0.01'))
         
         return Response({
             'orders': status_counts,
             'payments': payment_counts,
-            'revenue': {
-                'total': float(total_revenue),
-                'monthly': float(monthly_revenue)
+            'gross_revenue': { # Renamed from 'revenue' to 'gross_revenue'
+                'total': float(total_gross_revenue),
+                'monthly': float(monthly_gross_revenue)
+            },
+            'platform_revenue': { # New field for platform's net revenue
+                'total': float(net_platform_revenue),
+                'monthly': float(monthly_net_platform_revenue),
+                'total_platform_fees': float(total_platform_fees),
+                'total_vat_on_platform_fees': float(total_vat_on_platform_fees),
+                'total_transaction_fees': float(total_transaction_fees),
+                'monthly_platform_fees': float(monthly_platform_fees),
+                'monthly_vat_on_platform_fees': float(monthly_vat_on_platform_fees),
+                'monthly_transaction_fees': float(monthly_transaction_fees),
+            },
+            'delivery_fees': { # New field for delivery fees collected (pass-through)
+                'total_collected': float(total_delivery_fees_collected),
+                'monthly_collected': float(monthly_delivery_fees_collected)
             }
         })
 

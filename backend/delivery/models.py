@@ -46,7 +46,7 @@ class Delivery(models.Model):
     DELIVERY_STATUS_CHOICES = (
         ('assigned', 'Assigned'),
         ('picked_up', 'Picked Up'),
-        ('in_transit', 'In Transit'),
+        ('on_the_way', 'On The Way'),
         ('delivered', 'Delivered'),
         ('failed', 'Failed'),
     )
@@ -130,7 +130,7 @@ def update_order_status_on_delivery_update(sender, instance, **kwargs):
     if instance.delivery_status == 'picked_up' and order.order_status != 'processing':
         order.order_status = 'processing'
         order.save()
-    elif instance.delivery_status == 'in_transit' and order.order_status != 'out_for_delivery':
+    elif instance.delivery_status == 'on_the_way' and order.order_status != 'out_for_delivery':
         order.order_status = 'out_for_delivery'
         order.save()
     elif instance.delivery_status == 'delivered' and order.order_status != 'delivered':

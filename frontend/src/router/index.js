@@ -49,6 +49,7 @@ const SystemSettings = () => import('@/views/admin/SystemSettings.vue')
 const ReviewsManagement = () => import('@/views/admin/ReviewsManagement.vue')
 const PayoutsManagement = () => import('@/views/admin/PayoutsManagement.vue')
 const SupportManagement = () => import('@/views/admin/SupportManagement.vue')
+const ProductCategoriesManagement = () => import('@/views/admin/ProductCategoriesManagement.vue')
 
 const routes = [
   {
@@ -474,6 +475,17 @@ const routes = [
       roles: ['admin'],
       title: 'Payout Management - Tunda App',
       description: 'Manage farmer and rider payout requests on Tunda App.'
+    }
+  },
+  {
+    path: '/admin/categories',
+    name: 'categories-management',
+    component: ProductCategoriesManagement,
+    meta: {
+      requiresAuth: true,
+      roles: ['admin'],
+      title: 'Category Management - Tunda App',
+      description: 'Manage product categories on Tunda App.'
     }
   },
   {

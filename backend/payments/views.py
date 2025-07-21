@@ -14,6 +14,7 @@ from .serializers import (
     PaymentSessionSerializer, PaymentSessionCreateSerializer,
     PaymentSessionInitiatePaymentSerializer
 )
+from .tasks import process_mpesa_callback_task # NEW IMPORT
 
 
 class IsCustomerUser(permissions.BasePermission):
@@ -231,76 +232,31 @@ class PaymentTransactionViewSet(viewsets.ModelViewSet):
     @csrf_exempt
     def mpesa_callback(self, request):
         """
-        Handle M-Pesa STK Push callback
+        Handle M-Pesa STK Push callback.
+        Immediately returns 200 OK and processes asynchronously using Celery.
         """
         import logging
-        from .services.mpesa_service import MpesaService
-        
         logger = logging.getLogger(__name__)
-        
+
         try:
             # Log the raw callback for debugging
             logger.info(f"M-Pesa callback received: {request.data}")
-            
-            # Validate callback structure
-            serializer = MpesaCallbackSerializer(data=request.data)
-            if not serializer.is_valid():
-                logger.error(f"Invalid callback format: {serializer.errors}")
-                return Response({'status': 'error', 'message': 'Invalid callback format'}, 
-                              status=status.HTTP_400_BAD_REQUEST)
-            
-            # Process callback using M-Pesa service
-            mpesa_service = MpesaService()
-            callback_info = mpesa_service.process_callback(request.data)
-            
-            checkout_request_id = callback_info['checkout_request_id']
-            
-            # Find the transaction
-            try:
-                transaction = PaymentTransaction.objects.get(
-                    mpesa_checkout_request_id=checkout_request_id
-                )
-            except PaymentTransaction.DoesNotExist:
-                logger.error(f"Transaction not found for checkout request: {checkout_request_id}")
-                return Response({'status': 'error', 'message': 'Transaction not found'}, 
-                              status=status.HTTP_404_NOT_FOUND)
-            
-            # Update transaction with callback data
-            transaction.callback_received = True
-            transaction.callback_data = request.data
-            
-            result_code = callback_info['result_code']
-            
-            if result_code == 0:
-                # Payment successful
-                transaction.payment_status = 'completed'
-                transaction.payment_date = timezone.now()
-                transaction.mpesa_receipt_number = callback_info['mpesa_receipt_number']
-                transaction.transaction_code = callback_info['mpesa_receipt_number']
-                
-                logger.info(f"Payment successful for transaction {transaction.transaction_id}")
-            else:
-                # Payment failed
-                transaction.payment_status = 'failed'
-                transaction.failure_reason = callback_info['result_desc']
-                
-                logger.info(f"Payment failed for transaction {transaction.transaction_id}: {callback_info['result_desc']}")
-            
-            transaction.save()
-            
-            # Update payment status (handles both session and order-based flows)
-            transaction.update_payment_status()
-            
+
+            # Immediately return 200 OK to Daraja
+            # The actual processing will happen in a background task
+            process_mpesa_callback_task.delay(request.data) # Dispatch task asynchronously
+
             return Response({
                 'status': 'success',
-                'message': 'Callback processed successfully'
+                'message': 'Callback received and processing initiated'
             }, status=status.HTTP_200_OK)
-            
+
         except Exception as e:
-            logger.error(f"Error processing M-Pesa callback: {str(e)}")
+            logger.error(f"Error receiving M-Pesa callback or dispatching task: {str(e)}")
+            # Even if there's an error dispatching, we still try to return 200 to Daraja
             return Response({
                 'status': 'error',
-                'message': 'Callback processing failed'
+                'message': 'Failed to process callback internally'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     @action(detail=True, methods=['get'])

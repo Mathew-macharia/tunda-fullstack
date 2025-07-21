@@ -1,22 +1,20 @@
 from pathlib import Path
 from datetime import timedelta
 import os
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'your-secret-key'  # Replace with a secure key in production
+SECRET_KEY = os.environ.get('SECRET_KEY')
+if not SECRET_KEY:
+    raise ImproperlyConfigured("The SECRET_KEY environment variable must be set for production.")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = [
-    'https://97c353835b46.ngrok-free.app',
-    '97c353835b46.ngrok-free.app',
-    'http://localhost:8000',
-    'localhost',
-]
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 # Application definition
 INSTALLED_APPS = [
@@ -42,12 +40,20 @@ INSTALLED_APPS = [
     'communication',
     'finance',
     
-    # Third-party apps
+# Third-party apps
     'rest_framework',
     'rest_framework.authtoken',
     'djoser',
     'corsheaders',
 ]
+
+# Celery Configuration
+CELERY_BROKER_URL = 'redis://localhost:6379/0' # Use Redis as the broker
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0' # Use Redis as the result backend
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Africa/Nairobi' # Or your desired timezone
 
 # Configure custom user model
 AUTH_USER_MODEL = 'users.User'
@@ -87,11 +93,11 @@ WSGI_APPLICATION = 'tunda.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'tunda_db_copy',
-        'USER': 'wiseman',
-        'PASSWORD': 'nopassword',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'NAME': os.environ.get('DB_NAME', 'tunda_db_copy'),
+        'USER': os.environ.get('DB_USER', 'wiseman'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'nopassword'),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'PORT': os.environ.get('DB_PORT', '3306'),
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
         }
@@ -154,19 +160,13 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # CORS settings
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # Vite dev server
-    "http://127.0.0.1:5173",
-]
-
-# Allow all origins during development (remove in production)
-CORS_ALLOW_ALL_ORIGINS = True  # Only for development
+CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173').split(',')
 
 # Allow credentials to be included in CORS requests
 CORS_ALLOW_CREDENTIALS = True
 
 # Google Maps API Configuration
-GOOGLE_MAPS_API_KEY = os.getenv('GOOGLE_MAPS_API_KEY', 'AIzaSyA2c7DbZnMoxriVKRmsIoF90mOt4jTffOQ')
+GOOGLE_MAPS_API_KEY = os.environ.get('GOOGLE_MAPS_API_KEY') # Must be set in production environment variables
 
 # Caching for geocoding results and performance
 CACHES = {

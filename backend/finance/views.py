@@ -195,7 +195,7 @@ class PayoutViewSet(viewsets.ModelViewSet):
         # Format transactions for response
         formatted_transactions = [
             {
-                'id': txn.payment_transaction_id,
+                'id': txn.transaction_id,
                 'date': txn.payment_date,
                 'amount': txn.order.delivery_fee, # Assuming delivery_fee is the relevant amount for rider transactions
                 'description': f"Delivery fee for Order #{txn.order.order_number}",

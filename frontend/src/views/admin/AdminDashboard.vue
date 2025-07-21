@@ -29,7 +29,64 @@
 
       <div v-else>
         <!-- Key Metrics Overview -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
+        <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8">
+          <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+            <div class="flex flex-col sm:flex-row sm:items-center">
+              <div class="p-2 bg-yellow-100 rounded-lg mb-3 sm:mb-0 w-fit">
+                <svg class="h-6 w-6 sm:h-8 sm:w-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <div class="sm:ml-4">
+                <p class="text-xs sm:text-sm font-medium text-gray-600">Gross Sales</p>
+                <p class="text-sm sm:text-2xl font-bold text-gray-900">
+                  KSh {{ formatNumber(stats.total_gross_revenue || 0) }}
+                </p>
+                <p class="text-xs text-gray-500">
+                  This month: KSh {{ formatNumber(stats.monthly_gross_revenue || 0) }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+            <div class="flex flex-col sm:flex-row sm:items-center">
+              <div class="p-2 bg-indigo-100 rounded-lg mb-3 sm:mb-0 w-fit">
+                <svg class="h-6 w-6 sm:h-8 sm:w-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                </svg>
+              </div>
+              <div class="sm:ml-4">
+                <p class="text-xs sm:text-sm font-medium text-gray-600">Platform Revenue</p>
+                <p class="text-sm sm:text-2xl font-bold text-gray-900">
+                  KSh {{ formatNumber(stats.total_platform_revenue || 0) }}
+                </p>
+                <p class="text-xs text-gray-500">
+                  This month: KSh {{ formatNumber(stats.monthly_platform_revenue || 0) }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+            <div class="flex flex-col sm:flex-row sm:items-center">
+              <div class="p-2 bg-red-100 rounded-lg mb-3 sm:mb-0 w-fit">
+                <svg class="h-6 w-6 sm:h-8 sm:w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+              </div>
+              <div class="sm:ml-4">
+                <p class="text-xs sm:text-sm font-medium text-gray-600">Delivery Fees Collected</p>
+                <p class="text-sm sm:text-2xl font-bold text-gray-900">
+                  KSh {{ formatNumber(stats.total_delivery_fees_collected || 0) }}
+                </p>
+                <p class="text-xs text-gray-500">
+                  This month: KSh {{ formatNumber(stats.monthly_delivery_fees_collected || 0) }}
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div class="bg-white rounded-lg shadow p-4 sm:p-6">
             <div class="flex flex-col sm:flex-row sm:items-center">
               <div class="p-2 bg-blue-100 rounded-lg mb-3 sm:mb-0 w-fit">
@@ -59,25 +116,6 @@
                 <p class="text-lg sm:text-2xl font-bold text-gray-900">{{ stats.total_orders || 0 }}</p>
                 <p class="text-xs text-gray-500">
                   {{ stats.pending_orders || 0 }} pending
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-white rounded-lg shadow p-4 sm:p-6">
-            <div class="flex flex-col sm:flex-row sm:items-center">
-              <div class="p-2 bg-yellow-100 rounded-lg mb-3 sm:mb-0 w-fit">
-                <svg class="h-6 w-6 sm:h-8 sm:w-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-              </div>
-              <div class="sm:ml-4">
-                <p class="text-xs sm:text-sm font-medium text-gray-600">Revenue</p>
-                <p class="text-sm sm:text-2xl font-bold text-gray-900">
-                  KSh {{ formatNumber(stats.total_revenue || 0) }}
-                </p>
-                <p class="text-xs text-gray-500">
-                  This month: KSh {{ formatNumber(stats.monthly_revenue || 0) }}
                 </p>
               </div>
             </div>
@@ -279,86 +317,97 @@
 
         <!-- Management Links -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-4 sm:mb-6">
-          <div class="bg-white rounded-lg shadow p-4 sm:p-6">
-            <div class="flex items-center mb-2">
-              <svg class="w-5 h-5 text-gray-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
-              </svg>
-              <h3 class="text-base sm:text-lg font-medium text-gray-900">User Management</h3>
+          <router-link to="/admin/users" class="block bg-white rounded-lg shadow p-4 sm:p-6 hover:shadow-lg transition-shadow duration-200">
+            <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center">
+                <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                </svg>
+                <h3 class="text-base sm:text-lg font-medium text-gray-900">User Management</h3>
+              </div>
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
             </div>
-            <p class="text-gray-600 mb-4 text-sm">Manage users and permissions</p>
-            <router-link to="/admin/users" class="btn-primary inline-flex w-full justify-center">
-              Manage Users
-            </router-link>
-          </div>
+            <p class="text-gray-500 text-sm">Manage users and permissions</p>
+          </router-link>
           
-          <div class="bg-white rounded-lg shadow p-4 sm:p-6">
-            <div class="flex items-center mb-2">
-              <svg class="w-5 h-5 text-gray-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-              </svg>
-              <h3 class="text-base sm:text-lg font-medium text-gray-900">Orders Management</h3>
+          <router-link to="/admin/orders" class="block bg-white rounded-lg shadow p-4 sm:p-6 hover:shadow-lg transition-shadow duration-200">
+            <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center">
+                <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                </svg>
+                <h3 class="text-base sm:text-lg font-medium text-gray-900">Orders Management</h3>
+              </div>
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
             </div>
-            <p class="text-gray-600 mb-4 text-sm">Oversee all platform orders</p>
-            <router-link to="/admin/orders" class="btn-primary inline-flex w-full justify-center">
-              View Orders
-            </router-link>
-          </div>
+            <p class="text-gray-500 text-sm">Oversee all platform orders</p>
+          </router-link>
           
-          <div class="bg-white rounded-lg shadow p-4 sm:p-6">
-            <div class="flex items-center mb-2">
-              <svg class="w-5 h-5 text-gray-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
-              </svg>
-              <h3 class="text-base sm:text-lg font-medium text-gray-900">Delivery Management</h3>
+          <router-link to="/admin/deliveries" class="block bg-white rounded-lg shadow p-4 sm:p-6 hover:shadow-lg transition-shadow duration-200">
+            <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center">
+                <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+                </svg>
+                <h3 class="text-base sm:text-lg font-medium text-gray-900">Delivery Management</h3>
+              </div>
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
             </div>
-            <p class="text-gray-600 mb-4 text-sm">Monitor delivery operations</p>
-            <router-link to="/admin/deliveries" class="btn-primary inline-flex w-full justify-center">
-              View Deliveries
-            </router-link>
-          </div>
-        </div>
+            <p class="text-gray-500 text-sm">Monitor delivery operations</p>
+          </router-link>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          <div class="bg-white rounded-lg shadow p-4 sm:p-6">
-            <div class="flex items-center mb-2">
-              <svg class="w-5 h-5 text-gray-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
-              </svg>
-              <h3 class="text-base sm:text-lg font-medium text-gray-900">Reviews Management</h3>
+          <router-link to="/admin/categories" class="block bg-white rounded-lg shadow p-4 sm:p-6 hover:shadow-lg transition-shadow duration-200">
+            <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center">
+                <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                </svg>
+                <h3 class="text-base sm:text-lg font-medium text-gray-900">Product Categories</h3>
+              </div>
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
             </div>
-            <p class="text-gray-600 mb-4 text-sm">Moderate user reviews and ratings</p>
-            <router-link to="/admin/reviews" class="btn-primary inline-flex w-full justify-center">
-              Manage Reviews
-            </router-link>
-          </div>
+            <p class="text-gray-500 text-sm">Manage product categories</p>
+          </router-link>
           
-          <div class="bg-white rounded-lg shadow p-4 sm:p-6">
-            <div class="flex items-center mb-2">
-              <svg class="w-5 h-5 text-gray-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-              <h3 class="text-base sm:text-lg font-medium text-gray-900">Payouts Management</h3>
+          <router-link to="/admin/reviews" class="block bg-white rounded-lg shadow p-4 sm:p-6 hover:shadow-lg transition-shadow duration-200">
+            <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center">
+                <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                </svg>
+                <h3 class="text-base sm:text-lg font-medium text-gray-900">Reviews Management</h3>
+              </div>
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
             </div>
-            <p class="text-gray-600 mb-4 text-sm">Process farmer and rider payouts</p>
-            <router-link to="/admin/payouts" class="btn-primary inline-flex w-full justify-center">
-              Manage Payouts
-            </router-link>
-          </div>
+            <p class="text-gray-500 text-sm">Moderate user reviews and ratings</p>
+          </router-link>
           
-          <div class="bg-white rounded-lg shadow p-4 sm:p-6">
-            <div class="flex items-center mb-2">
-              <svg class="w-5 h-5 text-gray-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-              </svg>
-              <h3 class="text-base sm:text-lg font-medium text-gray-900">System Settings</h3>
+          <router-link to="/admin/payouts" class="block bg-white rounded-lg shadow p-4 sm:p-6 hover:shadow-lg transition-shadow duration-200">
+            <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center">
+                <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <h3 class="text-base sm:text-lg font-medium text-gray-900">Payouts Management</h3>
+              </div>
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
             </div>
-            <p class="text-gray-600 mb-4 text-sm">Configure platform settings</p>
-            <router-link to="/admin/settings" class="btn-primary inline-flex w-full justify-center">
-              Settings
-            </router-link>
-          </div>
+            <p class="text-gray-500 text-sm">Process farmer and rider payouts</p>
+          </router-link>
+          
+          <router-link to="/admin/settings" class="block bg-white rounded-lg shadow p-4 sm:p-6 hover:shadow-lg transition-shadow duration-200">
+            <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center">
+                <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+                <h3 class="text-base sm:text-lg font-medium text-gray-900">System Settings</h3>
+              </div>
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </div>
+            <p class="text-gray-500 text-sm">Configure platform settings</p>
+          </router-link>
         </div>
       </div>
     </div>
@@ -538,4 +587,4 @@ export default {
   opacity: 0.5;
   cursor: not-allowed;
 }
-</style> 
+</style>

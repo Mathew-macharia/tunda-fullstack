@@ -150,8 +150,9 @@ class DeliveryUpdateSerializer(serializers.ModelSerializer):
         current_status = self.instance.delivery_status
         valid_transitions = {
             'assigned': ['picked_up', 'failed'],
-            'picked_up': ['in_transit', 'failed'],
-            'in_transit': ['delivered', 'failed'],
+            'pending_pickup': ['on_the_way', 'failed'], 
+            'picked_up': ['on_the_way', 'failed'],
+            'on_the_way': ['delivered', 'failed'],
             'delivered': [],  # Terminal state
             'failed': []      # Terminal state
         }

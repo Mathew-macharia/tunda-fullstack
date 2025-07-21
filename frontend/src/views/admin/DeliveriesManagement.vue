@@ -94,7 +94,7 @@
                class="border-b border-gray-200 p-4 hover:bg-gray-50">
             <div class="flex justify-between items-start mb-2">
               <div>
-                <div class="text-sm font-medium text-gray-900">Delivery #{delivery.delivery_id}</div>
+                <div class="text-sm font-medium text-gray-900">Delivery #{{ delivery.delivery_id }}</div>
                 <div class="text-xs text-gray-500">{{ delivery.order_number }}</div>
               </div>
               <span :class="getDeliveryStatusClass(delivery.delivery_status)"
@@ -330,6 +330,22 @@
         </div>
       </div>
     </div>
+    <!-- Toast Notification -->
+    <transition enter-active-class="transition ease-out duration-300"
+                enter-from-class="transform opacity-0 translate-y-full"
+                enter-to-class="transform opacity-100 translate-y-0"
+                leave-active-class="transition ease-in duration-300"
+                leave-from-class="transform opacity-100 translate-y-0"
+                leave-to-class="transform opacity-0 translate-y-full">
+      <div v-if="showToast" 
+           :class="{ 'bg-green-500': toastType === 'success', 'bg-red-500': toastType === 'error', 'bg-blue-500': toastType === 'info' }"
+           class="fixed bottom-4 right-4 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-3">
+        <svg v-if="toastType === 'success'" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <svg v-else-if="toastType === 'error'" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <svg v-else-if="toastType === 'info'" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <p class="font-medium">{{ toastMessage }}</p>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -352,6 +368,11 @@ export default {
     const selectedRiderId = ref('')
     const availableRiders = ref([])
     const assigning = ref(false)
+
+    // Toast notification state
+    const showToast = ref(false)
+    const toastMessage = ref('')
+    const toastType = ref('success') // 'success' or 'error'
     
     const filters = ref({
       delivery_status: '',
@@ -467,13 +488,19 @@ export default {
         }
         
         // Show success message
-        alert(response.detail || 'Rider assigned successfully!')
+        showToast.value = true
+        toastMessage.value = response.detail || 'Rider assigned successfully!'
+        toastType.value = 'success'
+        setTimeout(() => { showToast.value = false }, 3000) // Hide after 3 seconds
         
         closeAssignRiderModal()
         
       } catch (error) {
         console.error('Failed to assign rider:', error)
-        alert(error.response?.data?.detail || 'Failed to assign rider')
+        showToast.value = true
+        toastMessage.value = error.response?.data?.detail || 'Failed to assign rider'
+        toastType.value = 'error'
+        setTimeout(() => { showToast.value = false }, 3000) // Hide after 3 seconds
       } finally {
         assigning.value = false
       }
@@ -545,7 +572,10 @@ export default {
       getDeliveryStatusLabel,
       getDeliveryStatusClass,
       formatDate,
-      formatDateTime
+      formatDateTime,
+      showToast,
+      toastMessage,
+      toastType
     }
   }
 }

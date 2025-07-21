@@ -5,6 +5,7 @@ from django.utils import timezone
 from datetime import timedelta
 import uuid
 from orders.models import Order
+from delivery.models import Delivery
 
 class PaymentSession(models.Model):
     """
@@ -155,22 +156,27 @@ class PaymentSession(models.Model):
                     order=order,
                     listing=listing,
                     farmer=listing.farm.farmer,
-                    quantity=cart_item_data['quantity'],
-                    price_at_purchase=cart_item_data['price_at_addition'],
-                    total_price=cart_item_data['quantity'] * cart_item_data['price_at_addition']
+                    quantity=Decimal(str(cart_item_data['quantity'])), # Ensure quantity is Decimal
+                    price_at_purchase=Decimal(str(cart_item_data['price_at_addition'])), # Ensure price is Decimal
+                    total_price=Decimal(str(cart_item_data['quantity'])) * Decimal(str(cart_item_data['price_at_addition'])) # Ensure calculation uses Decimals
                 )
                 
                 # Update inventory
-                listing.quantity_available -= cart_item_data['quantity']
+                listing.quantity_available -= Decimal(str(cart_item_data['quantity'])) # Convert float to Decimal
                 listing.save()
             
             # 5. Clear customer's cart
-            CartItem.objects.filter(user=self.user).delete()
+            CartItem.objects.filter(cart__customer=self.user).delete()
             
             # 6. Update session
             self.order = order
             self.session_status = 'order_created'
             self.save()
+            
+            # 7. Create Delivery record
+            # The rider field is null=True, blank=True, so it can be created without a rider
+            Delivery.objects.create(order=order)
+            print(f"DEBUG: Delivery record created for Order {order.order_id} from PaymentSession.")
             
             return order
 

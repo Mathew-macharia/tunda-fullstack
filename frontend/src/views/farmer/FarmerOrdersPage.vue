@@ -141,61 +141,161 @@
           </p>
         </div>
 
-        <!-- Desktop Table View -->
-        <div v-else class="hidden lg:block bg-white rounded-lg shadow overflow-hidden">
-          <!-- Table Header -->
-          <div class="px-6 py-3 bg-gray-50 border-b border-gray-200">
-            <div class="grid grid-cols-12 gap-4 text-xs font-medium text-gray-500 uppercase tracking-wider">
-              <div class="col-span-3">Product</div>
-              <div class="col-span-2">Order</div>
-              <div class="col-span-1">Quantity</div>
-              <div class="col-span-1">Amount</div>
-              <div class="col-span-2">Payment Status</div>
-              <div class="col-span-2">Item Status</div>
-              <div class="col-span-1">Actions</div>
+        <div v-else>
+          <!-- Desktop Table View -->
+          <div class="hidden lg:block bg-white rounded-lg shadow overflow-hidden">
+            <!-- Table Header -->
+            <div class="px-6 py-3 bg-gray-50 border-b border-gray-200">
+              <div class="grid grid-cols-12 gap-4 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <div class="col-span-3">Product</div>
+                <div class="col-span-2">Order</div>
+                <div class="col-span-1">Quantity</div>
+                <div class="col-span-1">Amount</div>
+                <div class="col-span-2">Payment Status</div>
+                <div class="col-span-2">Item Status</div>
+                <div class="col-span-1">Actions</div>
+              </div>
             </div>
-          </div>
 
-          <!-- Table Body -->
-          <div class="divide-y divide-gray-200">
-            <div
-              v-for="order in orders"
-              :key="order.order_item_id"
-              class="px-6 py-4 hover:bg-gray-50"
-            >
-              <div class="grid grid-cols-12 gap-4 items-center">
-                <!-- Product -->
-                <div class="col-span-3">
-                  <div class="flex items-center space-x-3">
-                    <img 
-                      :src="order.listing_details?.photos?.[0] || '/api/placeholder/40/40'"
-                      :alt="order.listing_details?.product_name"
-                      class="h-10 w-10 rounded-lg object-cover"
-                    />
-                    <div>
-                      <p class="text-sm font-medium text-gray-900">
-                        {{ order.listing_details?.product_name }}
-                      </p>
-                      <p class="text-xs text-gray-500">
-                        {{ order.listing_details?.farm_name }}
-                      </p>
+            <!-- Table Body -->
+            <div class="divide-y divide-gray-200">
+              <div
+                v-for="order in orders"
+                :key="order.order_item_id"
+                class="px-6 py-4 hover:bg-gray-50"
+              >
+                <div class="grid grid-cols-12 gap-4 items-center">
+                  <!-- Product -->
+                  <div class="col-span-3">
+                    <div class="flex items-center space-x-3">
+                      <img 
+                        :src="order.listing_details?.photos?.[0] || '/api/placeholder/40/40'"
+                        :alt="order.listing_details?.product_name"
+                        class="h-10 w-10 rounded-lg object-cover"
+                      />
+                      <div>
+                        <p class="text-sm font-medium text-gray-900">
+                          {{ order.listing_details?.product_name }}
+                        </p>
+                        <p class="text-xs text-gray-500">
+                          {{ order.listing_details?.farm_name }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Order Info -->
+                  <div class="col-span-2">
+                    <p class="text-sm font-medium text-gray-900">
+                      #{{ order.order_details?.order_number }}
+                    </p>
+                    <p class="text-xs text-gray-500">
+                      {{ formatDate(order.created_at) }}
+                    </p>
+                  </div>
+
+                  <!-- Quantity -->
+                  <div class="col-span-1">
+                    <p class="text-sm text-gray-900">
+                      {{ order.quantity }} {{ order.listing_details?.product_unit }}
+                    </p>
+                    <p class="text-xs text-gray-500">
+                      @ KES {{ formatCurrency(order.price_at_purchase) }}
+                    </p>
+                  </div>
+
+                  <!-- Amount -->
+                  <div class="col-span-1">
+                    <p class="text-sm font-medium text-gray-900">
+                      KES {{ formatCurrency(order.total_price) }}
+                    </p>
+                  </div>
+
+                  <!-- Payment Status -->
+                  <div class="col-span-2">
+                    <span :class="getPaymentStatusBadgeClass(order.order_details?.payment_status)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                      {{ getPaymentStatusDisplayName(order.order_details?.payment_status) }}
+                    </span>
+                    <p class="text-xs text-gray-500 mt-1">
+                      {{ getPaymentMethodDisplayName(order.order_details?.payment_method?.payment_type) }}
+                    </p>
+                  </div>
+
+                  <!-- Item Status -->
+                  <div class="col-span-2">
+                    <span :class="getItemStatusBadgeClass(order.item_status)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                      {{ getItemStatusDisplayName(order.item_status) }}
+                    </span>
+                    <p class="text-xs text-gray-500 mt-1">
+                      Updated {{ formatRelativeTime(order.updated_at) }}
+                    </p>
+                  </div>
+
+                  <!-- Actions -->
+                  <div class="col-span-1">
+                    <div class="flex items-center space-x-2">
+                      <button
+                        v-if="canAdvanceStatus(order)"
+                        @click="updateOrderStatus(order)"
+                        :disabled="updatingStatus === order.order_item_id || !canUpdateStatus(order)"
+                        :title="getStatusUpdateTooltip(order)"
+                        :class="[
+                          'inline-flex items-center p-2 border border-transparent rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500',
+                          canUpdateStatus(order) 
+                            ? 'text-white bg-green-600 hover:bg-green-700' 
+                            : 'text-gray-400 bg-gray-300 cursor-not-allowed'
+                        ]"
+                      >
+                        <ArrowRightIcon v-if="updatingStatus !== order.order_item_id" class="h-4 w-4" />
+                        <div v-else class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      </button>
+                      
+                      <button
+                        @click="viewOrderDetails(order)"
+                        class="inline-flex items-center p-2 border border-gray-300 rounded-full shadow-sm text-gray-400 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                      >
+                        <EyeIcon class="h-4 w-4" />
+                      </button>
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
 
-                <!-- Order Info -->
-                <div class="col-span-2">
-                  <p class="text-sm font-medium text-gray-900">
-                    #{{ order.order_details?.order_number }}
+          <!-- Mobile Card View -->
+          <div class="lg:hidden space-y-4">
+            <div
+              v-for="order in orders"
+              :key="order.order_item_id"
+              class="bg-white rounded-lg shadow p-4"
+            >
+              <!-- Product Info -->
+              <div class="flex items-start space-x-3 mb-4">
+                <img 
+                  :src="order.listing_details?.photos?.[0] || '/api/placeholder/48/48'"
+                  :alt="order.listing_details?.product_name"
+                  class="h-12 w-12 rounded-lg object-cover flex-shrink-0"
+                />
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-gray-900 truncate">
+                    {{ order.listing_details?.product_name }}
                   </p>
                   <p class="text-xs text-gray-500">
-                    {{ formatDate(order.created_at) }}
+                    {{ order.listing_details?.farm_name }}
+                  </p>
+                  <p class="text-xs text-gray-500 mt-1">
+                    Order #{{ order.order_details?.order_number }}
                   </p>
                 </div>
+              </div>
 
-                <!-- Quantity -->
-                <div class="col-span-1">
-                  <p class="text-sm text-gray-900">
+              <!-- Order Details Grid -->
+              <div class="grid grid-cols-2 gap-4 mb-4">
+                <!-- Quantity & Price -->
+                <div>
+                  <p class="text-xs text-gray-500">Quantity</p>
+                  <p class="text-sm font-medium text-gray-900">
                     {{ order.quantity }} {{ order.listing_details?.product_unit }}
                   </p>
                   <p class="text-xs text-gray-500">
@@ -203,159 +303,61 @@
                   </p>
                 </div>
 
-                <!-- Amount -->
-                <div class="col-span-1">
-                  <p class="text-sm font-medium text-gray-900">
+                <!-- Total Amount -->
+                <div>
+                  <p class="text-xs text-gray-500">Total</p>
+                  <p class="text-sm font-semibold text-gray-900">
                     KES {{ formatCurrency(order.total_price) }}
                   </p>
-                </div>
-
-                <!-- Payment Status -->
-                <div class="col-span-2">
-                  <span :class="getPaymentStatusBadgeClass(order.order_details?.payment_status)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
-                    {{ getPaymentStatusDisplayName(order.order_details?.payment_status) }}
-                  </span>
-                  <p class="text-xs text-gray-500 mt-1">
-                    {{ getPaymentMethodDisplayName(order.order_details?.payment_method?.payment_type) }}
+                  <p class="text-xs text-gray-500">
+                    {{ formatDate(order.created_at) }}
                   </p>
                 </div>
-
-                <!-- Item Status -->
-                <div class="col-span-2">
-                  <span :class="getItemStatusBadgeClass(order.item_status)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
-                    {{ getItemStatusDisplayName(order.item_status) }}
-                  </span>
-                  <p class="text-xs text-gray-500 mt-1">
-                    Updated {{ formatRelativeTime(order.updated_at) }}
-                  </p>
-                </div>
-
-                <!-- Actions -->
-                <div class="col-span-1">
-                  <div class="flex items-center space-x-2">
-                    <button
-                      v-if="canAdvanceStatus(order)"
-                      @click="updateOrderStatus(order)"
-                      :disabled="updatingStatus === order.order_item_id || !canUpdateStatus(order)"
-                      :title="getStatusUpdateTooltip(order)"
-                      :class="[
-                        'inline-flex items-center p-2 border border-transparent rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500',
-                        canUpdateStatus(order) 
-                          ? 'text-white bg-green-600 hover:bg-green-700' 
-                          : 'text-gray-400 bg-gray-300 cursor-not-allowed'
-                      ]"
-                    >
-                      <ArrowRightIcon v-if="updatingStatus !== order.order_item_id" class="h-4 w-4" />
-                      <div v-else class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    </button>
-                    
-                    <button
-                      @click="viewOrderDetails(order)"
-                      class="inline-flex items-center p-2 border border-gray-300 rounded-full shadow-sm text-gray-400 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                    >
-                      <EyeIcon class="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Mobile Card View -->
-        <div v-else class="lg:hidden space-y-4">
-          <div
-            v-for="order in orders"
-            :key="order.order_item_id"
-            class="bg-white rounded-lg shadow p-4"
-          >
-            <!-- Product Info -->
-            <div class="flex items-start space-x-3 mb-4">
-              <img 
-                :src="order.listing_details?.photos?.[0] || '/api/placeholder/48/48'"
-                :alt="order.listing_details?.product_name"
-                class="h-12 w-12 rounded-lg object-cover flex-shrink-0"
-              />
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-gray-900 truncate">
-                  {{ order.listing_details?.product_name }}
-                </p>
-                <p class="text-xs text-gray-500">
-                  {{ order.listing_details?.farm_name }}
-                </p>
-                <p class="text-xs text-gray-500 mt-1">
-                  Order #{{ order.order_details?.order_number }}
-                </p>
-              </div>
-            </div>
-
-            <!-- Order Details Grid -->
-            <div class="grid grid-cols-2 gap-4 mb-4">
-              <!-- Quantity & Price -->
-              <div>
-                <p class="text-xs text-gray-500">Quantity</p>
-                <p class="text-sm font-medium text-gray-900">
-                  {{ order.quantity }} {{ order.listing_details?.product_unit }}
-                </p>
-                <p class="text-xs text-gray-500">
-                  @ KES {{ formatCurrency(order.price_at_purchase) }}
-                </p>
               </div>
 
-              <!-- Total Amount -->
-              <div>
-                <p class="text-xs text-gray-500">Total</p>
-                <p class="text-sm font-semibold text-gray-900">
-                  KES {{ formatCurrency(order.total_price) }}
-                </p>
-                <p class="text-xs text-gray-500">
-                  {{ formatDate(order.created_at) }}
-                </p>
+              <!-- Status Badges -->
+              <div class="flex flex-wrap gap-2 mb-4">
+                <span :class="getItemStatusBadgeClass(order.item_status)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                  {{ getItemStatusDisplayName(order.item_status) }}
+                </span>
+                <span :class="getPaymentStatusBadgeClass(order.order_details?.payment_status)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                  {{ getPaymentStatusDisplayName(order.order_details?.payment_status) }}
+                </span>
               </div>
-            </div>
 
-            <!-- Status Badges -->
-            <div class="flex flex-wrap gap-2 mb-4">
-              <span :class="getItemStatusBadgeClass(order.item_status)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
-                {{ getItemStatusDisplayName(order.item_status) }}
-              </span>
-              <span :class="getPaymentStatusBadgeClass(order.order_details?.payment_status)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
-                {{ getPaymentStatusDisplayName(order.order_details?.payment_status) }}
-              </span>
-            </div>
+              <!-- Payment Method -->
+              <div class="text-xs text-gray-500 mb-4">
+                <span>{{ getPaymentMethodDisplayName(order.order_details?.payment_method?.payment_type) }}</span>
+                <span class="mx-2">•</span>
+                <span>Updated {{ formatRelativeTime(order.updated_at) }}</span>
+              </div>
 
-            <!-- Payment Method -->
-            <div class="text-xs text-gray-500 mb-4">
-              <span>{{ getPaymentMethodDisplayName(order.order_details?.payment_method?.payment_type) }}</span>
-              <span class="mx-2">•</span>
-              <span>Updated {{ formatRelativeTime(order.updated_at) }}</span>
-            </div>
-
-            <!-- Actions -->
-            <div class="flex space-x-3">
-              <button
-                v-if="canAdvanceStatus(order)"
-                @click="updateOrderStatus(order)"
-                :disabled="updatingStatus === order.order_item_id || !canUpdateStatus(order)"
-                :class="[
-                  'flex-1 inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500',
-                  canUpdateStatus(order) 
-                    ? 'text-white bg-green-600 hover:bg-green-700' 
-                    : 'text-gray-400 bg-gray-300 cursor-not-allowed'
-                ]"
-              >
-                <ArrowRightIcon v-if="updatingStatus !== order.order_item_id" class="h-4 w-4 mr-2" />
-                <div v-else class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                {{ getNextStatusButtonText(order.item_status) }}
-              </button>
-              
-              <button
-                @click="viewOrderDetails(order)"
-                class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-              >
-                <EyeIcon class="h-4 w-4 mr-2" />
-                View
-              </button>
+              <!-- Actions -->
+              <div class="flex space-x-3">
+                <button
+                  v-if="canAdvanceStatus(order)"
+                  @click="updateOrderStatus(order)"
+                  :disabled="updatingStatus === order.order_item_id || !canUpdateStatus(order)"
+                  :class="[
+                    'flex-1 inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500',
+                    canUpdateStatus(order) 
+                      ? 'text-white bg-green-600 hover:bg-green-700' 
+                      : 'text-gray-400 bg-gray-300 cursor-not-allowed'
+                  ]"
+                >
+                  <ArrowRightIcon v-if="updatingStatus !== order.order_item_id" class="h-4 w-4 mr-2" />
+                  <div v-else class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  {{ getNextStatusButtonText(order.item_status) }}
+                </button>
+                
+                <button
+                  @click="viewOrderDetails(order)"
+                  class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                >
+                  <EyeIcon class="h-4 w-4 mr-2" />
+                  View
+                </button>
+              </div>
             </div>
           </div>
         </div>

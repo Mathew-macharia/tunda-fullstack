@@ -94,7 +94,8 @@
         <div 
           v-for="delivery in deliveries" 
           :key="delivery.delivery_id"
-          class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200"
+          :class="getDeliveryCardClass(delivery.delivery_status)"
+          class="bg-white rounded-lg shadow-sm border overflow-hidden hover:shadow-md transition-shadow duration-200"
         >
           <div class="p-4 sm:p-6">
             <!-- Delivery Header -->
@@ -371,7 +372,8 @@ const loadDeliveries = async (reset = true) => {
   try {
     const params = {
       page: currentPage.value,
-      page_size: 10
+      page_size: 10,
+      ordering: '-created_at'
     }
     
     if (statusFilter.value) {
@@ -498,6 +500,13 @@ const getStatusBadgeClass = (status) => {
   }
   return classes[status] || 'bg-gray-100 text-gray-800'
 }
+
+const getDeliveryCardClass = (status) => {
+  if (status === 'delivered' || status === 'failed') {
+    return 'border-gray-200 border-2';
+  }
+  return 'border-green-500 border-2';
+};
 
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString('en-US', {

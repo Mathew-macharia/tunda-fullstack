@@ -372,15 +372,9 @@ def track_order_status_changes(sender, instance, **kwargs):
             old_instance = sender.objects.get(pk=instance.pk)
             instance._original_order_status = old_instance.order_status
             
-            # If order status changes to 'confirmed', create a Delivery record
-            if old_instance.order_status != 'confirmed' and instance.order_status == 'confirmed':
-                try:
-                    from delivery.models import Delivery
-                    if not Delivery.objects.filter(order=instance).exists():
-                        Delivery.objects.create(order=instance, rider=instance.rider)
-                        print(f"DEBUG: Delivery record created for Order {instance.order_id}")
-                except ImportError:
-                    print("DEBUG: Delivery app not available, skipping Delivery record creation.")
+            # The Delivery record is now created by PaymentSession.create_order_from_session
+            # or by an admin. This signal no longer creates it.
+            pass 
         except sender.DoesNotExist:
             instance._original_order_status = None # New order
     else:

@@ -1,6 +1,6 @@
 <template>
-  <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+  <div v-if="isOpen" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+    <div class="relative mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
       <div class="mt-3 text-center">
         <!-- Icon -->
         <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
@@ -22,7 +22,7 @@
         <!-- Buttons -->
         <div class="flex justify-center space-x-3 px-4 py-3">
           <button
-            @click="$emit('cancel')"
+            @click="$emit('close')"
             class="px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             Cancel
@@ -40,10 +40,14 @@
 </template>
 
 <script setup>
-import { defineEmits } from 'vue'
+import { defineEmits, defineProps } from 'vue'
 import { ExclamationTriangleIcon } from '@heroicons/vue/24/outline'
 
 const props = defineProps({
+  isOpen: {
+    type: Boolean,
+    required: true,
+  },
   title: {
     type: String,
     default: 'Confirm Action'
@@ -58,5 +62,5 @@ const props = defineProps({
   }
 })
 
-defineEmits(['confirm', 'cancel'])
-</script> 
+defineEmits(['confirm', 'close'])
+</script>
