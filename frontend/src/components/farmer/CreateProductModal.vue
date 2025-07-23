@@ -26,7 +26,7 @@
             Category <span class="text-red-500">*</span>
           </label>
           <select
-            v-model="formData.category_id"
+            v-model="formData.category"
             required
             class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
           >
@@ -117,7 +117,7 @@ const categories = ref([])
 
 const formData = reactive({
   product_name: '',
-  category_id: '',
+  category: '', // Changed from category_id to category
   description: '',
   unit_of_measurement: '',
   is_seasonal: false
