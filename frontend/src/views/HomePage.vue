@@ -273,7 +273,7 @@ export default {
       'meat & poultry': 'meat and poultry.jpg',
       'nuts & seeds': 'nuts.png',
       'processed foods': 'ProcessedFoods.jpg',
-      'vegetables': 'vegetables.avif',
+      'vegetables': 'vegetables.webp',
       'default': 'default.jpg' // Fallback default image
     }
     
