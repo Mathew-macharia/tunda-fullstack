@@ -188,6 +188,11 @@ export const productsAPI = {
     return response.data
   },
 
+  async createProduct(productData) {
+    const response = await api.post('/products/items/', productData)
+    return response.data
+  },
+
   async getListings(params = {}) {
     const response = await api.get('/products/listings/', { params })
     return response.data
