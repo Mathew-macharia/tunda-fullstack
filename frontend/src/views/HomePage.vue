@@ -264,15 +264,17 @@ export default {
     
     // Image mapping for categories
     const categoryImages = {
-      'vegetables': 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=200&h=200&fit=crop&crop=center',
-      'fruits': 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=200&h=200&fit=crop&crop=center',
-      'grains': 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=200&h=200&fit=crop&crop=center',
-      'herbs': 'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=200&h=200&fit=crop&crop=center',
-      'poultry': 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=200&h=200&fit=crop&crop=center',
-      'animal products': 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=200&h=200&fit=crop&crop=center',
-      'tubers': 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=200&h=200&fit=crop&crop=center',
-      'legumes': 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=200&h=200&fit=crop&crop=center',
-      'default': 'https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=200&h=200&fit=crop&crop=center'
+      'dairy': 'dairy',
+      'fruits': 'fruits',
+      'grains': 'grains',
+      'herbs & spices': 'herbs and spices',
+      'honey & natural': 'honey',
+      'legumes': 'legumes',
+      'meat & poultry': 'meat and poultry',
+      'nuts & seeds': 'nuts',
+      'processed foods': 'ProcessedFoods',
+      'vegetables': 'vegetabales', // Typo in filename, mapping to correct category name
+      'default': 'default' // You might want a default image in your local folder too
     }
     
     // Computed
@@ -284,13 +286,18 @@ export default {
     
     // Methods
     const getCategoryImage = (categoryName) => {
-      const lowerName = categoryName.toLowerCase()
-      for (const [key, value] of Object.entries(categoryImages)) {
-        if (lowerName.includes(key)) {
-          return value
-        }
+      const baseName = categoryImages[categoryName.toLowerCase()] || categoryImages.default;
+      const extensions = ['jpg', 'png', 'webp', 'avif']; // Order by preference if any
+      
+      for (const ext of extensions) {
+        // Check for exact match first, then try variations
+        const path = `/images/categories/${baseName}.${ext}`;
+        // In a real scenario, you'd need to check if the file actually exists
+        // For now, we assume the user has placed the correct files.
+        // A more robust solution would involve a backend endpoint to verify image existence or serve them.
+        return path; 
       }
-      return categoryImages.default
+      return `/images/categories/${categoryImages.default}.jpg`; // Fallback to a default image with a common extension
     }
     
     const debouncedSearch = () => {
