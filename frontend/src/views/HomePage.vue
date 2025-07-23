@@ -262,19 +262,19 @@ export default {
       "Stay hydrated by eating water-rich foods like cucumbers, watermelon, and tomatoes. They help maintain healthy skin and support kidney function."
     ]
     
-    // Image mapping for categories
+    // Image mapping for categories with correct extensions
     const categoryImages = {
-      'dairy': 'dairy',
-      'fruits': 'fruits',
-      'grains': 'grains',
-      'herbs & spices': 'herbs and spices',
-      'honey & natural': 'honey',
-      'legumes': 'legumes',
-      'meat & poultry': 'meat and poultry',
-      'nuts & seeds': 'nuts',
-      'processed foods': 'ProcessedFoods',
-      'vegetables': 'vegetabales', // Typo in filename, mapping to correct category name
-      'default': 'default' // You might want a default image in your local folder too
+      'dairy': 'dairy.jpg',
+      'fruits': 'fruits.webp',
+      'grains': 'grains.jpg',
+      'herbs & spices': 'herbs and spices.png',
+      'honey & natural': 'honey.webp',
+      'legumes': 'legumes.jpg',
+      'meat & poultry': 'meat and poultry.jpg',
+      'nuts & seeds': 'nuts.png',
+      'processed foods': 'ProcessedFoods.jpg',
+      'vegetables': 'vegetables.avif',
+      'default': 'default.jpg' // Fallback default image
     }
     
     // Computed
@@ -286,18 +286,8 @@ export default {
     
     // Methods
     const getCategoryImage = (categoryName) => {
-      const baseName = categoryImages[categoryName.toLowerCase()] || categoryImages.default;
-      const extensions = ['jpg', 'png', 'webp', 'avif']; // Order by preference if any
-      
-      for (const ext of extensions) {
-        // Check for exact match first, then try variations
-        const path = `/images/categories/${baseName}.${ext}`;
-        // In a real scenario, you'd need to check if the file actually exists
-        // For now, we assume the user has placed the correct files.
-        // A more robust solution would involve a backend endpoint to verify image existence or serve them.
-        return path; 
-      }
-      return `/images/categories/${categoryImages.default}.jpg`; // Fallback to a default image with a common extension
+      const imagePath = categoryImages[categoryName.toLowerCase()] || categoryImages.default;
+      return `/images/categories/${imagePath}`;
     }
     
     const debouncedSearch = () => {
