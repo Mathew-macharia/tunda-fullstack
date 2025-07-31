@@ -196,3 +196,6 @@ CACHES = {
         }
     }
 }
+
+# CSRF trusted origins
+CSRF_TRUSTED_ORIGINS = ['https://gotunda.com', 'https://www.gotunda.com']
