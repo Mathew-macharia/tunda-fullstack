@@ -336,13 +336,54 @@ class CartViewSet(viewsets.ModelViewSet): # Changed base class to ModelViewSet
             free_threshold = SystemSettings.objects.get_setting('free_delivery_threshold', Decimal('1000.00'))
             
             # Calculate delivery fee and get distance information
-            calculation_results = Order.calculate_delivery_fee_for_cart(cart_items, temp_address)
+            delivery_fee = Order.calculate_delivery_fee_for_cart(cart_items, temp_address)
             
-            delivery_fee = calculation_results['total_fee']
-            distance_km = calculation_results['distance_km']
-            calculation_method = calculation_results['calculation_method']
-            address_used_for_calculation = calculation_results['address_used_for_calculation']
-            geocoding_confidence = calculation_results['geocoding_confidence']
+            # Try to get distance information for display
+            distance_km = None
+            calculation_method = 'fallback'
+            address_used_for_calculation = None
+            geocoding_confidence = None
+            
+            try:
+                address_service = AddressService()
+                # Convert temp_address to dictionary format expected by AddressService
+                address_dict = {
+                    'detailed_address': temp_address.detailed_address,
+                    'sub_county': temp_address.sub_county.sub_county_name,
+                    'county': temp_address.county.county_name,
+                    'latitude': temp_address.latitude,
+                    'longitude': temp_address.longitude
+                }
+                
+                # Get customer coordinates with geocoding details
+                geocoding_result = address_service.get_customer_coordinates_with_details(address_dict)
+                if isinstance(geocoding_result, dict) and 'coordinates' in geocoding_result:
+                    customer_coords = geocoding_result['coordinates']
+                    address_used_for_calculation = geocoding_result.get('address_used', 'Unknown')
+                    geocoding_confidence = geocoding_result.get('confidence', 0.0)
+                else:
+                    customer_coords = geocoding_result
+                
+                # Get all unique farms
+                farms = set(item.listing.farm for item in cart_items)
+                
+                if farms:
+                    # Calculate distance to farthest farm (matching our delivery fee logic)
+                    max_distance = 0
+                    for farm in farms:
+                        try:
+                            farm_coords = address_service.get_farm_coordinates(farm)
+                            distance = address_service.calculate_distance(customer_coords, farm_coords)
+                            max_distance = max(max_distance, distance)
+                        except Exception as e:
+                            print(f"Error calculating distance to farm {farm}: {e}")
+                    
+                    if max_distance > 0:
+                        distance_km = round(max_distance, 2)
+                        calculation_method = 'distance_based'
+                        
+            except Exception as e:
+                print(f"Error getting distance information: {e}")
             
             # Calculate subtotal
             subtotal = sum(item.quantity * item.price_at_addition for item in cart_items)

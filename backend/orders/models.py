@@ -220,16 +220,9 @@ class Order(models.Model):
         Calculate delivery fee for cart items before order creation
         Static method to estimate delivery fee during cart/checkout process
         """
-        # Initialize variables for return
-        distance_km = None
-        calculation_method = 'fallback'
-        address_used_for_calculation = None
-        geocoding_confidence = None
-
         try:
             from core.models import SystemSettings
             from decimal import Decimal
-            from core.services.address_service import AddressService
             
             # Get system settings
             base_fee = SystemSettings.objects.get_setting('base_delivery_fee', Decimal('50.00'))
@@ -244,13 +237,7 @@ class Order(models.Model):
             
             # Free delivery threshold check
             if items_total >= free_delivery_threshold:
-                return {
-                    'total_fee': Decimal('0.00'),
-                    'distance_km': None,
-                    'calculation_method': 'free_delivery',
-                    'address_used_for_calculation': None,
-                    'geocoding_confidence': None,
-                }
+                return Decimal('0.00')
             
             # Start with base fee
             total_fee = base_fee
@@ -269,103 +256,60 @@ class Order(models.Model):
             
             # Distance-based fee calculation
             distance_fee = Decimal('0.00')
-            
             if delivery_location:
                 try:
+                    from core.services.address_service import AddressService
+                    
                     address_service = AddressService()
                     
-                    # Convert temp_address to dictionary format expected by AddressService
-                    if hasattr(delivery_location, 'sub_county') and hasattr(delivery_location, 'detailed_address'):
-                        address_dict_for_service = {
-                            'detailed_address': delivery_location.detailed_address,
-                            'sub_county': delivery_location.sub_county.sub_county_name,
-                            'county': delivery_location.county.county_name,
-                            'latitude': getattr(delivery_location, 'latitude', None),
-                            'longitude': getattr(delivery_location, 'longitude', None)
-                        }
-                    elif isinstance(delivery_location, dict):
-                        address_dict_for_service = delivery_location
-                    else:
-                        # Fallback for other object types, try to extract minimal info
-                        address_dict_for_service = {
-                            'detailed_address': getattr(delivery_location, 'detailed_address', ''),
-                            'sub_county': getattr(getattr(delivery_location, 'sub_county', None), 'sub_county_name', ''),
-                            'county': getattr(getattr(delivery_location, 'county', None), 'county_name', ''),
-                            'latitude': getattr(delivery_location, 'latitude', None),
-                            'longitude': getattr(delivery_location, 'longitude', None)
-                        }
-
-                    geocoding_result = address_service.get_customer_coordinates_with_details(address_dict_for_service)
+                    # Get customer coordinates
+                    customer_coords = address_service.get_customer_coordinates(delivery_location)
                     
-                    customer_coords = geocoding_result['coordinates']
-                    address_used_for_calculation = geocoding_result.get('address_used', 'Unknown')
-                    geocoding_confidence = geocoding_result.get('confidence', 0.0)
-                    
+                    # Get all farms involved in cart
                     farms = set(item.listing.farm for item in cart_items)
                     
                     if len(farms) == 1:
+                        # Single farm delivery
                         farm = list(farms)[0]
                         farm_coords = address_service.get_farm_coordinates(farm)
-                        calculated_distance = address_service.calculate_distance(farm_coords, customer_coords)
+                        distance_km = address_service.calculate_distance(farm_coords, customer_coords)
                         
+                        # Apply distance-based fee
                         fee_per_km = SystemSettings.objects.get_setting('delivery_fee_per_km', Decimal('5.00'))
-                        distance_fee = Decimal(str(calculated_distance)) * fee_per_km
-                        distance_km = calculated_distance
-                        calculation_method = 'distance_based'
+                        distance_fee = Decimal(str(distance_km)) * fee_per_km
                         
                     else:
-                        max_distance = 0.0
+                        # Multi-farm delivery - use farthest farm + consolidation fee
+                        max_distance = Decimal('0.00')
+                        
                         for farm in farms:
                             farm_coords = address_service.get_farm_coordinates(farm)
-                            distance = address_service.calculate_distance(farm_coords, customer_coords)
-                            max_distance = max(max_distance, distance)
+                            distance_km = address_service.calculate_distance(farm_coords, customer_coords)
+                            max_distance = max(max_distance, Decimal(str(distance_km)))
                         
+                        # Base distance fee (farthest farm)
                         fee_per_km = SystemSettings.objects.get_setting('delivery_fee_per_km', Decimal('5.00'))
-                        distance_fee = Decimal(str(max_distance)) * fee_per_km
+                        distance_fee = max_distance * fee_per_km
                         
+                        # Add consolidation fee for additional farms
                         consolidation_fee = SystemSettings.objects.get_setting('multi_farm_consolidation_fee', Decimal('25.00'))
                         distance_fee += consolidation_fee * (len(farms) - 1)
                         
-                        distance_km = max_distance
-                        calculation_method = 'distance_based'
-                        
                 except Exception as e:
-                    import logging
-                    logger = logging.getLogger(__name__)
-                    logger.exception(f"Distance calculation error in calculate_delivery_fee_for_cart: {e}")
+                    print(f"Distance calculation error: {e}")
+                    # Fallback to no distance fee
                     distance_fee = Decimal('0.00')
-                    distance_km = None
-                    calculation_method = 'fallback'
-                    address_used_for_calculation = None
-                    geocoding_confidence = None
-            else: # Explicitly handle case where delivery_location is None
-                distance_km = None
-                calculation_method = 'fallback'
-                address_used_for_calculation = None
-                geocoding_confidence = None
             
             total_fee += distance_fee
             
-            return {
-                'total_fee': total_fee,
-                'distance_km': round(distance_km, 2) if distance_km is not None else None,
-                'calculation_method': calculation_method,
-                'address_used_for_calculation': address_used_for_calculation,
-                'geocoding_confidence': geocoding_confidence,
-            }
+            return total_fee
             
         except Exception as e:
             import logging
             logger = logging.getLogger(__name__)
             logger.exception("Error during delivery fee calculation in Order.calculate_delivery_fee_for_cart. Falling back to 50.00 KES.")
-            # Fallback to base fee and default calculation details
-            return {
-                'total_fee': Decimal('50.00'),
-                'distance_km': None,
-                'calculation_method': 'fallback',
-                'address_used_for_calculation': None,
-                'geocoding_confidence': None,
-            }
+            # Fallback to base fee
+            return Decimal('50.00')
 
 
 class OrderItem(models.Model):
