@@ -185,35 +185,37 @@
           <!-- Photos -->
           <div>
             <h3 class="text-lg font-medium text-gray-900 mb-4">Product Photos</h3>
-            <div class="space-y-4">
-              <div
-                @drop="handleDrop"
-                @dragover.prevent
-                @dragenter.prevent
-                class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400"
-              >
+            <div
+              @drop="handleDrop"
+              @dragover.prevent="isDragging = true"
+              @dragenter.prevent="isDragging = true"
+              @dragleave="isDragging = false"
+              @click="triggerFileInput"
+              :class="[
+                'border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors duration-200',
+                isDragging ? 'border-green-500 bg-green-50' : 'border-gray-300 hover:border-gray-400'
+              ]"
+            >
+              <input
+                ref="fileInput"
+                type="file"
+                multiple
+                accept="image/*"
+                @change="handleFileSelect"
+                class="sr-only"
+              />
+              
+              <div v-if="photoPreviewUrls.length === 0" class="flex flex-col items-center">
                 <PhotoIcon class="mx-auto h-12 w-12 text-gray-400" />
                 <div class="mt-4">
-                  <label for="photo-upload" class="cursor-pointer">
-                    <span class="mt-2 block text-sm font-medium text-gray-900">
-                      Drag and drop photos here, or
-                    </span>
-                    <span class="text-green-600 hover:text-green-500"> browse to upload</span>
-                    <input
-                      id="photo-upload"
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      @change="handleFileSelect"
-                      class="sr-only"
-                    />
-                  </label>
+                  <p class="mt-2 block text-sm font-medium text-gray-900">
+                    Drag and drop photos here, or
+                    <span class="text-green-600 hover:text-green-500">browse to upload</span>
+                  </p>
                   <p class="mt-2 text-xs text-gray-500">PNG, JPG, GIF up to 10MB each</p>
                 </div>
               </div>
-
-              <!-- Photo Previews -->
-              <div v-if="photoPreviewUrls.length > 0" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div v-else class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div
                   v-for="(url, index) in photoPreviewUrls"
                   :key="index"
@@ -226,7 +228,7 @@
                   />
                   <button
                     type="button"
-                    @click="removePhoto(index)"
+                    @click.stop="removePhoto(index)"
                     class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <XMarkIcon class="h-4 w-4" />
@@ -298,6 +300,8 @@ const products = ref([])
 const showCreateProductModal = ref(false)
 const photoFiles = ref([])
 const photoPreviewUrls = ref([])
+const isDragging = ref(false) // New state for drag-and-drop visual feedback
+const fileInput = ref(null) // Reference to the hidden file input
 
 // Form data
 const form = ref({
@@ -315,6 +319,10 @@ const form = ref({
 })
 
 // Methods
+const triggerFileInput = () => {
+  fileInput.value.click()
+}
+
 const loadFarms = async () => {
   try {
     const response = await farmsAPI.getFarms()
@@ -436,4 +444,4 @@ onMounted(async () => {
     loadProducts()
   ])
 })
-</script> 
+</script>

@@ -1,4 +1,4 @@
-#!C:\Users\mathew.macharia\OneDrive - Ashesi University\personal projects\vegas_backup\copy_24\vegas_inc\backend\.venv\Scripts\python.exe
+#!C:\Users\mathew.macharia\OneDrive - Ashesi University\personal projects\vegas_backup\copy_36\vegas_inc\backend\.venv\Scripts\python.exe
 
 import sys
 import json

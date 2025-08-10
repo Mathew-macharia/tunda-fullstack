@@ -21,3 +21,4 @@ celery
 redis
 mysqlclient
 setuptools
+googlemaps==4.4.6

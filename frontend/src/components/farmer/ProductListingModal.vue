@@ -134,13 +134,69 @@
             </div>
           </div>
 
+          <!-- Product Photos -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Product Photos</label>
+            <div
+              @drop="handleDrop"
+              @dragover.prevent="isDragging = true"
+              @dragenter.prevent="isDragging = true"
+              @dragleave="isDragging = false"
+              @click="triggerFileInput"
+              :class="[
+                'border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors duration-200',
+                isDragging ? 'border-green-500 bg-green-50' : 'border-gray-300 hover:border-gray-400'
+              ]"
+            >
+              <input
+                ref="fileInput"
+                type="file"
+                multiple
+                accept="image/*"
+                @change="handleFileSelect"
+                class="sr-only"
+              />
+              
+              <div v-if="photoPreviewUrls.length === 0" class="flex flex-col items-center">
+                <PhotoIcon class="mx-auto h-12 w-12 text-gray-400" />
+                <div class="mt-4">
+                  <p class="mt-2 block text-sm font-medium text-gray-900">
+                    Drag and drop photos here, or
+                    <span class="text-green-600 hover:text-green-500">browse to upload</span>
+                  </p>
+                  <p class="mt-2 text-xs text-gray-500">PNG, JPG, GIF up to 10MB each</p>
+                </div>
+              </div>
+              <div v-else class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div
+                  v-for="(url, index) in photoPreviewUrls"
+                  :key="index"
+                  class="relative group"
+                >
+                  <img
+                    :src="url"
+                    :alt="`Product photo ${index + 1}`"
+                    class="w-full h-24 object-cover rounded-lg"
+                  />
+                  <button
+                    type="button"
+                    @click.stop="removePhoto(index)"
+                    class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <XMarkIcon class="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Notes -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Notes (Optional)</label>
             <textarea
               v-model="formData.notes"
               rows="3"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-500"
               placeholder="Additional information about this listing..."
             ></textarea>
           </div>
@@ -199,6 +255,10 @@ const emit = defineEmits(['close', 'save'])
 const loading = ref(false)
 const error = ref(null)
 const products = ref([])
+const photoFiles = ref([])
+const photoPreviewUrls = ref([])
+const isDragging = ref(false)
+const fileInput = ref(null)
 
 const formData = ref({
   farm: '',
@@ -210,7 +270,8 @@ const formData = ref({
   expected_harvest_date: '',
   listing_status: 'available',
   is_organic_certified: false,
-  notes: ''
+  notes: '',
+  photos: []
 })
 
 // Computed
@@ -219,6 +280,10 @@ const filteredProducts = computed(() => {
 })
 
 // Methods
+const triggerFileInput = () => {
+  fileInput.value.click()
+}
+
 const loadProducts = async () => {
   try {
     const response = await productsAPI.getProducts()
@@ -240,9 +305,68 @@ const initializeForm = () => {
       expected_harvest_date: props.listing.expected_harvest_date || '',
       listing_status: props.listing.listing_status || 'available',
       is_organic_certified: props.listing.is_organic_certified || false,
-      notes: props.listing.notes || ''
+      notes: props.listing.notes || '',
+      photos: props.listing.photos || []
+    }
+    // Populate photoPreviewUrls with existing photos
+    photoPreviewUrls.value = [...(props.listing.photos || [])]
+    photoFiles.value = [] // Clear photoFiles as these are existing URLs, not new files
+  }
+}
+
+const handleFileSelect = (event) => {
+  const files = Array.from(event.target.files)
+  processFiles(files)
+}
+
+const handleDrop = (event) => {
+  event.preventDefault()
+  isDragging.value = false
+  const files = Array.from(event.dataTransfer.files)
+  processFiles(files)
+}
+
+const processFiles = (files) => {
+  files.forEach(file => {
+    if (file.type.startsWith('image/')) {
+      photoFiles.value.push(file)
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        photoPreviewUrls.value.push(e.target.result)
+      }
+      reader.readAsDataURL(file)
+    }
+  })
+}
+
+const removePhoto = (index) => {
+  // If removing an existing photo (from URL), remove it from formData.photos
+  if (index < (formData.value.photos?.length || 0)) {
+    formData.value.photos.splice(index, 1)
+  } else {
+    // If removing a newly added photo (from file), adjust index for photoFiles
+    const fileIndex = index - (formData.value.photos?.length || 0)
+    if (fileIndex >= 0 && fileIndex < photoFiles.value.length) {
+      photoFiles.value.splice(fileIndex, 1)
     }
   }
+  photoPreviewUrls.value.splice(index, 1)
+}
+
+const uploadPhotos = async () => {
+  const uploadedUrls = []
+  for (const file of photoFiles.value) {
+    const formDataForUpload = new FormData()
+    formDataForUpload.append('photo', file)
+    try {
+      const response = await productsAPI.uploadPhoto(formDataForUpload)
+      uploadedUrls.push(response.url)
+    } catch (err) {
+      console.error('Error uploading photo:', err)
+      // Handle error for individual photo upload
+    }
+  }
+  return uploadedUrls
 }
 
 const handleSubmit = async () => {
@@ -250,6 +374,12 @@ const handleSubmit = async () => {
   loading.value = true
   
   try {
+    // Upload new photos
+    const newPhotoUrls = await uploadPhotos()
+    
+    // Combine existing photos (that weren't removed) with newly uploaded photos
+    const finalPhotos = [...(formData.value.photos || []), ...newPhotoUrls]
+
     const listingData = {
       farm: formData.value.farm,
       product: formData.value.product,
@@ -258,7 +388,8 @@ const handleSubmit = async () => {
       quality_grade: formData.value.quality_grade,
       listing_status: formData.value.listing_status,
       is_organic_certified: formData.value.is_organic_certified,
-      notes: formData.value.notes
+      notes: formData.value.notes,
+      photos: finalPhotos // Send the combined list of photos
     }
     
     // Only include dates if they have values
@@ -281,4 +412,4 @@ onMounted(async () => {
   await loadProducts()
   initializeForm()
 })
-</script> 
+</script>

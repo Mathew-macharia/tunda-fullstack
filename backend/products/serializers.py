@@ -150,35 +150,47 @@ class ProductListingSerializer(serializers.ModelSerializer):
     
     def validate(self, data):
         """Validate the data"""
-        # Ensure quantity_available is positive
-        if data.get('quantity_available', 0) <= 0:
-            raise serializers.ValidationError({"quantity_available": "Quantity available must be positive."})
+        # Get the instance being updated, if any
+        instance = self.instance
+        
+        # Determine the effective listing_status for validation
+        # If listing_status is provided in data, use it. Otherwise, use the instance's current status.
+        effective_listing_status = data.get('listing_status', instance.listing_status if instance else None)
+
+        # Ensure quantity_available is positive only if status is 'available' or 'pre_order'
+        # If quantity_available is not provided in data, use the instance's current value.
+        current_quantity_available = data.get('quantity_available', instance.quantity_available if instance else 0)
+
+        if effective_listing_status in ['available', 'pre_order'] and current_quantity_available <= 0:
+            raise serializers.ValidationError({"quantity_available": "Quantity available must be positive for active listings."})
         
         # Ensure min_order_quantity is positive and not greater than quantity_available
-        min_order = data.get('min_order_quantity', 1)
+        min_order = data.get('min_order_quantity', instance.min_order_quantity if instance else 1)
         if min_order <= 0:
             raise serializers.ValidationError({"min_order_quantity": "Minimum order quantity must be positive."})
         
-        if min_order > data.get('quantity_available', 0):
-            raise serializers.ValidationError({"min_order_quantity": "Minimum order quantity cannot exceed quantity available."})
+        # Only validate min_order_quantity against quantity_available if quantity_available is provided or exists
+        if 'quantity_available' in data or instance:
+            if min_order > current_quantity_available:
+                raise serializers.ValidationError({"min_order_quantity": "Minimum order quantity cannot exceed quantity available."})
         
         # Ensure current_price is positive
-        if data.get('current_price', 0) <= 0:
+        if data.get('current_price', instance.current_price if instance else 0) <= 0:
             raise serializers.ValidationError({"current_price": "Price must be positive."})
         
         # Validate dates
-        harvest_date = data.get('harvest_date')
-        expected_harvest_date = data.get('expected_harvest_date')
+        harvest_date = data.get('harvest_date', instance.harvest_date if instance else None)
+        expected_harvest_date = data.get('expected_harvest_date', instance.expected_harvest_date if instance else None)
         
         if harvest_date and expected_harvest_date and harvest_date != expected_harvest_date:
             raise serializers.ValidationError({"harvest_date": "Cannot specify both actual and expected harvest dates with different values."})
         
         # If listing status is pre_order, expected_harvest_date is required
-        if data.get('listing_status') == 'pre_order' and not expected_harvest_date:
+        if effective_listing_status == 'pre_order' and not expected_harvest_date:
             raise serializers.ValidationError({"expected_harvest_date": "Expected harvest date is required for pre-order listings."})
         
         # If listing status is available and no harvest_date, set it to today
-        if data.get('listing_status') == 'available' and not harvest_date and not expected_harvest_date:
+        if effective_listing_status == 'available' and not harvest_date and not expected_harvest_date:
             data['harvest_date'] = timezone.now().date()
         
         return data
@@ -187,3 +199,12 @@ class ProductListingSerializer(serializers.ModelSerializer):
         # Set the farmer to the current user
         validated_data['farmer'] = self.context['request'].user
         return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        # Handle photos field separately as it's a JSONField storing a list of URLs
+        photos_data = validated_data.pop('photos', None)
+        if photos_data is not None:
+            instance.photos = photos_data # Update the photos list directly
+
+        # Call the super method to handle other fields
+        return super().update(instance, validated_data)

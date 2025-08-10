@@ -131,157 +131,159 @@
         </div>
       </div>
 
-      <!-- Mobile: List View for smaller screens -->
-      <div v-else-if="listings.length > 0" class="block sm:hidden space-y-4">
-        <div
-          v-for="listing in listings"
-          :key="listing.listing_id"
-          class="bg-white overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow duration-200"
-        >
-          <div class="flex">
-            <!-- Image -->
-            <div class="relative w-24 h-24 flex-shrink-0">
+      <div v-else-if="listings.length > 0">
+        <!-- Mobile: List View for smaller screens -->
+        <div class="block sm:hidden space-y-4">
+          <div
+            v-for="listing in listings"
+            :key="listing.listing_id"
+            class="bg-white overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow duration-200"
+          >
+            <div class="flex">
+              <!-- Image -->
+              <div class="relative w-24 h-24 flex-shrink-0">
+                <img
+                  :src="listing.photos?.[0] || '/api/placeholder/96/96'"
+                  :alt="listing.product_name"
+                  class="w-full h-full object-cover rounded-l-lg"
+                />
+                <div class="absolute -top-1 -right-1">
+                  <span :class="getStatusClass(listing.listing_status)" class="px-1.5 py-0.5 rounded-full text-xs font-medium">
+                    {{ formatStatus(listing.listing_status) }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Content -->
+              <div class="flex-1 p-4 min-w-0">
+                <div class="flex justify-between items-start mb-2">
+                  <h3 class="text-base font-medium text-gray-900 truncate pr-2">{{ listing.product_name }}</h3>
+                  <p class="text-base font-semibold text-gray-900 flex-shrink-0">
+                    KES {{ formatCurrency(listing.current_price) }}
+                  </p>
+                </div>
+
+                <div class="space-y-1 mb-3">
+                  <div class="flex items-center text-xs text-gray-600">
+                    <HomeIcon class="h-3 w-3 mr-1 text-gray-400 flex-shrink-0" />
+                    <span class="truncate">{{ listing.farm_name }}</span>
+                  </div>
+                  <div class="flex items-center justify-between text-xs text-gray-600">
+                    <div class="flex items-center min-w-0">
+                      <TagIcon class="h-3 w-3 mr-1 text-gray-400 flex-shrink-0" />
+                      <span class="truncate">{{ listing.product?.category_name || 'Uncategorized' }}</span>
+                    </div>
+                    <span class="flex-shrink-0 ml-2">{{ listing.quantity_available }} {{ listing.product_unit }}</span>
+                  </div>
+                </div>
+
+                <!-- Mobile Actions -->
+                <div class="flex flex-wrap space-x-2">
+                  <button
+                    @click="editListing(listing)"
+                    class="flex-1 bg-white border border-gray-300 rounded-md px-2 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-green-500"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    @click="toggleStatus(listing)"
+                    :class="listing.listing_status === 'inactive' ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-600 hover:bg-gray-700 text-white'"
+                    class="flex-1 border border-transparent rounded-md px-2 py-1.5 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-offset-1"
+                  >
+                    {{ listing.listing_status === 'inactive' ? 'Activate' : 'Deactivate' }}
+                  </button>
+                  <button
+                    @click="deleteListing(listing)"
+                    class="px-2 py-1.5 border border-red-300 rounded-md text-xs font-medium text-red-700 hover:bg-red-50 focus:outline-none focus:ring-1 focus:ring-red-500"
+                  >
+                    <TrashIcon class="h-3 w-3" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Desktop: Grid View for larger screens -->
+        <div class="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div
+            v-for="listing in listings"
+            :key="listing.listing_id"
+            class="bg-white overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow duration-200"
+          >
+            <div class="relative">
               <img
-                :src="listing.photos?.[0] || '/api/placeholder/96/96'"
+                :src="listing.photos?.[0] || '/api/placeholder/300/200'"
                 :alt="listing.product_name"
-                class="w-full h-full object-cover rounded-l-lg"
+                class="w-full h-48 object-cover"
               />
-              <div class="absolute -top-1 -right-1">
-                <span :class="getStatusClass(listing.listing_status)" class="px-1.5 py-0.5 rounded-full text-xs font-medium">
+              <div class="absolute top-2 right-2">
+                <span :class="getStatusClass(listing.listing_status)" class="px-2 py-1 rounded-full text-xs font-medium">
                   {{ formatStatus(listing.listing_status) }}
                 </span>
               </div>
             </div>
 
-            <!-- Content -->
-            <div class="flex-1 p-4 min-w-0">
-              <div class="flex justify-between items-start mb-2">
-                <h3 class="text-base font-medium text-gray-900 truncate pr-2">{{ listing.product_name }}</h3>
-                <p class="text-base font-semibold text-gray-900 flex-shrink-0">
-                  KES {{ formatCurrency(listing.current_price) }}
-                </p>
+            <div class="p-6">
+              <!-- Product Info -->
+              <div class="mb-4">
+                <h3 class="text-lg font-medium text-gray-900 mb-2">{{ listing.product_name }}</h3>
+                <p class="text-sm text-gray-600 line-clamp-2">{{ listing.notes || 'No description available' }}</p>
               </div>
 
-              <div class="space-y-1 mb-3">
-                <div class="flex items-center text-xs text-gray-600">
-                  <HomeIcon class="h-3 w-3 mr-1 text-gray-400 flex-shrink-0" />
-                  <span class="truncate">{{ listing.farm_name }}</span>
+              <!-- Farm and Category -->
+              <div class="mb-4 space-y-1">
+                <div class="flex items-center text-sm text-gray-600">
+                  <HomeIcon class="h-4 w-4 mr-2 text-gray-400" />
+                  <span>{{ listing.farm_name }}</span>
                 </div>
-                <div class="flex items-center justify-between text-xs text-gray-600">
-                  <div class="flex items-center min-w-0">
-                    <TagIcon class="h-3 w-3 mr-1 text-gray-400 flex-shrink-0" />
-                    <span class="truncate">{{ listing.product?.category_name || 'Uncategorized' }}</span>
+                <div class="flex items-center text-sm text-gray-600">
+                  <TagIcon class="h-4 w-4 mr-2 text-gray-400" />
+                  <span>{{ listing.product?.category_name || 'Uncategorized' }}</span>
+                </div>
+              </div>
+
+              <!-- Pricing and Quantity -->
+              <div class="mb-4">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-lg font-semibold text-gray-900">
+                      KES {{ formatCurrency(listing.current_price) }}
+                      <span class="text-sm font-normal text-gray-600">/ {{ listing.product_unit }}</span>
+                    </p>
+                    <p class="text-sm text-gray-600">
+                      {{ listing.quantity_available }} {{ listing.product_unit }} available
+                    </p>
                   </div>
-                  <span class="flex-shrink-0 ml-2">{{ listing.quantity_available }} {{ listing.product_unit }}</span>
+                  <div class="text-right">
+                    <p class="text-sm text-gray-600">Quality: {{ formatQuality(listing.quality_grade) }}</p>
+                  </div>
                 </div>
               </div>
 
-              <!-- Mobile Actions -->
+              <!-- Actions -->
               <div class="flex space-x-2">
                 <button
                   @click="editListing(listing)"
-                  class="flex-1 bg-white border border-gray-300 rounded-md px-2 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-green-500"
+                  class="flex-1 bg-white border border-gray-300 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500"
                 >
+                  <PencilIcon class="h-4 w-4 inline mr-1" />
                   Edit
                 </button>
                 <button
                   @click="toggleStatus(listing)"
                   :class="listing.listing_status === 'inactive' ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-600 hover:bg-gray-700 text-white'"
-                  class="flex-1 border border-transparent rounded-md px-2 py-1.5 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-offset-1"
+                  class="flex-1 border border-transparent rounded-md px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2"
                 >
                   {{ listing.listing_status === 'inactive' ? 'Activate' : 'Deactivate' }}
                 </button>
                 <button
                   @click="deleteListing(listing)"
-                  class="px-2 py-1.5 border border-red-300 rounded-md text-xs font-medium text-red-700 hover:bg-red-50 focus:outline-none focus:ring-1 focus:ring-red-500"
+                  class="px-3 py-2 border border-red-300 rounded-md text-sm font-medium text-red-700 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500"
                 >
-                  <TrashIcon class="h-3 w-3" />
+                  <TrashIcon class="h-4 w-4" />
                 </button>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Desktop: Grid View for larger screens -->
-      <div v-else-if="listings.length > 0" class="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div
-          v-for="listing in listings"
-          :key="listing.listing_id"
-          class="bg-white overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow duration-200"
-        >
-          <div class="relative">
-            <img
-              :src="listing.photos?.[0] || '/api/placeholder/300/200'"
-              :alt="listing.product_name"
-              class="w-full h-48 object-cover"
-            />
-            <div class="absolute top-2 right-2">
-              <span :class="getStatusClass(listing.listing_status)" class="px-2 py-1 rounded-full text-xs font-medium">
-                {{ formatStatus(listing.listing_status) }}
-              </span>
-            </div>
-          </div>
-
-          <div class="p-6">
-            <!-- Product Info -->
-            <div class="mb-4">
-              <h3 class="text-lg font-medium text-gray-900 mb-2">{{ listing.product_name }}</h3>
-              <p class="text-sm text-gray-600 line-clamp-2">{{ listing.notes || 'No description available' }}</p>
-            </div>
-
-            <!-- Farm and Category -->
-            <div class="mb-4 space-y-1">
-              <div class="flex items-center text-sm text-gray-600">
-                <HomeIcon class="h-4 w-4 mr-2 text-gray-400" />
-                <span>{{ listing.farm_name }}</span>
-              </div>
-              <div class="flex items-center text-sm text-gray-600">
-                <TagIcon class="h-4 w-4 mr-2 text-gray-400" />
-                <span>{{ listing.product?.category_name || 'Uncategorized' }}</span>
-              </div>
-            </div>
-
-            <!-- Pricing and Quantity -->
-            <div class="mb-4">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-lg font-semibold text-gray-900">
-                    KES {{ formatCurrency(listing.current_price) }}
-                    <span class="text-sm font-normal text-gray-600">/ {{ listing.product_unit }}</span>
-                  </p>
-                  <p class="text-sm text-gray-600">
-                    {{ listing.quantity_available }} {{ listing.product_unit }} available
-                  </p>
-                </div>
-                <div class="text-right">
-                  <p class="text-sm text-gray-600">Quality: {{ formatQuality(listing.quality_grade) }}</p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Actions -->
-            <div class="flex space-x-2">
-              <button
-                @click="editListing(listing)"
-                class="flex-1 bg-white border border-gray-300 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500"
-              >
-                <PencilIcon class="h-4 w-4 inline mr-1" />
-                Edit
-              </button>
-              <button
-                @click="toggleStatus(listing)"
-                :class="listing.listing_status === 'inactive' ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-600 hover:bg-gray-700 text-white'"
-                class="flex-1 border border-transparent rounded-md px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2"
-              >
-                {{ listing.listing_status === 'inactive' ? 'Activate' : 'Deactivate' }}
-              </button>
-              <button
-                @click="deleteListing(listing)"
-                class="px-3 py-2 border border-red-300 rounded-md text-sm font-medium text-red-700 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500"
-              >
-                <TrashIcon class="h-4 w-4" />
-              </button>
             </div>
           </div>
         </div>
@@ -357,11 +359,11 @@
 
     <!-- Delete Confirmation -->
     <ConfirmModal
-      v-if="showDeleteModal"
+      :isOpen="showDeleteModal"
       title="Delete Product Listing"
       message="Are you sure you want to delete this product listing? This action cannot be undone."
       @confirm="confirmDelete"
-      @cancel="showDeleteModal = false"
+      @close="showDeleteModal = false"
     />
   </div>
 </template>

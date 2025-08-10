@@ -1,8 +1,14 @@
 import os
 from celery import Celery
+from dotenv import load_dotenv # Import load_dotenv
+
+# Load environment variables from .env file for local development
+load_dotenv()
 
 # Set the default Django settings module for the 'celery' program.
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tunda.settings')
+# Determine which settings file to use
+settings_module = os.environ.get('DJANGO_ENV', 'production') # Default to 'production' for Celery
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', f'tunda.settings.{settings_module}')
 
 app = Celery('tunda')
 

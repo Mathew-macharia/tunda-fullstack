@@ -35,6 +35,11 @@ class Migration(migrations.Migration):
                 'ordering': ['-created_at'],
             },
         ),
+        migrations.AddField(
+            model_name='paymenttransaction',
+            name='payment_session',
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='transactions', to='payments.paymentsession'),
+        ),
         migrations.AddIndex(
             model_name='paymenttransaction',
             index=models.Index(fields=['payment_session'], name='Payment_Tra_payment_05aa3e_idx'),
@@ -48,11 +53,6 @@ class Migration(migrations.Migration):
             model_name='paymentsession',
             name='user',
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='payment_sessions', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AddField(
-            model_name='paymenttransaction',
-            name='payment_session',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='transactions', to='payments.paymentsession'),
         ),
         migrations.AddIndex(
             model_name='paymentsession',

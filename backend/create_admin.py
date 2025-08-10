@@ -20,7 +20,7 @@ import django
 from django.core.management import execute_from_command_line
 
 # Setup Django environment
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tunda.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tunda.settings.base')
 django.setup()
 
 from django.contrib.auth import get_user_model
@@ -137,4 +137,4 @@ def main():
         print("\n" + "-"*50)
 
 if __name__ == '__main__':
-    main() 
+    main()

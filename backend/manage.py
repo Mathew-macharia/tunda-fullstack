@@ -2,11 +2,20 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
+from dotenv import load_dotenv # Import load_dotenv
 
 
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tunda.settings')
+    # Load environment variables from .env file for local development
+    # This should be done before setting DJANGO_SETTINGS_MODULE
+    load_dotenv()
+
+    # Determine which settings file to use
+    # Default to 'local' if DJANGO_ENV is not set
+    settings_module = os.environ.get('DJANGO_ENV', 'local')
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', f'tunda.settings.{settings_module}')
+
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
