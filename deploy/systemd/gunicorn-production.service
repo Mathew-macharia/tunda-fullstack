@@ -1,0 +1,30 @@
+[Unit]
+Description=gunicorn daemon
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/gotunda/backend
+ExecStart=/var/www/gotunda/backend/venv/bin/python /var/www/gotunda/backend/venv/bin/gunicorn \
+          --access-logfile - \
+          --workers 3 \
+          --bind unix:/var/www/gotunda/backend/gotunda.sock \
+          tunda.wsgi:application
+Environment="DJANGO_SETTINGS_MODULE=tunda.settings.production"
+          "DJANGO_ENV=production" \
+          "SECRET_KEY=3^pxo#ta1pqe#z-^yv*1r-l^f66n5+l_3fyhed@nty1or#7(!z" \
+          "DEBUG=False" \
+          "DB_NAME=gotunda_db" \
+          "DB_USER=gotunda_user" \
+          "DB_PASSWORD=Samuelngige@254!" \
+          "DB_HOST=localhost" \
+          "DB_PORT=3306" \
+          "GOOGLE_MAPS_API_KEY=AIzaSyDx4wFdtNac5cIShkEc_8jTzbbg5Q-rPrs" \
+          "CORS_ALLOWED_ORIGINS=https://www.gotunda.com,https://gotunda.com" \
+          "ALLOWED_HOSTS=gotunda.com,www.gotunda.com"
+Environment="PATH=/var/www/gotunda/backend/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
