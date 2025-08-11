@@ -10,14 +10,16 @@ https://docs.djangoproject.com/en/5.1/howto/deployment/wsgi/
 import os
 from dotenv import load_dotenv # Import load_dotenv
 
-# Load environment variables from .env file (for local testing with WSGI server)
+# Determine which settings file to use *before* potentially loading .env
+settings_module = os.environ.get('DJANGO_ENV', 'production') # Default to 'production' for WSGI
+
+# Load environment variables from .env file only if not in production
 # In production, environment variables should be set directly by the server (e.g., Gunicorn, uWSGI)
-load_dotenv()
+if settings_module != 'production':
+    load_dotenv()
 
 from django.core.wsgi import get_wsgi_application
 
-# Determine which settings file to use
-settings_module = os.environ.get('DJANGO_ENV', 'production') # Default to 'production' for WSGI
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', f'tunda.settings.{settings_module}')
 
 application = get_wsgi_application()
