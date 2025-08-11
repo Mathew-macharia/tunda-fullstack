@@ -11,18 +11,9 @@ ExecStart=/var/www/gotunda/backend/venv/bin/python /var/www/gotunda/backend/venv
           --workers 3 \
           --bind unix:/var/www/gotunda/backend/gotunda.sock \
           tunda.wsgi:application
-Environment="DJANGO_SETTINGS_MODULE=tunda.settings.production"
-Environment="DJANGO_ENV=production"
-Environment="SECRET_KEY=3^pxo#ta1pqe#z-^yv*1r-l^f66n5+l_3fyhed@nty1or#7(!z"
-Environment="CORS_ALLOWED_ORIGINS=https://www.gotunda.com,https://gotunda.com"
-Environment="ALLOWED_HOSTS=gotunda.com,www.gotunda.com"
-Environment="DB_NAME=gotunda_db"
-Environment="DB_USER=gotunda_user"
-Environment="DB_PASSWORD=Samuelngige@254!"
-Environment="DB_HOST=localhost"
-Environment="DB_PORT=3306"
-Environment="GOOGLE_MAPS_API_KEY=AIzaSyDx4wFdtNac5cIShkEc_8jTzbbg5Q-rPrs"
+EnvironmentFile=/etc/gunicorn/production.env
 Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target
+
