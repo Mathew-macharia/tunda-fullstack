@@ -118,6 +118,9 @@ TIME_ZONE = 'Africa/Nairobi'
 USE_I18N = True
 USE_TZ = True
 
+# Append trailing slash to URLs (set to False for API consistency with frontends)
+APPEND_SLASH = False
+
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
 STATIC_ROOT = '/var/www/gotunda/backend/staticfiles' # Path where static files will be collected
