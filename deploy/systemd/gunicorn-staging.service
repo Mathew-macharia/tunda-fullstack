@@ -12,18 +12,8 @@ ExecStart=/var/www/staging.gotunda.com/backend/venv/bin/python /var/www/staging.
           --bind unix:/var/www/staging.gotunda.com/backend/gotunda-staging.sock \
           tunda.wsgi:application
 
-Environment="DJANGO_SETTINGS_MODULE=tunda.settings.production" \
-          "DJANGO_ENV=production" \
-          "SECRET_KEY=CXTOxaAuiW0KIGaWllDb22j3a7zYKaP72BwR29i-KhFuFxrPlzEEe-wpZuoX-njMfAY" \
-          "DEBUG=False" \
-          "DB_NAME=tunda_staging_db" \
-          "DB_USER=tunda_staging_user" \
-          "DB_PASSWORD=Samuelngige@254!" \
-          "DB_HOST=localhost" \
-          "DB_PORT=3306" \
-          "GOOGLE_MAPS_API_KEY=AIzaSyDx4wFdtNac5cIShkEc_8jTzbbg5Q-rPrs" \
-          "CORS_ALLOWED_ORIGINS=https://staging.gotunda.com,https://www.staging.gotunda.com" \
-          "ALLOWED_HOSTS=staging.gotunda.com,www.staging.gotunda.com"
+EnvironmentFile=/etc/gunicorn/staging.env
+
 Environment="PATH=/var/www/staging.gotunda.com/backend/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 Restart=on-failure
 
