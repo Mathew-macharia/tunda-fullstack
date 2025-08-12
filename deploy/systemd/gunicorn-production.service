@@ -12,8 +12,8 @@ ExecStart=/var/www/gotunda/backend/venv/bin/python /var/www/gotunda/backend/venv
           --bind unix:/var/www/gotunda/backend/gotunda.sock \
           tunda.wsgi:application
 EnvironmentFile=/etc/gunicorn/production.env
+Environment="PATH=/var/www/gotunda/backend/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target
-
