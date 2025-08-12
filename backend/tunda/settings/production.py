@@ -7,7 +7,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 if not SECRET_KEY:
     raise ImproperlyConfigured("The SECRET_KEY environment variable must be set for production.")
 
-DEBUG = False # Crucial for production!
+DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true' # Allow DEBUG to be controlled by environment variable
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
 if not ALLOWED_HOSTS or ALLOWED_HOSTS == ['']: # Check for empty string after split
