@@ -23,75 +23,13 @@
       </div>
 
       <div v-else class="space-y-6 lg:grid lg:grid-cols-3 lg:gap-8 lg:space-y-0">
-        <!-- Order Summary - Mobile First -->
-        <div class="lg:hidden">
-          <div class="bg-white rounded-lg shadow p-4">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Order Summary</h2>
-            
-            <!-- Collapsed Items View for Mobile -->
-            <div class="mb-4">
-              <div class="flex justify-between items-center">
-                <span class="text-sm text-gray-600">{{ cart.total_items }} item{{ cart.total_items > 1 ? 's' : '' }}</span>
-                <button @click="showItems = !showItems" class="text-sm text-green-600 font-medium">
-                  {{ showItems ? 'Hide' : 'Show' }} details
-                </button>
-              </div>
-              
-              <!-- Expandable Items List -->
-              <div v-show="showItems" class="mt-3 space-y-2">
-                <div v-for="item in cart.items" :key="item.cart_item_id" class="flex items-center space-x-2 text-sm">
-                  <img
-                    v-if="item.photos && item.photos.length"
-                    :src="item.photos[0]"
-                    :alt="item.product_name"
-                    class="h-8 w-8 object-cover rounded"
-                  />
-                  <div v-else class="h-8 w-8 bg-gray-200 rounded"></div>
-                  
-                  <div class="flex-1">
-                    <p class="font-medium text-gray-900 text-xs leading-tight">{{ item.product_name }}</p>
-                    <p class="text-xs text-gray-500">{{ item.quantity }} × KSh {{ item.price_at_addition }}</p>
-                  </div>
-                  
-                  <div class="text-xs font-medium">KSh {{ item.subtotal }}</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Totals -->
-            <div class="border-t pt-3 space-y-1">
-              <div class="flex justify-between text-sm">
-                <span class="text-gray-600">Subtotal</span>
-                <span class="font-medium">KSh {{ cart.total_cost }}</span>
-              </div>
-              <div class="flex justify-between text-sm">
-                <span class="text-gray-600">
-                  Delivery Fee
-                  <span v-if="deliveryDistance" class="text-xs text-gray-500">({{ deliveryDistance }} km)</span>
-                </span>
-                <div class="flex items-center space-x-2">
-                  <span v-if="estimatingDeliveryFee" class="text-xs text-blue-600">Calculating...</span>
-                  <span class="font-medium">KSh {{ actualDeliveryFee.toFixed(2) }}</span>
-                </div>
-              </div>
-              <div v-if="deliveryFeeError" class="text-xs text-orange-600 mt-1">
-                {{ deliveryFeeError }}
-              </div>
-              <div class="flex justify-between font-bold border-t pt-2">
-                <span>Total</span>
-                <span>KSh {{ totalAmount }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Checkout Form -->
+        <!-- Checkout Form (Delivery Information and Payment Method) -->
         <div class="lg:col-span-2 space-y-6">
           <!-- Delivery Information -->
           <div class="bg-white rounded-lg shadow p-4 sm:p-6">
             <h2 class="text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-6">Delivery Information</h2>
             
-            <form @submit.prevent="submitOrder" class="space-y-4 sm:space-y-6">
+            <form @submit.prevent="createOrderManually" class="space-y-4 sm:space-y-6">
               <!-- Contact Information -->
               <div class="space-y-4 sm:grid sm:grid-cols-2 sm:gap-4 sm:space-y-0">
                 <div>
@@ -102,9 +40,10 @@
                     v-model="orderForm.delivery_address.full_name"
                     type="text"
                     required
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-sm sm:text-base"
+                    :class="['w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-sm sm:text-base', {'border-red-500': formSubmitted && !orderForm.delivery_address.full_name}]"
                     placeholder="John Doe"
                   />
+                  <p v-if="formSubmitted && !orderForm.delivery_address.full_name" class="mt-1 text-xs text-red-500">Full Name is required.</p>
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
@@ -114,9 +53,10 @@
                     v-model="orderForm.delivery_address.phone_number"
                     type="tel"
                     required
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-sm sm:text-base"
+                    :class="['w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-sm sm:text-base', {'border-red-500': formSubmitted && !orderForm.delivery_address.phone_number}]"
                     placeholder="+254712345678"
                   />
+                  <p v-if="formSubmitted && !orderForm.delivery_address.phone_number" class="mt-1 text-xs text-red-500">Phone Number is required.</p>
                 </div>
               </div>
 
@@ -130,13 +70,14 @@
                     v-model="orderForm.delivery_address.county_id"
                     @change="loadSubCounties"
                     required
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-sm sm:text-base"
+                    :class="['w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-sm sm:text-base', {'border-red-500': formSubmitted && !orderForm.delivery_address.county_id}]"
                   >
                     <option value="">Select County</option>
                     <option v-for="county in counties" :key="county.county_id" :value="county.county_id">
                       {{ county.county_name }}
                     </option>
                   </select>
+                  <p v-if="formSubmitted && !orderForm.delivery_address.county_id" class="mt-1 text-xs text-red-500">County is required.</p>
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
@@ -146,7 +87,7 @@
                     v-model="orderForm.delivery_address.subcounty_id"
                     required
                     :disabled="!orderForm.delivery_address.county_id || loadingSubCounties"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 text-sm sm:text-base"
+                    :class="['w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 text-sm sm:text-base', {'border-red-500': formSubmitted && !orderForm.delivery_address.subcounty_id}]"
                   >
                     <option value="">
                       {{ loadingSubCounties ? 'Loading sub-counties...' : 'Select Sub-County' }}
@@ -155,6 +96,7 @@
                       {{ subCounty.sub_county_name }}
                     </option>
                   </select>
+                  <p v-if="formSubmitted && !orderForm.delivery_address.subcounty_id" class="mt-1 text-xs text-red-500">Sub-County is required.</p>
                 </div>
               </div>
 
@@ -169,7 +111,7 @@
                     @input="onAddressInput"
                     required
                     rows="3"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-sm sm:text-base"
+                    :class="['w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-sm sm:text-base', {'border-red-500': formSubmitted && !orderForm.delivery_address.detailed_address}]"
                     placeholder="House number, street name, landmark, etc."
                   ></textarea>
                   
@@ -195,6 +137,7 @@
                     </div>
                   </div>
                 </div>
+                <p v-if="formSubmitted && !orderForm.delivery_address.detailed_address" class="mt-1 text-xs text-red-500">Detailed Address is required.</p>
                 
                 <!-- Address Validation Status -->
                 <div v-if="addressValidation" class="mt-2 space-y-1">
@@ -303,29 +246,8 @@
             </div>
 
             <!-- Payment Instructions -->
-            <div class="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
-              <div class="flex items-start space-x-3">
-                <svg class="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <div class="flex-1">
-                  <p class="text-sm text-green-800 font-semibold mb-2">How to Pay with M-Pesa:</p>
-                  <div class="space-y-2 text-xs text-green-700">
-                    <div class="flex items-start space-x-2">
-                      <span class="inline-flex items-center justify-center w-4 h-4 bg-green-600 text-white rounded-full text-xs font-bold mt-0.5">1</span>
-                      <p>Pay KSh <span class="font-semibold">{{ totalAmount }}</span> to <span class="font-semibold">Till Number: 253953</span> <span class="font-bold text-red-600">(BEFORE clicking 'Create Order')</span>.</p>
-                    </div>
-                    <div class="flex items-start space-x-2">
-                      <span class="inline-flex items-center justify-center w-4 h-4 bg-green-600 text-white rounded-full text-xs font-bold mt-0.5">2</span>
-                      <p>After paying, click 'Create Order' below to finalize your order.</p>
-                    </div>
-                    <div class="flex items-start space-x-2">
-                      <span class="inline-flex items-center justify-center w-4 h-4 bg-green-600 text-white rounded-full text-xs font-bold mt-0.5">3</span>
-                      <p>Your order will be confirmed by an admin once payment is received.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <div class="mt-4">
+              <MpesaPaymentCard :totalAmount="totalAmount" />
             </div>
 
             <!-- Trust Building Message -->
@@ -451,9 +373,13 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { cartAPI, ordersAPI, locationsAPI, paymentsAPI } from '@/services/api'
 import { user, isAuthenticated, mergeGuestCartToUserCart, guestCartItems } from '@/stores/auth' // Import isAuthenticated, mergeGuestCartToUserCart, guestCartItems
+import MpesaPaymentCard from '@/components/customer/MpesaPaymentCard.vue' // Import the new component
 
 export default {
   name: 'CheckoutPage',
+  components: {
+    MpesaPaymentCard // Register the new component
+  },
   setup() {
     const router = useRouter()
     
@@ -466,6 +392,7 @@ export default {
     const loadingSubCounties = ref(false)
     const deliveryFee = ref(50)
     const showItems = ref(false)
+    const formSubmitted = ref(false) // New reactive property for form submission status
     
     // New variables for delivery fee estimation
     const estimatedDeliveryFee = ref(null)
@@ -659,8 +586,8 @@ export default {
     }
 
     const createOrderManually = async () => {
+      formSubmitted.value = true // Set formSubmitted to true on attempt
       if (!isFormValid.value) {
-        alert('Please fill in all required fields')
         return
       }
 
@@ -704,11 +631,6 @@ export default {
       } finally {
         processingPayment.value = false
       }
-    }
-
-    const submitOrder = async () => {
-      // This method is now deprecated - use createOrderManually instead
-      await createOrderManually()
     }
 
     // Address input handler for autocomplete and validation
@@ -843,7 +765,6 @@ export default {
       showItems,
       loadSubCounties,
       estimateDeliveryFee,
-      submitOrder,
       createOrderManually,
       totalAmount,
       actualDeliveryFee,
@@ -858,6 +779,7 @@ export default {
       addressResolution,
       debouncedEstimateDeliveryFee,
       processingPayment,
+      formSubmitted, // Expose formSubmitted
     }
   }
 }
