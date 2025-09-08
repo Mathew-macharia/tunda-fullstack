@@ -115,8 +115,8 @@ class DeliveryViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if user.user_role == 'admin':
-            # For admin, fetch all deliveries, but ensure rider and order customer exist
-            return Delivery.objects.select_related('rider', 'order__customer').filter(rider__isnull=False, order__customer__isnull=False)
+            # For admin, fetch all deliveries, ensuring order customer exists (rider can be null for pending assignment)
+            return Delivery.objects.select_related('rider', 'order__customer').filter(order__customer__isnull=False)
         elif user.user_role == 'rider':
             return Delivery.objects.filter(rider=user)
         elif user.user_role == 'customer':

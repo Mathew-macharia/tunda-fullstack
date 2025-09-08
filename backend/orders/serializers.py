@@ -161,12 +161,21 @@ class OrderCreateSerializer(serializers.Serializer):
         
         # If delivery_address is provided, validate its structure
         if delivery_address:
-            required_fields = ['full_name', 'phone_number', 'location', 'detailed_address']
+            required_fields = ['full_name', 'phone_number', 'county_id', 'subcounty_id', 'detailed_address']
             for field in required_fields:
                 if field not in delivery_address:
                     raise serializers.ValidationError({
                         "delivery_address": f"Missing required field: {field}"
                     })
+            
+            # Validate county and subcounty exist
+            try:
+                county = County.objects.get(county_id=delivery_address['county_id'])
+                subcounty = SubCounty.objects.get(sub_county_id=delivery_address['subcounty_id'])
+                data['county'] = county # Store for create method
+                data['subcounty'] = subcounty # Store for create method
+            except (County.DoesNotExist, SubCounty.DoesNotExist):
+                raise serializers.ValidationError("Invalid county or subcounty provided in delivery_address.")
         
         return data
     
@@ -204,9 +213,9 @@ class OrderCreateSerializer(serializers.Serializer):
         delivery_location_id = validated_data.get('delivery_location_id')
         
         if delivery_address:
-            # Create new location from address
-            subcounty = SubCounty.objects.get(sub_county_id=delivery_address['location'])
-            county = subcounty.county
+            # Retrieve county and subcounty from validated_data
+            county = validated_data['county']
+            subcounty = validated_data['subcounty']
             
             # Create a temporary UserAddress for this order
             user_address = UserAddress.objects.create(

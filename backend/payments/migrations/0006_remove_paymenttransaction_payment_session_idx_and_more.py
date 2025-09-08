@@ -11,10 +11,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveIndex(
-            model_name='paymenttransaction',
-            name='payment_session_idx',
-        ),
         migrations.AlterField(
             model_name='paymenttransaction',
             name='transaction_id',

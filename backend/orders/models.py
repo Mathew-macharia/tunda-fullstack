@@ -6,9 +6,13 @@ from locations.models import Location
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from django.utils import timezone
+import logging
 
+from communication.services import NotificationService # Import the new service
 # Import will be resolved after migration
 # Using string reference to avoid circular import issues
+
+logger = logging.getLogger(__name__)
 
 
 class Order(models.Model):
@@ -384,106 +388,130 @@ def track_order_status_changes(sender, instance, **kwargs):
 def handle_order_status_changes(sender, instance, created, **kwargs):
     """
     Handle order status changes, including updating order item statuses to 'delivered'
-    when the order is delivered, and sending notifications.
+    when the order is delivered, and sending notifications to all relevant parties.
     """
+    # Import User model here to avoid circular dependency with communication.services
+    from users.models import User 
+
     # Logic for initial order creation notifications
     if created:
-        print(f"DEBUG: Order {instance.order_id} created, sending notifications...")
-        try:
-            from communication.models import Notification
-            print(f"DEBUG: Successfully imported Notification model")
-            
-            # Send order confirmation to customer
-            if instance.customer.should_receive_notification('order_update'):
-                print(f"DEBUG: Creating customer notification for order {instance.order_id}")
-                print(f"DEBUG: Customer: {instance.customer}")
-                print(f"DEBUG: Customer SMS: {instance.customer.sms_notifications}")
-                try:
-                    notification = Notification.objects.create(
-                        user=instance.customer,
-                        notification_type='order_update',
-                        title=f'Order Confirmed #{instance.order_number}',
-                        message=f'Your order for KES {instance.total_amount} has been confirmed and is being processed.',
-                        send_sms=instance.customer.sms_notifications
-                    )
-                    print(f"DEBUG: Customer notification created successfully: {notification.notification_id}")
-                except Exception as e:
-                    print(f"DEBUG: Error creating customer notification: {e}")
-                    import traceback
-                    traceback.print_exc()
-            
-            # Notify farmers about new orders
-            farmers = instance.get_farmers()
-            print(f"DEBUG: Found {len(farmers)} farmers for this order")
-            print(f"DEBUG: Order items: {list(instance.items.all())}")
-            
-            for farmer in farmers:
-                if farmer.should_receive_notification('order_update'):
-                    farmer_items = instance.items.filter(farmer=farmer)
-                    total_farmer_amount = sum(item.total_price for item in farmer_items)
-                    
-                    print(f"DEBUG: Creating farmer notification for {farmer}")
-                    try:
-                        notification = Notification.objects.create(
-                            user=farmer,
-                            notification_type='order_update',
-                            title=f'New Order Received #{instance.order.order_number}',
-                            message=f'You have received a new order worth KES {total_farmer_amount}. Please prepare the items for delivery.',
-                            send_sms=farmer.sms_notifications
-                        )
-                        print(f"DEBUG: Farmer notification created successfully: {notification.notification_id}")
-                    except Exception as e:
-                        print(f"DEBUG: Error creating farmer notification: {e}")
-                        import traceback
-                        traceback.print_exc()
-            
-        except ImportError as e:
-            print(f"DEBUG: Communication app not available: {e}")
-        except Exception as e:
-            print(f"DEBUG: Unexpected error in handle_order_status_changes (creation): {e}")
-            import traceback
-            traceback.print_exc()
-            # Don't raise the exception - let the order creation succeed
+        # Send order confirmation to customer
+        if instance.customer.should_receive_notification('order_update'):
+            NotificationService.send_notification(
+                user=instance.customer,
+                notification_type='order_update',
+                title=f'Order Confirmed #{instance.order_number}',
+                message=f'Your order for KES {instance.total_amount} has been confirmed and is being processed.',
+                send_sms=True, # Always attempt SMS for critical updates if user allows
+                related_id=instance.order_id
+            )
+        
+        # Notify farmers about new orders
+        farmers = instance.get_farmers()
+        for farmer in farmers:
+            if farmer.should_receive_notification('order_update'):
+                farmer_items = instance.items.filter(farmer=farmer)
+                total_farmer_amount = sum(item.total_price for item in farmer_items)
+                NotificationService.send_notification(
+                    user=farmer,
+                    notification_type='order_update',
+                    title=f'New Order Received #{instance.order_number}',
+                    message=f'You have received a new order worth KES {total_farmer_amount}. Please prepare the items for delivery.',
+                    send_sms=True, # Always attempt SMS for critical updates if user allows
+                    related_id=instance.order_id
+                )
+        
+        # Notify admins about new orders
+        admins = User.objects.filter(user_role='admin')
+        for admin in admins:
+            if admin.should_receive_notification('order_update'): # Admins should receive system messages
+                NotificationService.send_notification(
+                    user=admin,
+                    notification_type='system_message',
+                    title=f'New Order Placed #{instance.order_number}',
+                    message=f'A new order (KES {instance.total_amount}) has been placed by {instance.customer.get_full_name()}.',
+                    send_sms=True, # Admins might want SMS for new orders
+                    related_id=instance.order_id
+                )
 
     # Logic for existing order status changes
     if not created and instance.pk: # Only for updates to existing orders
-        try:
-            # Check if order_status has actually changed using the original status from pre_save
-            original_order_status = getattr(instance, '_original_order_status', None)
-            
-            if original_order_status != instance.order_status:
-                # If order status changes to 'delivered', update all order items to 'delivered'
-                if instance.order_status == 'delivered':
-                    for item in instance.items.all():
-                        if item.item_status != 'delivered':
-                            item.item_status = 'delivered'
-                            item.save(update_fields=['item_status']) # Save only the changed field
-                    print(f"DEBUG: Order {instance.order_id} delivered. All order items marked as delivered.")
-                
-                # Send status update notifications (existing logic)
+        original_order_status = getattr(instance, '_original_order_status', None)
+        
+        if original_order_status != instance.order_status:
+            # If order status changes to 'confirmed', create a Delivery record
+            # This is now handled by PaymentSession.create_order_from_session or admin action
+            # The logic here is primarily for when an admin manually changes status to confirmed
+            if instance.order_status == 'confirmed' and not hasattr(instance, 'delivery'):
                 try:
-                    from communication.models import Notification
-                    
-                    status_messages = {
-                        'confirmed': 'Your order has been confirmed and is being prepared.',
-                        'processing': 'Your order is being processed by our farmers.',
-                        'out_for_delivery': 'Your order is out for delivery.',
-                        'delivered': 'Your order has been delivered successfully.',
-                        'cancelled': 'Your order has been cancelled.',
-                    }
-                    
-                    if instance.order_status in status_messages:
-                        if instance.customer.should_receive_notification('order_update'):
-                            Notification.objects.create(
-                                user=instance.customer,
-                                notification_type='order_update',
-                                title=f'Order Update #{instance.order.order_number}',
-                                message=status_messages[instance.order_status],
-                                send_sms=instance.customer.sms_notifications
-                            )
-                except ImportError:
-                    pass
-        except Exception as e:
-            print(f"DEBUG: Unexpected error in handle_order_status_changes (update): {e}")
-            import traceback
-            traceback.print_exc()
+                    from delivery.models import Delivery # Import Delivery model here to avoid circular dependency
+                    Delivery.objects.create(
+                        order=instance,
+                        delivery_status='pending_pickup'
+                    )
+                    logger.info(f"Delivery record created for Order #{instance.order_number} due to status change to confirmed.")
+                except Exception as e:
+                    logger.error(f"Error creating Delivery record for Order #{instance.order_number}: {e}")
+
+            # If order status changes to 'delivered', update all order items to 'delivered'
+            if instance.order_status == 'delivered':
+                for item in instance.items.all():
+                    if item.item_status != 'delivered':
+                        item.item_status = 'delivered'
+                        item.save(update_fields=['item_status']) # Save only the changed field
+                logger.info(f"Order {instance.order_id} delivered. All order items marked as delivered.")
+            
+            # Send status update notifications to customer
+            status_messages = {
+                'confirmed': 'Your order has been confirmed and is being prepared.',
+                'processing': 'Your order is being processed by our farmers.',
+                'out_for_delivery': 'Your order is out for delivery.',
+                'delivered': 'Your order has been delivered successfully.',
+                'cancelled': 'Your order has been cancelled.',
+                'refunded': 'Your order has been refunded.',
+            }
+            
+            if instance.order_status in status_messages:
+                if instance.customer.should_receive_notification('order_update'):
+                    NotificationService.send_notification(
+                        user=instance.customer,
+                        notification_type='order_update',
+                        title=f'Order Update #{instance.order_number}',
+                        message=status_messages[instance.order_status],
+                        send_sms=True, # Always attempt SMS for critical updates if user allows
+                        related_id=instance.order_id
+                    )
+            
+            # Notify admins of critical order status changes
+            admin_status_messages = {
+                'cancelled': f'Order #{instance.order_number} has been cancelled by {instance.customer.get_full_name()}.',
+                'refunded': f'Order #{instance.order_number} has been refunded.',
+                'delivered': f'Order #{instance.order_number} has been delivered.',
+            }
+            
+            if instance.order_status in admin_status_messages:
+                admins = User.objects.filter(user_role='admin')
+                for admin in admins:
+                    if admin.should_receive_notification('system_message'):
+                        NotificationService.send_notification(
+                            user=admin,
+                            notification_type='system_message',
+                            title=f'Order Status Alert #{instance.order_number}',
+                            message=admin_status_messages[instance.order_status],
+                            send_sms=True, # Admins might want SMS for critical alerts
+                            related_id=instance.order_id
+                        )
+            
+            # Notify farmers if their items are affected by cancellation
+            if instance.order_status == 'cancelled':
+                farmers = instance.get_farmers()
+                for farmer in farmers:
+                    if farmer.should_receive_notification('order_update'):
+                        NotificationService.send_notification(
+                            user=farmer,
+                            notification_type='order_update',
+                            title=f'Order Cancelled #{instance.order_number}',
+                            message=f'Order #{instance.order_number} containing your items has been cancelled.',
+                            send_sms=True,
+                            related_id=instance.order_id
+                        )

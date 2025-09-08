@@ -127,7 +127,7 @@
                     County *
                   </label>
                   <select
-                    v-model="selectedCounty"
+                    v-model="orderForm.delivery_address.county_id"
                     @change="loadSubCounties"
                     required
                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-sm sm:text-base"
@@ -143,9 +143,9 @@
                     Sub-County *
                   </label>
                   <select
-                    v-model="orderForm.delivery_address.location"
+                    v-model="orderForm.delivery_address.subcounty_id"
                     required
-                    :disabled="!selectedCounty || loadingSubCounties"
+                    :disabled="!orderForm.delivery_address.county_id || loadingSubCounties"
                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 text-sm sm:text-base"
                   >
                     <option value="">
@@ -309,23 +309,19 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
                 <div class="flex-1">
-                  <p class="text-sm text-green-800 font-semibold mb-2">How M-Pesa Payment Works:</p>
+                  <p class="text-sm text-green-800 font-semibold mb-2">How to Pay with M-Pesa:</p>
                   <div class="space-y-2 text-xs text-green-700">
                     <div class="flex items-start space-x-2">
                       <span class="inline-flex items-center justify-center w-4 h-4 bg-green-600 text-white rounded-full text-xs font-bold mt-0.5">1</span>
-                      <p>Click "Pay with M-Pesa" to start the payment process</p>
+                      <p>Pay KSh <span class="font-semibold">{{ totalAmount }}</span> to <span class="font-semibold">Till Number: 253953</span> <span class="font-bold text-red-600">(BEFORE clicking 'Create Order')</span>.</p>
                     </div>
                     <div class="flex items-start space-x-2">
                       <span class="inline-flex items-center justify-center w-4 h-4 bg-green-600 text-white rounded-full text-xs font-bold mt-0.5">2</span>
-                      <p>You'll receive an <span class="font-semibold">STK Push</span> on your phone to pay <span class="font-semibold">KSh {{ totalAmount }}</span></p>
+                      <p>After paying, click 'Create Order' below to finalize your order.</p>
                     </div>
                     <div class="flex items-start space-x-2">
                       <span class="inline-flex items-center justify-center w-4 h-4 bg-green-600 text-white rounded-full text-xs font-bold mt-0.5">3</span>
-                      <p>Enter your <span class="font-semibold">M-Pesa PIN</span> to complete the payment</p>
-                    </div>
-                    <div class="flex items-start space-x-2">
-                      <span class="inline-flex items-center justify-center w-4 h-4 bg-green-600 text-white rounded-full text-xs font-bold mt-0.5">4</span>
-                      <p>Your order will be confirmed and delivery scheduled automatically</p>
+                      <p>Your order will be confirmed by an admin once payment is received.</p>
                     </div>
                   </div>
                 </div>
@@ -351,7 +347,7 @@
           <!-- Mobile Pay with M-Pesa Button -->
           <div class="lg:hidden">
             <button
-              @click="initiatePayment"
+              @click="createOrderManually"
               :disabled="processingPayment || !isFormValid"
               class="w-full btn-primary py-3 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
             >
@@ -359,11 +355,11 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              <span v-if="processingPayment">Processing Payment...</span>
-              <span v-else>Pay with M-Pesa - KSh {{ totalAmount }}</span>
+              <span v-if="processingPayment">Processing Order...</span>
+              <span v-else>Create Order - KSh {{ totalAmount }}</span>
             </button>
             <div class="mt-3 text-xs text-gray-500 text-center space-y-1">
-              <p>You'll receive an STK Push on your phone to complete payment</p>
+              <p>Your order will be confirmed by an admin once payment is received.</p>
               <p>By placing this order, you agree to our Terms of Service and Privacy Policy.</p>
             </div>
           </div>
@@ -427,7 +423,7 @@
 
             <!-- Pay with M-Pesa Button -->
             <button
-              @click="initiatePayment"
+              @click="createOrderManually"
               :disabled="processingPayment || !isFormValid"
               class="w-full mt-6 btn-primary py-3 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
             >
@@ -435,112 +431,13 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              <span v-if="processingPayment">Processing Payment...</span>
-              <span v-else>Pay with M-Pesa</span>
+              <span v-if="processingPayment">Processing Order...</span>
+              <span v-else>Create Order</span>
             </button>
 
             <div class="mt-4 text-xs text-gray-500 text-center space-y-1">
-              <p>You'll receive an STK Push on your phone to complete payment</p>
+              <p>Your order will be confirmed by an admin once payment is received.</p>
               <p>By placing this order, you agree to our Terms of Service and Privacy Policy.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- M-Pesa Payment Modal -->
-    <div v-if="showMpesaModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-lg max-w-md w-full p-6">
-        <div class="text-center">
-          <!-- Initiating Payment -->
-          <div v-if="mpesaPaymentStatus === 'initiating'" class="space-y-4">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
-            <h3 class="text-lg font-semibold text-gray-900">Initiating Payment</h3>
-            <p class="text-sm text-gray-600">Setting up your M-Pesa payment...</p>
-          </div>
-          
-          <!-- Pending Payment -->
-          <div v-else-if="mpesaPaymentStatus === 'pending'" class="space-y-4">
-            <div class="flex items-center justify-center">
-              <div class="bg-green-100 p-3 rounded-full">
-                <svg class="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                </svg>
-              </div>
-            </div>
-            <h3 class="text-lg font-semibold text-gray-900">Check Your Phone</h3>
-            <p class="text-sm text-gray-600">
-              We've sent an M-Pesa payment request to your phone. 
-              Please enter your M-Pesa PIN to complete the payment.
-            </p>
-            <div class="flex items-center justify-center space-x-2 text-sm text-gray-500">
-              <div class="animate-pulse w-2 h-2 bg-green-600 rounded-full"></div>
-              <span>Waiting for payment confirmation...</span>
-            </div>
-          </div>
-          
-          <!-- Payment Completed -->
-          <div v-else-if="mpesaPaymentStatus === 'completed'" class="space-y-4">
-            <div class="flex items-center justify-center">
-              <div class="bg-green-100 p-3 rounded-full">
-                <svg class="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-              </div>
-            </div>
-            <h3 class="text-lg font-semibold text-green-900">Payment Successful!</h3>
-            <p class="text-sm text-gray-600">
-              Your payment has been processed successfully.
-            </p>
-            <div v-if="mpesaReceiptNumber" class="bg-gray-50 p-3 rounded-lg">
-              <p class="text-xs text-gray-500">M-Pesa Receipt Number</p>
-              <p class="font-mono text-sm font-semibold">{{ mpesaReceiptNumber }}</p>
-            </div>
-            <p class="text-xs text-gray-500">Redirecting to your order details...</p>
-          </div>
-          
-          <!-- Payment Failed -->
-          <div v-else-if="mpesaPaymentStatus === 'failed'" class="space-y-4">
-            <div class="flex items-center justify-center">
-              <div class="bg-red-100 p-3 rounded-full">
-                <svg class="h-8 w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </div>
-            </div>
-            <h3 class="text-lg font-semibold text-red-900">Payment Failed</h3>
-            <p class="text-sm text-gray-600">{{ mpesaErrorMessage }}</p>
-            <div class="flex space-x-3">
-              <button @click="retryPayment" class="btn-primary flex-1">
-                Try Again
-              </button>
-              <button @click="closeMpesaModal" class="btn-secondary flex-1">
-                Close
-              </button>
-            </div>
-          </div>
-          
-          <!-- Payment Timeout -->
-          <div v-else-if="mpesaPaymentStatus === 'timeout'" class="space-y-4">
-            <div class="flex items-center justify-center">
-              <div class="bg-yellow-100 p-3 rounded-full">
-                <svg class="h-8 w-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-              </div>
-            </div>
-            <h3 class="text-lg font-semibold text-yellow-900">Payment Verification Timeout</h3>
-            <p class="text-sm text-gray-600">
-              We couldn't verify your payment within the expected time. 
-              Please check your M-Pesa messages for confirmation.
-            </p>
-            <div class="flex space-x-3">
-              <button @click="retryPayment" class="btn-primary flex-1">
-                Check Again
-              </button>
-              <button @click="closeMpesaModal" class="btn-secondary flex-1">
-                Close
-              </button>
             </div>
           </div>
         </div>
@@ -564,7 +461,7 @@ export default {
     const authenticatedCart = ref(null) // For authenticated user's cart
     const counties = ref([])
     const subCounties = ref([])
-    const selectedCounty = ref('')
+    const selectedCounty = computed(() => orderForm.value.delivery_address.county_id); // Changed to computed
     const submittingOrder = ref(false)
     const loadingSubCounties = ref(false)
     const deliveryFee = ref(50)
@@ -583,20 +480,15 @@ export default {
     const addressResolution = ref(null)
     const deliveryFeeTimeout = ref(null)
     
-    // M-Pesa payment state
-    const showMpesaModal = ref(false)
-    const mpesaPaymentStatus = ref('idle') // idle, initiating, pending, completed, failed, timeout
-    const mpesaErrorMessage = ref('')
-    const mpesaReceiptNumber = ref('')
-    const currentTransaction = ref(null)
+    // M-Pesa payment state (removed for manual flow)
     const processingPayment = ref(false)
-    const pollingInterval = ref(null); // ADDED: To store polling interval ID
     
     const orderForm = ref({
       delivery_address: {
         full_name: '',
         phone_number: '',
-        location: '',
+        county_id: '', // New field for county ID
+        subcounty_id: '', // New field for subcounty ID
         detailed_address: ''
       },
       payment_method: 'mpesa', // Default to mpesa since it's the primary option
@@ -629,7 +521,7 @@ export default {
     // Computed total amount
     const totalAmount = computed(() => {
       const subtotal = parseFloat(cart.value?.total_cost || 0)
-      return subtotal + actualDeliveryFee.value
+      return (subtotal + actualDeliveryFee.value).toFixed(2)
     })
 
     // Computed
@@ -637,7 +529,8 @@ export default {
       const addr = orderForm.value.delivery_address
       return addr.full_name && 
              addr.phone_number && 
-             addr.location && 
+             addr.county_id && 
+             addr.subcounty_id && 
              addr.detailed_address &&
              orderForm.value.payment_method === 'mpesa' // Only allow mpesa for now
     })
@@ -674,9 +567,9 @@ export default {
 
     const loadSubCounties = async () => {
       // Clear the current subcounty selection when county changes
-      orderForm.value.delivery_address.location = ''
+      orderForm.value.delivery_address.subcounty_id = ''
       
-      if (!selectedCounty.value) {
+      if (!orderForm.value.delivery_address.county_id) {
         subCounties.value = []
         loadingSubCounties.value = false
         return
@@ -685,8 +578,8 @@ export default {
       loadingSubCounties.value = true
       
       try {
-        console.log('Loading sub-counties for county:', selectedCounty.value)
-        const response = await locationsAPI.getSubCounties(selectedCounty.value)
+        console.log('Loading sub-counties for county:', orderForm.value.delivery_address.county_id)
+        const response = await locationsAPI.getSubCounties(orderForm.value.delivery_address.county_id)
         console.log('Sub-counties response:', response)
         subCounties.value = response.results || response
         console.log('Sub-counties set to:', subCounties.value)
@@ -701,7 +594,7 @@ export default {
     const estimateDeliveryFee = async () => {
       // Only estimate if we have sufficient address information
       const addr = orderForm.value.delivery_address
-      if (!addr.location || !addr.detailed_address) {
+      if (!addr.subcounty_id || !addr.detailed_address) {
         estimatedDeliveryFee.value = null
         deliveryDistance.value = null
         deliveryFeeError.value = null
@@ -725,7 +618,7 @@ export default {
       try {
         const response = await cartAPI.estimateDeliveryFee({
           county: selectedCounty.value,
-          sub_county: addr.location,
+          sub_county: addr.subcounty_id,
           detailed_address: addr.detailed_address,
           full_name: addr.full_name,
           phone_number: addr.phone_number
@@ -765,7 +658,7 @@ export default {
       }
     }
 
-    const initiatePayment = async () => {
+    const createOrderManually = async () => {
       if (!isFormValid.value) {
         alert('Please fill in all required fields')
         return
@@ -780,168 +673,42 @@ export default {
       processingPayment.value = true
 
       try {
-        // Create payment session first
-        const sessionData = {
+        const orderPayload = {
           cart_items: cart.value.items.map(item => ({
             product_listing_id: item.product_listing_id || item.listing_id,
             quantity: item.quantity
           })),
-          // CORRECTED: Structure delivery_details as expected by backend
-          delivery_details: {
+          delivery_address: {
             full_name: orderForm.value.delivery_address.full_name,
             phone_number: orderForm.value.delivery_address.phone_number,
-            county_id: selectedCounty.value, // Add county_id
-            subcounty_id: orderForm.value.delivery_address.location, // Use subcounty_id
+            county_id: selectedCounty.value,
+            subcounty_id: orderForm.value.delivery_address.subcounty_id,
             detailed_address: orderForm.value.delivery_address.detailed_address,
-            special_instructions: orderForm.value.special_instructions || '', // Move special_instructions here
-            // You might also want to include estimated_delivery_date and delivery_time_slot if collected
-            estimated_delivery_date: null, // Placeholder, update if you have a form field for this
-            delivery_time_slot: null,     // Placeholder, update if you have a form field for this
           },
           payment_method: 'mpesa',
-          expected_total: totalAmount.value
+          special_instructions: orderForm.value.special_instructions || '',
+          expected_total: parseFloat(totalAmount.value).toFixed(2) // Ensure two decimal places
         }
 
-        const session = await paymentsAPI.createPaymentSession(sessionData)
+        const response = await ordersAPI.createOrder(orderPayload)
         
-        // Now initiate M-Pesa payment
-        await initiateMpesaPayment(session)
-        
-      } catch (error) {
-        console.error('Failed to initiate payment:', error)
-        alert('Failed to initiate payment. Please try again.')
-        processingPayment.value = false
-      }
-    }
-
-    const submitOrder = async () => {
-      // This method is now deprecated - use initiatePayment instead
-      await initiatePayment()
-    }
-
-    const initiateMpesaPayment = async (session) => {
-      try {
-        // Show M-Pesa payment modal
-        showMpesaModal.value = true
-        mpesaPaymentStatus.value = 'initiating'
-        
-        // Get phone number for M-Pesa payment
-        const phoneNumber = orderForm.value.delivery_address.phone_number
-        
-        // Initiate M-Pesa STK Push using payment session
-        const response = await paymentsAPI.initiateSessionPayment(session.session_id, {
-          phone_number: phoneNumber
-        })
-        
-        if (response.status === 'success') {
-          mpesaPaymentStatus.value = 'pending'
-          currentTransaction.value = {
-            transaction_id: response.transaction_id,
-            checkout_request_id: response.checkout_request_id,
-            session_id: session.session_id
-          }
-          
-          // Start polling for payment status
-          pollPaymentStatus(response.transaction_id)
-          
+        if (response.order_id) {
+          router.push(`/orders/${response.order_id}`)
         } else {
-          mpesaPaymentStatus.value = 'failed'
-          mpesaErrorMessage.value = response.message || 'Failed to initiate payment'
+          alert('Failed to create order. Please try again.')
         }
         
       } catch (error) {
-        console.error('Failed to initiate M-Pesa payment:', error)
-        mpesaPaymentStatus.value = 'failed'
-        mpesaErrorMessage.value = error.response?.data?.message || 'Failed to initiate M-Pesa payment'
+        console.error('Failed to create order:', error)
+        alert('Failed to create order. Please try again.')
       } finally {
         processingPayment.value = false
       }
     }
 
-    const pollPaymentStatus = async (transactionId) => {
-      const maxAttempts = 30 // 5 minutes with 10-second intervals
-      let attempts = 0
-      
-      // Clear any existing polling interval before starting a new one
-      if (pollingInterval.value) {
-        clearTimeout(pollingInterval.value);
-      }
-
-      const poll = async () => {
-        try {
-          const response = await paymentsAPI.getPaymentTransaction(transactionId)
-          const status = response.payment_status
-          
-          if (status === 'completed') {
-            mpesaPaymentStatus.value = 'completed'
-            mpesaReceiptNumber.value = response.mpesa_receipt_number
-            
-            // Stop polling
-            if (pollingInterval.value) clearTimeout(pollingInterval.value);
-            
-            // Redirect to order details after a short delay
-            setTimeout(() => {
-              router.push(`/orders/${response.order}`)
-            }, 3000)
-            
-          } else if (status === 'failed') {
-            mpesaPaymentStatus.value = 'failed'
-            mpesaErrorMessage.value = response.failure_reason || 'Payment failed'
-            // Stop polling
-            if (pollingInterval.value) clearTimeout(pollingInterval.value);
-            
-          } else if (attempts < maxAttempts) {
-            attempts++
-            pollingInterval.value = setTimeout(poll, 10000) // Store interval ID
-            
-          } else {
-            mpesaPaymentStatus.value = 'timeout'
-            mpesaErrorMessage.value = 'Payment verification timed out. Please check your M-Pesa messages.'
-            // Stop polling
-            if (pollingInterval.value) clearTimeout(pollingInterval.value);
-          }
-          
-        } catch (error) {
-          console.error('Error checking payment status:', error)
-          if (attempts < maxAttempts) {
-            attempts++
-            pollingInterval.value = setTimeout(poll, 10000) // Store interval ID
-          } else {
-            mpesaPaymentStatus.value = 'failed'
-            mpesaErrorMessage.value = 'Unable to verify payment status'
-            // Stop polling
-            if (pollingInterval.value) clearTimeout(pollingInterval.value);
-          }
-        }
-      }
-      
-      poll()
-    }
-
-    const retryPayment = async () => {
-      if (currentTransaction.value && currentTransaction.value.session_id) {
-        // Retry payment using the session
-        try {
-          const session = await paymentsAPI.getPaymentSession(currentTransaction.value.session_id)
-          await initiateMpesaPayment(session)
-        } catch (error) {
-          console.error('Failed to retry payment:', error)
-          alert('Failed to retry payment. Please try again.')
-        }
-      }
-    }
-
-    const closeMpesaModal = () => {
-      showMpesaModal.value = false
-      mpesaPaymentStatus.value = 'idle'
-      mpesaErrorMessage.value = ''
-      mpesaReceiptNumber.value = ''
-      currentTransaction.value = null
-      // Ensure any active polling is stopped when modal is closed
-      if (pollingInterval.value) {
-        clearTimeout(pollingInterval.value);
-        pollingInterval.value = null;
-      }
+    const submitOrder = async () => {
+      // This method is now deprecated - use createOrderManually instead
+      await createOrderManually()
     }
 
     // Address input handler for autocomplete and validation
@@ -1033,11 +800,11 @@ export default {
 
     // Watchers for real-time delivery fee estimation
     watch([
-      () => orderForm.value.delivery_address.location,
+      () => orderForm.value.delivery_address.subcounty_id,
       () => orderForm.value.delivery_address.detailed_address
     ], () => {
       // Only trigger if both fields have values
-      if (orderForm.value.delivery_address.location && orderForm.value.delivery_address.detailed_address) {
+      if (orderForm.value.delivery_address.subcounty_id && orderForm.value.delivery_address.detailed_address) {
         debouncedEstimateDeliveryFee()
       }
     }, { deep: true })
@@ -1077,7 +844,7 @@ export default {
       loadSubCounties,
       estimateDeliveryFee,
       submitOrder,
-      initiatePayment,
+      createOrderManually,
       totalAmount,
       actualDeliveryFee,
       estimatedDeliveryFee,
@@ -1090,13 +857,7 @@ export default {
       selectAddressSuggestion,
       addressResolution,
       debouncedEstimateDeliveryFee,
-      showMpesaModal,
-      mpesaPaymentStatus,
-      mpesaErrorMessage,
-      mpesaReceiptNumber,
       processingPayment,
-      retryPayment,
-      closeMpesaModal
     }
   }
 }

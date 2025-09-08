@@ -6,6 +6,7 @@ from django.dispatch import receiver
 
 from users.models import User
 from orders.models import Order
+from communication.services import NotificationService # Import the new service
 
 class Vehicle(models.Model):
     """Model representing a rider's vehicle"""
@@ -123,9 +124,18 @@ class DeliveryRoute(models.Model):
 
 @receiver(post_save, sender=Delivery)
 def update_order_status_on_delivery_update(sender, instance, **kwargs):
-    """Update the order status when delivery status changes"""
+    """
+    Update the order status when delivery status changes and send notifications
+    to relevant parties (customer, admin, rider).
+    """
     order = instance.order
     
+    # Import User model here to avoid circular dependency with communication.services
+    from users.models import User 
+
+    # Store original delivery status for comparison
+    original_delivery_status = getattr(instance, '_original_delivery_status', None)
+
     # Update order status based on delivery status
     if instance.delivery_status == 'picked_up' and order.order_status != 'processing':
         order.order_status = 'processing'
@@ -145,7 +155,48 @@ def update_order_status_on_delivery_update(sender, instance, **kwargs):
         order.order_status = 'failed_delivery'
         order.save()
 
-# Store previous rider state for comparison
+    # Send notifications based on delivery status changes
+    if original_delivery_status != instance.delivery_status:
+        # Notifications for Rider
+        if instance.rider and instance.rider.should_receive_notification('order_update'):
+            rider_messages = {
+                'picked_up': f'You have picked up Order #{order.order_number}.',
+                'on_the_way': f'You are on the way to deliver Order #{order.order_number} to {order.delivery_location.location_name}.',
+                'delivered': f'You have successfully delivered Order #{order.order_number}.',
+                'failed': f'Delivery for Order #{order.order_number} has failed. Please update details.',
+            }
+            if instance.delivery_status in rider_messages:
+                NotificationService.send_notification(
+                    user=instance.rider,
+                    notification_type='order_update', # Using order_update for delivery-related updates
+                    title=f'Delivery Status: #{order.order_number}',
+                    message=rider_messages[instance.delivery_status],
+                    send_sms=True,
+                    related_id=instance.delivery_id
+                )
+        
+        # Notifications for Admin
+        admins = User.objects.filter(user_role='admin')
+        for admin in admins:
+            if admin.should_receive_notification('system_message'):
+                admin_messages = {
+                    'picked_up': f'Rider {instance.rider.get_full_name()} has picked up Order #{order.order_number}.',
+                    'on_the_way': f'Order #{order.order_number} is now out for delivery with {instance.rider.get_full_name()}.',
+                    'delivered': f'Order #{order.order_number} has been delivered by {instance.rider.get_full_name()}.',
+                    'failed': f'Delivery for Order #{order.order_number} has failed. Rider: {instance.rider.get_full_name()}.',
+                }
+                if instance.delivery_status in admin_messages:
+                    NotificationService.send_notification(
+                        user=admin,
+                        notification_type='system_message',
+                        title=f'Delivery Alert: #{order.order_number}',
+                        message=admin_messages[instance.delivery_status],
+                        send_sms=True,
+                        related_id=instance.delivery_id
+                    )
+
+
+# Store previous delivery state for comparison
 _previous_delivery_states = {}
 
 @receiver(pre_save, sender=Delivery)
@@ -154,69 +205,80 @@ def store_previous_delivery_state(sender, instance, **kwargs):
     if instance.pk:
         try:
             old_instance = Delivery.objects.get(pk=instance.pk)
+            instance._original_delivery_status = old_instance.delivery_status # Store original delivery status
             _previous_delivery_states[instance.pk] = {
                 'rider': old_instance.rider,
                 'delivery_status': old_instance.delivery_status
             }
         except Delivery.DoesNotExist:
+            instance._original_delivery_status = None # New delivery
             pass
+    else:
+        instance._original_delivery_status = None # New delivery
 
 @receiver(post_save, sender=Delivery)
 def send_rider_assignment_notification(sender, instance, created, **kwargs):
     """Send notification to rider when they are assigned to a delivery"""
-    try:
-        from communication.models import Notification
+    # Import User model here to avoid circular dependency with communication.services
+    from users.models import User 
+
+    should_notify = False
+    notification_message = ""
+    
+    if created and instance.rider:
+        # New delivery with rider assigned
+        should_notify = True
+        notification_message = (
+            f'You have been assigned to deliver Order #{instance.order.order_number}. '
+            f'Total value: KES {instance.order.total_amount}. '
+            f'Please check your delivery dashboard for details.'
+        )
+    elif not created and instance.pk in _previous_delivery_states:
+        # Check if rider assignment changed
+        previous_state = _previous_delivery_states[instance.pk]
+        previous_rider = previous_state.get('rider')
         
-        should_notify = False
-        notification_message = ""
-        
-        if created and instance.rider:
-            # New delivery with rider assigned
+        if previous_rider != instance.rider and instance.rider:
+            # Rider was assigned or changed
             should_notify = True
+            action = "reassigned" if previous_rider else "assigned"
             notification_message = (
-                f'You have been assigned to deliver Order #{instance.order.order_number}. '
+                f'You have been {action} to deliver Order #{instance.order.order_number}. '
                 f'Total value: KES {instance.order.total_amount}. '
                 f'Please check your delivery dashboard for details.'
             )
-        elif not created and instance.pk in _previous_delivery_states:
-            # Check if rider assignment changed
-            previous_state = _previous_delivery_states[instance.pk]
-            previous_rider = previous_state.get('rider')
-            
-            if previous_rider != instance.rider and instance.rider:
-                # Rider was assigned or changed
-                should_notify = True
-                action = "reassigned" if previous_rider else "assigned"
-                notification_message = (
-                    f'You have been {action} to deliver Order #{instance.order.order_number}. '
-                    f'Total value: KES {instance.order.total_amount}. '
-                    f'Please check your delivery dashboard for details.'
-                )
-            
-            # Clean up stored state
-            del _previous_delivery_states[instance.pk]
         
-        if should_notify and instance.rider.should_receive_notification('order_update'):
-            # Get delivery address details
-            delivery_location = "N/A"
-            if instance.order.delivery_location:
-                delivery_location = f"{instance.order.delivery_location.location_name}"
-            
-            full_message = f"{notification_message} Delivery to: {delivery_location}"
-            
-            Notification.objects.create(
-                user=instance.rider,
-                notification_type='order_update',
-                title=f'Delivery Assignment #{instance.delivery_id}',
-                message=full_message,
-                send_sms=instance.rider.sms_notifications,
-                related_id=instance.delivery_id
-            )
-            
-    except ImportError:
-        # Communication app not available
-        pass
-    except Exception as e:
-        # Log error but don't break delivery creation
-        print(f"Error sending rider notification: {e}")
-        pass
+        # Clean up stored state
+        del _previous_delivery_states[instance.pk]
+    
+    if should_notify and instance.rider.should_receive_notification('order_update'):
+        # Get delivery address details
+        delivery_location = "N/A"
+        if instance.order.delivery_location:
+            delivery_location = f"{instance.order.delivery_location.location_name}"
+        
+        full_message = f"{notification_message} Delivery to: {delivery_location}"
+        
+        NotificationService.send_notification(
+            user=instance.rider,
+            notification_type='order_update',
+            title=f'Delivery Assignment #{instance.delivery_id}',
+            message=full_message,
+            send_sms=True, # Always attempt SMS for critical updates if user allows
+            related_id=instance.delivery_id
+        )
+    
+    # Notify admins when a rider is assigned/reassigned
+    if should_notify:
+        admins = User.objects.filter(user_role='admin')
+        for admin in admins:
+            if admin.should_receive_notification('system_message'):
+                admin_assignment_message = f'Rider {instance.rider.get_full_name()} has been assigned to Order #{instance.order.order_number}.'
+                NotificationService.send_notification(
+                    user=admin,
+                    notification_type='system_message',
+                    title=f'Rider Assignment: #{instance.order.order_number}',
+                    message=admin_assignment_message,
+                    send_sms=True,
+                    related_id=instance.delivery_id
+                )

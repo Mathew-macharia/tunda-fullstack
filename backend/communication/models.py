@@ -1,8 +1,11 @@
 from django.db import models
 import uuid
 from users.models import User
-from orders.models import Order
 from django.utils import timezone
+from django.apps import apps # Import apps to resolve circular dependency
+
+# Defer Order import to avoid circular dependency
+# Order = apps.get_model('orders', 'Order') # This line is not needed here, but for reference
 
 class Notification(models.Model):
     """Model for system notifications"""
@@ -22,7 +25,7 @@ class Notification(models.Model):
     message = models.TextField()
     is_read = models.BooleanField(default=False)
     send_sms = models.BooleanField(default=False)
-    related_id = models.UUIDField(null=True, blank=True)  # ID of related entity
+    related_id = models.CharField(max_length=255, null=True, blank=True)  # ID of related entity (changed to CharField)
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
@@ -50,7 +53,8 @@ class Message(models.Model):
     message_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
     recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
-    order = models.ForeignKey(Order, on_delete=models.SET_NULL, null=True, blank=True, related_name='messages')
+    # Use a string reference for Order to avoid circular import
+    order = models.ForeignKey('orders.Order', on_delete=models.SET_NULL, null=True, blank=True, related_name='messages')
     message_text = models.TextField()
     message_type = models.CharField(max_length=10, choices=MESSAGE_TYPES, default='text')
     media_url = models.URLField(null=True, blank=True)
@@ -99,7 +103,8 @@ class SupportTicket(models.Model):
     
     ticket_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='support_tickets')
-    order = models.ForeignKey(Order, on_delete=models.SET_NULL, null=True, blank=True, related_name='support_tickets')
+    # Use a string reference for Order to avoid circular import
+    order = models.ForeignKey('orders.Order', on_delete=models.SET_NULL, null=True, blank=True, related_name='support_tickets')
     ticket_number = models.CharField(max_length=20, unique=True)
     subject = models.CharField(max_length=255)
     description = models.TextField()

@@ -166,6 +166,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # CORS settings
 CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173').split(',')
 
+# Africa's Talking SMS settings
+AFRICASTALKING_USERNAME = os.environ.get('AFRICASTALKING_USERNAME')
+AFRICASTALKING_API_KEY = os.environ.get('AFRICASTALKING_API_KEY')
+
 # Allow credentials to be included in CORS requests
 CORS_ALLOW_CREDENTIALS = True
 

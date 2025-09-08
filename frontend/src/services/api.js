@@ -734,16 +734,9 @@ export const communicationAPI = {
     const response = await api.post('/communication/notifications/mark_all_read/')
     return response.data
   },
-
-  async createNotification(notificationData) {
-    const response = await api.post('/communication/notifications/', notificationData)
-    return response.data
-  },
-
-  async bulkCreateNotifications(bulkData) {
-    const response = await api.post('/communication/notifications/bulk_create/', bulkData)
-    return response.data
-  },
+  // Note: createNotification and bulkCreateNotifications are backend-only operations
+  // as notifications are created by the NotificationService on the backend.
+  // Frontend will only fetch and manage read status.
 
   // Messages
   async getMessages(params = {}) {

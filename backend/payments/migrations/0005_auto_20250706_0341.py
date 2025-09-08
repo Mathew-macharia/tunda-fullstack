@@ -11,22 +11,4 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='paymenttransaction',
-            name='payment_session',
-            field=models.ForeignKey(
-                blank=True,
-                null=True,
-                on_delete=django.db.models.deletion.CASCADE,
-                related_name='transactions',
-                to='payments.paymentsession'
-            ),
-        ),
-        migrations.AddIndex(
-            model_name='paymenttransaction',
-            index=models.Index(
-                fields=['payment_session'],
-                name='payment_session_idx'
-            ),
-        ),
     ]

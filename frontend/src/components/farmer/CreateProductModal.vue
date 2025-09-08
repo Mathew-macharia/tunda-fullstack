@@ -56,19 +56,16 @@
             Unit of Measurement <span class="text-red-500">*</span>
           </label>
           <select
-            v-model="formData.unit_of_measurement"
+            v-model="formData.unit_of_measure"
             required
             class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
           >
             <option value="">Select unit</option>
             <option value="kg">Kilogram (kg)</option>
-            <option value="g">Gram (g)</option>
             <option value="piece">Piece</option>
             <option value="bunch">Bunch</option>
             <option value="bag">Bag</option>
-            <option value="crate">Crate</option>
-            <option value="box">Box</option>
-            <option value="liter">Liter</option>
+            <option value="litre">Litre</option>
           </select>
         </div>
 
@@ -119,7 +116,7 @@ const formData = reactive({
   product_name: '',
   category: '', // Changed from category_id to category
   description: '',
-  unit_of_measurement: '',
+  unit_of_measure: '',
   is_seasonal: false
 })
 
