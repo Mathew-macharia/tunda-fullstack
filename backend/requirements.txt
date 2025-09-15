@@ -23,3 +23,4 @@ mysqlclient
 setuptools
 googlemaps==4.4.6
 africastalking
+Faker==18.11.2
