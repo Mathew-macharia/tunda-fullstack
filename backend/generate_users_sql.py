@@ -62,7 +62,7 @@ def generate_sql_script(num_users=200, num_farmers=30, num_riders=15, num_admins
         first_name = fake_english.first_name()
         last_name = random.choice(kenyan_last_names)
         phone_number = generate_kenyan_phone_number(user_index)
-        email = f"{first_name.lower()}.{last_name.lower()}.admin{i+1}@example.com"
+        email = f"{first_name.lower()}.{last_name.lower()}.admin{i+1}@gmail.com" # Changed to @gmail.com
         user_role = "admin"
         is_staff = 1
         is_superuser = 1
@@ -83,7 +83,7 @@ def generate_sql_script(num_users=200, num_farmers=30, num_riders=15, num_admins
         first_name = fake_english.first_name()
         last_name = random.choice(kenyan_last_names)
         phone_number = generate_kenyan_phone_number(user_index)
-        email = f"{first_name.lower()}.{last_name.lower()}.farmer{i+1}@example.com"
+        email = f"{first_name.lower()}.{last_name.lower()}.farmer{i+1}@gmail.com" # Changed to @gmail.com
         user_role = "farmer"
         is_staff = 0
         is_superuser = 0
@@ -104,7 +104,7 @@ def generate_sql_script(num_users=200, num_farmers=30, num_riders=15, num_admins
         first_name = fake_english.first_name()
         last_name = random.choice(kenyan_last_names)
         phone_number = generate_kenyan_phone_number(user_index)
-        email = f"{first_name.lower()}.{last_name.lower()}.rider{i+1}@example.com"
+        email = f"{first_name.lower()}.{last_name.lower()}.rider{i+1}@gmail.com" # Changed to @gmail.com
         user_role = "rider"
         is_staff = 0
         is_superuser = 0
@@ -130,7 +130,7 @@ def generate_sql_script(num_users=200, num_farmers=30, num_riders=15, num_admins
         first_name = fake_english.first_name()
         last_name = random.choice(kenyan_last_names)
         phone_number = generate_kenyan_phone_number(user_index)
-        email = f"{first_name.lower()}.{last_name.lower()}.customer{i+1}@example.com"
+        email = f"{first_name.lower()}.{last_name.lower()}.customer{i+1}@gmail.com" # Changed to @gmail.com
         user_role = "customer"
         is_staff = 0
         is_superuser = 0
