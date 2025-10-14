@@ -457,7 +457,7 @@ export default {
     
     const filters = reactive({
       search: route.query.search || '', // Initialize search from URL query
-      category: '',
+      category: route.query.category || '', // Initialize category from URL query
       farmer_id: route.query.farmer_id || '', // Initialize farmer_id from URL query
       availableOnly: false,
       organicOnly: false,
@@ -633,6 +633,12 @@ export default {
     // Watch for changes in the route's search query
     watch(() => route.query.search, (newSearchQuery) => {
       filters.search = newSearchQuery || '';
+      resetAndLoadProducts();
+    });
+
+    // Watch for changes in the route's category query
+    watch(() => route.query.category, (newCategory) => {
+      filters.category = newCategory || '';
       resetAndLoadProducts();
     });
 
