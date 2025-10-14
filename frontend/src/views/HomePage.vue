@@ -51,10 +51,7 @@
       <!-- Shop by Farmer -->
       <div class="mb-8 sm:mb-12">
         <div class="flex items-center justify-between mb-6">
-          <div>
-            <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">Shop by Farmer</h2>
-            <p class="mt-1 text-sm text-gray-600">Meet our verified local farmers</p>
-          </div>
+          <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">Shop by Farmer</h2>
           <router-link 
             to="/products" 
             class="text-green-600 hover:text-green-700 text-sm font-medium flex items-center space-x-1"
@@ -67,62 +64,62 @@
         </div>
         
         <!-- Loading State -->
-        <div v-if="loadingFarmers" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-          <div v-for="n in 5" :key="n" class="bg-white rounded-2xl p-6 shadow-sm animate-pulse">
-            <div class="w-20 h-20 rounded-full bg-gray-200 mx-auto mb-4"></div>
+        <div v-if="loadingFarmers" class="flex space-x-4 overflow-x-auto pb-2 -mb-2 scrollbar-hide">
+          <div v-for="n in 5" :key="n" class="flex-shrink-0 w-32 sm:w-40 bg-white rounded-2xl p-4 sm:p-6 shadow-sm animate-pulse">
+            <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gray-200 mx-auto mb-3 sm:mb-4"></div>
             <div class="h-4 bg-gray-200 rounded mb-2"></div>
             <div class="h-3 bg-gray-200 rounded w-2/3 mx-auto"></div>
           </div>
         </div>
         
-        <!-- Farmers Grid -->
-        <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-          <div
-            v-for="farmer in farmers"
-            :key="farmer.farmer_id"
-            @click="filterByFarmer(farmer.farmer_id)"
-            class="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer text-center border border-gray-100 hover:border-green-200 transform hover:-translate-y-1"
-          >
-            <!-- Farmer Avatar/Photo -->
-            <div class="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden mx-auto mb-4 bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
-              <!-- If profile photo exists -->
-              <img 
-                v-if="farmer.profile_photo_url"
-                :src="farmer.profile_photo_url"
-                :alt="farmer.farmer_name"
-                class="w-full h-full object-cover"
-              />
-              <!-- Fallback: Initials -->
-              <span v-else class="text-white text-2xl sm:text-3xl font-bold">
-                {{ getInitials(farmer.farmer_name) }}
-              </span>
-              
-              <!-- Verified Badge (if high rating) -->
-              <div v-if="farmer.average_rating >= 4.5" class="absolute -bottom-1 -right-1 bg-green-600 rounded-full p-1.5">
-                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                </svg>
+        <!-- Farmers Scrollable List -->
+        <div v-else class="relative">
+          <div class="flex space-x-4 overflow-x-auto pb-2 -mb-2 scrollbar-hide scroll-fade">
+            <div
+              v-for="farmer in farmers"
+              :key="farmer.farmer_id"
+              @click="filterByFarmer(farmer.farmer_id)"
+              class="flex-shrink-0 w-32 sm:w-40 bg-white rounded-2xl p-4 sm:p-6 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer text-center border border-gray-100 hover:border-green-200 transform hover:-translate-y-1"
+            >
+              <!-- Farmer Avatar/Photo -->
+              <div class="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden mx-auto mb-3 sm:mb-4 bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
+                <!-- If profile photo exists -->
+                <img 
+                  v-if="farmer.profile_photo_url"
+                  :src="farmer.profile_photo_url"
+                  :alt="farmer.farmer_name"
+                  class="w-full h-full object-cover"
+                />
+                <!-- Fallback: Initials -->
+                <span v-else class="text-white text-xl sm:text-2xl font-bold">
+                  {{ getInitials(farmer.farmer_name) }}
+                </span>
+                
+                <!-- Verified Badge (if high rating) -->
+                <div v-if="farmer.average_rating >= 4.5" class="absolute -bottom-1 -right-1 bg-green-600 rounded-full p-1">
+                  <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                  </svg>
+                </div>
               </div>
-            </div>
-            
-            <!-- Farmer Name -->
-            <h3 class="text-sm sm:text-base font-semibold text-gray-900 line-clamp-2 mb-2">
-              {{ farmer.farmer_name }}
-            </h3>
-            
-            <!-- Rating -->
-            <div v-if="farmer.review_count > 0" class="flex items-center justify-center text-xs text-gray-600 mb-2">
-              <svg class="h-4 w-4 text-yellow-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.929 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z"></path>
-              </svg>
-              <span class="font-medium">{{ farmer.average_rating.toFixed(1) }}</span>
-              <span class="mx-1">·</span>
-              <span class="text-gray-500">{{ farmer.review_count }}</span>
-            </div>
-            
-            <!-- Active Listings Count -->
-            <div class="text-xs text-green-600 font-medium">
-              {{ farmer.active_listings_count }} {{ farmer.active_listings_count === 1 ? 'product' : 'products' }}
+              
+              <!-- Farmer Name -->
+              <h3 class="text-sm sm:text-base font-semibold text-gray-900 line-clamp-2 mb-2">
+                {{ farmer.farmer_name }}
+              </h3>
+              
+              <!-- Rating -->
+              <div v-if="farmer.review_count > 0" class="flex items-center justify-center text-xs text-gray-600 mb-2">
+                <svg class="h-3 h-3 sm:h-4 sm:w-4 text-yellow-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.929 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z"></path>
+                </svg>
+                <span class="font-medium text-xs">{{ farmer.average_rating.toFixed(1) }}</span>
+              </div>
+              
+              <!-- Active Listings Count -->
+              <div class="text-xs text-green-600 font-medium">
+                {{ farmer.active_listings_count }} {{ farmer.active_listings_count === 1 ? 'product' : 'products' }}
+              </div>
             </div>
           </div>
         </div>

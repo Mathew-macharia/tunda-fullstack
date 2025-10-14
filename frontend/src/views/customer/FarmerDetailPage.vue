@@ -255,12 +255,14 @@
 
       <!-- Related Farmers Section -->
       <div v-if="relatedFarmers.length > 0" class="mb-8">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-2xl font-bold text-gray-900">Related Farmers</h2>
-          <span class="text-sm text-gray-500">Similar farmers in your area</span>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+          <div>
+            <h2 class="text-xl sm:text-2xl font-bold text-gray-900">More Farmers Like This</h2>
+            <p class="text-xs sm:text-sm text-gray-600 mt-1">Discover similar local producers</p>
+          </div>
         </div>
         
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
           <FarmerCard 
             v-for="relatedFarmer in relatedFarmers" 
             :key="relatedFarmer.farmer_id"
