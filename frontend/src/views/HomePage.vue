@@ -251,26 +251,6 @@
         </div>
       </div>
 
-      <!-- Health Tip Card -->
-      <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 sm:p-8 border border-green-100">
-        <div class="flex flex-col sm:flex-row items-start sm:space-x-4 space-y-4 sm:space-y-0">
-          <div class="flex-shrink-0 w-24 h-24 sm:w-32 sm:h-32 bg-green-100 rounded-full flex items-center justify-center mx-auto sm:mx-0">
-            <img src="@/assets/illustrations/healthylifestyle.svg" alt="Healthy Lifestyle" class="w-full h-full object-contain" />
-          </div>
-          <div class="flex-1 text-center sm:text-left">
-            <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2">Today's Health Tip</h3>
-            <p class="text-gray-700 text-sm sm:text-base leading-relaxed mb-4">
-              {{ currentHealthTip }}
-            </p>
-            <div class="flex items-center justify-center sm:justify-start text-sm text-green-600 font-medium">
-              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-              <span>Eat fresh, live healthy!</span>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- Notification Message -->
