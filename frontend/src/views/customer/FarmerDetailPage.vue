@@ -45,107 +45,82 @@
         </ol>
       </nav>
 
-      <!-- Farmer Header Section -->
-      <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
-        <div class="relative h-48 bg-gradient-to-br from-green-100 via-green-50 to-blue-50"></div>
-        
-        <div class="px-6 pb-6 pt-6">
-          <div class="flex flex-col sm:flex-row items-center sm:items-start -mt-32 sm:-mt-20">
-            <!-- Profile Photo -->
-            <div class="relative sm:flex-shrink-0">
+      <!-- Farmer Header Section - Mobile Optimized -->
+      <div class="bg-white rounded-lg shadow-sm mb-6">
+        <div class="p-4 sm:p-6">
+          <div class="flex items-start gap-4">
+            <!-- Profile Photo - Compact -->
+            <div class="flex-shrink-0">
               <img 
                 v-if="farmer.profile_photo_url" 
                 :src="farmer.profile_photo_url" 
                 :alt="farmer.farmer_name"
-                class="h-32 w-32 rounded-full object-cover border-4 border-white shadow-lg"
+                class="h-20 w-20 sm:h-24 sm:w-24 rounded-full object-cover border-2 border-green-100 shadow"
               />
               <div 
                 v-else 
-                class="h-32 w-32 rounded-full bg-green-600 flex items-center justify-center border-4 border-white shadow-lg"
+                class="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-green-600 flex items-center justify-center border-2 border-green-100 shadow"
               >
-                <span class="text-4xl font-bold text-white">{{ getInitials(farmer.farmer_name) }}</span>
+                <span class="text-2xl sm:text-3xl font-bold text-white">{{ getInitials(farmer.farmer_name) }}</span>
               </div>
             </div>
 
-            <!-- Farmer Info -->
-            <div class="mt-4 sm:mt-16 sm:ml-6 text-center sm:text-left flex-1">
-              <h1 class="text-3xl font-bold text-gray-900">{{ farmer.farmer_name }}</h1>
+            <!-- Farmer Info - Compact -->
+            <div class="flex-1 min-w-0">
+              <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">{{ farmer.farmer_name }}</h1>
               
-              <div class="flex flex-wrap items-center justify-center sm:justify-start gap-4 mt-2">
-                <!-- Location -->
-                <div v-if="farmer.primary_location" class="flex items-center text-gray-600">
-                  <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <!-- Location & Rating in one line on mobile -->
+              <div class="flex flex-wrap items-center gap-2 sm:gap-3 text-sm text-gray-600 mb-2">
+                <div v-if="farmer.primary_location" class="flex items-center">
+                  <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
-                  <span>{{ farmer.primary_location }}</span>
+                  <span class="text-xs sm:text-sm">{{ farmer.primary_location }}</span>
                 </div>
-
-                <!-- Member Since -->
-                <div class="flex items-center text-gray-600">
-                  <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <span>Member since {{ formatDate(farmer.member_since) }}</span>
-                </div>
-              </div>
-
-              <!-- Rating -->
-              <div class="flex items-center justify-center sm:justify-start mt-3">
+                
+                <span class="text-gray-300">•</span>
+                
+                <!-- Rating -->
                 <div class="flex items-center">
-                  <svg 
-                    v-for="star in 5" 
-                    :key="star"
-                    class="w-5 h-5"
-                    :class="star <= Math.round(farmer.average_rating) ? 'text-yellow-400' : 'text-gray-300'"
-                    fill="currentColor" 
-                    viewBox="0 0 20 20"
-                  >
+                  <svg class="w-4 h-4 text-yellow-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
+                  <span class="font-medium text-xs sm:text-sm">
+                    {{ farmer.average_rating > 0 ? farmer.average_rating.toFixed(1) : 'New' }}
+                  </span>
+                  <span v-if="farmer.review_count > 0" class="text-gray-400 text-xs sm:text-sm ml-1">
+                    ({{ farmer.review_count }})
+                  </span>
                 </div>
-                <span class="ml-2 text-lg font-semibold text-gray-700">
-                  {{ farmer.average_rating > 0 ? farmer.average_rating.toFixed(1) : 'New Farmer' }}
-                </span>
-                <span v-if="farmer.review_count > 0" class="ml-1 text-gray-500">
-                  ({{ farmer.review_count }} {{ farmer.review_count === 1 ? 'review' : 'reviews' }})
-                </span>
+              </div>
+
+              <!-- Quick Stats - Inline -->
+              <div class="flex items-center gap-3 text-xs sm:text-sm">
+                <div class="flex items-center text-green-600 font-medium">
+                  <span>{{ farmer.total_products }} products</span>
+                </div>
+                <span class="text-gray-300">•</span>
+                <div class="text-gray-600">
+                  {{ farmer.farms_count }} {{ farmer.farms_count === 1 ? 'farm' : 'farms' }}
+                </div>
+                <span v-if="farmer.statistics.organic_products > 0" class="text-gray-300 hidden sm:inline">•</span>
+                <div v-if="farmer.statistics.organic_products > 0" class="text-green-600 hidden sm:block">
+                  {{ farmer.statistics.organic_products }} organic
+                </div>
               </div>
             </div>
-
-            <!-- View All Products Button -->
-            <div class="mt-4 sm:mt-16 sm:ml-4">
-              <router-link 
-                :to="`/products?farmer_id=${farmer.farmer_id}`"
-                class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition-colors"
-              >
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                </svg>
-                View All Products
-              </router-link>
-            </div>
           </div>
 
-          <!-- Statistics -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8">
-            <div class="bg-green-50 rounded-lg p-4 text-center">
-              <div class="text-3xl font-bold text-green-600">{{ farmer.total_products }}</div>
-              <div class="text-sm text-gray-600 mt-1">Active Products</div>
-            </div>
-            <div class="bg-blue-50 rounded-lg p-4 text-center">
-              <div class="text-3xl font-bold text-blue-600">{{ farmer.farms_count }}</div>
-              <div class="text-sm text-gray-600 mt-1">Farms</div>
-            </div>
-            <div class="bg-yellow-50 rounded-lg p-4 text-center">
-              <div class="text-3xl font-bold text-yellow-600">{{ farmer.statistics.organic_products }}</div>
-              <div class="text-sm text-gray-600 mt-1">Organic Products</div>
-            </div>
-            <div class="bg-purple-50 rounded-lg p-4 text-center">
-              <div class="text-3xl font-bold text-purple-600">{{ farmer.statistics.total_sales }}</div>
-              <div class="text-sm text-gray-600 mt-1">Total Sales</div>
-            </div>
-          </div>
+          <!-- View All Products Button - Full width on mobile -->
+          <router-link 
+            :to="`/products?farmer_id=${farmer.farmer_id}`"
+            class="mt-4 w-full sm:w-auto inline-flex items-center justify-center px-6 py-2.5 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 transition-colors"
+          >
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            </svg>
+            View All Products ({{ farmer.total_products }})
+          </router-link>
         </div>
       </div>
 

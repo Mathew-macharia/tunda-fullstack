@@ -305,18 +305,6 @@ export default {
     const loadingFarmers = ref(false)
     const loadingFreshPicks = ref(false)
     
-    // Health tips array
-    const healthTips = [
-      "Eating 5 servings of fruits and vegetables daily can reduce your risk of heart disease by 20%. Start your day with a colorful fruit salad!",
-      "Dark leafy greens like spinach and kale are packed with iron and folate. Add them to your smoothies for an extra nutritional boost.",
-      "Berries are nature's antioxidant powerhouses! Blueberries, strawberries, and blackberries help fight inflammation and boost brain health.",
-      "Orange and yellow vegetables like carrots, sweet potatoes, and bell peppers are rich in beta-carotene, which supports healthy vision and immune function.",
-      "Fresh herbs like basil, cilantro, and parsley not only add flavor but also provide essential vitamins and minerals. Grow your own herb garden for maximum freshness!",
-      "Whole grains provide sustained energy and fiber for digestive health. Choose brown rice, quinoa, and oats over processed alternatives.",
-      "Legumes like beans, lentils, and chickpeas are excellent sources of plant-based protein and fiber. They help maintain stable blood sugar levels.",
-      "Stay hydrated by eating water-rich foods like cucumbers, watermelon, and tomatoes. They help maintain healthy skin and support kidney function."
-    ]
-    
     // Image mapping for categories with correct extensions
     const categoryImages = {
       'dairy': 'dairy.jpg',
@@ -331,13 +319,6 @@ export default {
       'vegetables': 'vegetables.webp',
       'default': 'default.jpg' // Fallback default image
     }
-    
-    // Computed
-    const currentHealthTip = computed(() => {
-      const today = new Date()
-      const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000)
-      return healthTips[dayOfYear % healthTips.length]
-    })
     
     // Methods
     const getCategoryImage = (categoryName) => {
@@ -486,7 +467,6 @@ export default {
       // Computed
       isAuthenticated,
       isCustomer,
-      currentHealthTip,
       showNotification,
       notificationMessage,
       

@@ -458,6 +458,7 @@ export default {
     const filters = reactive({
       search: route.query.search || '', // Initialize search from URL query
       category: '',
+      farmer_id: route.query.farmer_id || '', // Initialize farmer_id from URL query
       availableOnly: false,
       organicOnly: false,
       sortBy: ''
@@ -521,6 +522,7 @@ export default {
           page_size: 12,
           ...(filters.search && { search: filters.search }),
           ...(filters.category && { category: filters.category }), // Corrected to 'category'
+          ...(filters.farmer_id && { farmer_id: filters.farmer_id }),
           ...(filters.availableOnly ? { status: 'available' } : {}),
           ...(filters.organicOnly && { organic: 'true' }),
           ...(filters.sortBy && { ordering: getSortOrder(filters.sortBy) })
@@ -631,6 +633,12 @@ export default {
     // Watch for changes in the route's search query
     watch(() => route.query.search, (newSearchQuery) => {
       filters.search = newSearchQuery || '';
+      resetAndLoadProducts();
+    });
+
+    // Watch for changes in the route's farmer_id query
+    watch(() => route.query.farmer_id, (newFarmerId) => {
+      filters.farmer_id = newFarmerId || '';
       resetAndLoadProducts();
     });
     
