@@ -19,6 +19,7 @@ const RiderSupportPage = () => import('@/views/rider/SupportPage.vue')
 const CustomerDashboard = () => import('@/views/customer/CustomerDashboard.vue')
 const ProductsPage = () => import('@/views/customer/ProductsPage.vue')
 const ProductDetail = () => import('@/views/customer/ProductDetail.vue')
+const FarmerDetailPage = () => import('@/views/customer/FarmerDetailPage.vue')
 const CartPage = () => import('@/views/customer/CartPage.vue')
 const CheckoutPage = () => import('@/views/customer/CheckoutPage.vue')
 const OrdersPage = () => import('@/views/customer/OrdersPage.vue')
@@ -181,6 +182,29 @@ const routes = [
     meta: {
       title: 'Product Details - Tunda App',
       description: 'View detailed information about a specific product on Tunda App.'
+    },
+    beforeEnter: (to, from, next) => {
+      // Block access for non-customer authenticated users
+      if (isAuthenticated.value && (!isCustomer.value || isFarmer.value || isRider.value || isAdmin.value)) {
+        if (isFarmer.value) {
+          return next('/farmer')
+        } else if (isRider.value) {
+          return next('/rider')
+        } else if (isAdmin.value) {
+          return next('/admin')
+        }
+        return next('/')
+      }
+      next()
+    }
+  },
+  {
+    path: '/farmers/:id',
+    name: 'farmer-detail',
+    component: FarmerDetailPage,
+    meta: {
+      title: 'Farmer Profile - Tunda App',
+      description: 'View farmer profile and products on Tunda App.'
     },
     beforeEnter: (to, from, next) => {
       // Block access for non-customer authenticated users

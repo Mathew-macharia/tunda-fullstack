@@ -255,6 +255,25 @@ export const productsAPI = {
       }
     })
     return response.data
+  },
+
+  async getActiveFarmers() {
+    const response = await api.get('/products/listings/active_farmers/')
+    return response.data
+  },
+
+  async getFarmerDetail(farmerId) {
+    const response = await api.get('/products/listings/farmer_detail/', {
+      params: { farmer_id: farmerId }
+    })
+    return response.data
+  },
+
+  async getRelatedFarmers(farmerId) {
+    const response = await api.get('/products/listings/related_farmers/', {
+      params: { farmer_id: farmerId }
+    })
+    return response.data
   }
 }
 
