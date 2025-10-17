@@ -14,12 +14,12 @@
       <!-- Phone Number -->
       <div class="w-full px-4 py-3 border-2 border-green-600 rounded-lg text-center">
         <p class="text-sm font-medium text-gray-700 mb-1">Phone Number</p>
-        <p class="text-xl sm:text-2xl font-extrabold text-gray-900">0114004197</p>
+        <p class="text-xl sm:text-2xl font-extrabold text-gray-900">+254 701 669707</p>
       </div>
 
       <!-- Name -->
       <div class="w-full text-center">
-        <p class="text-lg sm:text-xl font-bold text-gray-900">Mathew Kamande Macharia</p>
+        <p class="text-lg sm:text-xl font-bold text-gray-900">Escrivia Nyongesa</p>
       </div>
 
       <!-- Instructions and Safaricom -->
