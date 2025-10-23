@@ -237,7 +237,7 @@
             </div>
             <div class="mt-3 pt-3 border-t border-gray-100">
               <div class="flex justify-between text-xs text-gray-500">
-                <span>Joined: {{ formatDate(user.date_joined) }}</span>
+                <span>Joined: {{ formatDate(user.created_at) }}</span>
                 <span>Last login: {{ user.last_login ? formatDate(user.last_login) : 'Never' }}</span>
               </div>
             </div>
@@ -300,7 +300,7 @@
                     </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {{ formatDate(user.date_joined) }}
+                    {{ formatDate(user.created_at) }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {{ user.last_login ? formatDate(user.last_login) : 'Never' }}
@@ -526,7 +526,11 @@ const loadUserStats = async () => {
 }
 
 const formatDate = (dateString) => {
+  if (!dateString) return 'N/A' // Handle null or undefined date strings
   const date = new Date(dateString)
+  if (isNaN(date.getTime())) { // Check if date is invalid
+    return 'Invalid Date'
+  }
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
