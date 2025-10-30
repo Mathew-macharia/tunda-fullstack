@@ -3,6 +3,7 @@ import { RouterLink, RouterView } from 'vue-router'
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import logoImage from '@/assets/tunda_logo.jpg'
+import Footer from '@/components/Footer.vue' // Import the Footer component
 import { 
   user, 
   isAuthenticated, 
@@ -520,5 +521,8 @@ onUnmounted(() => {
     
     <!-- Main Content -->
     <RouterView />
+
+    <!-- Footer -->
+    <Footer />
   </div>
 </template>

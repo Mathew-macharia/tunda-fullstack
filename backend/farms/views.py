@@ -43,8 +43,11 @@ class FarmViewSet(viewsets.ModelViewSet):
         if self.action in ['update', 'partial_update', 'destroy']:
             # For update and delete actions, add IsOwner permission
             permission_classes = [permissions.IsAuthenticated, IsFarmer, IsOwner]
+        elif self.action == 'list':
+            # Allow any user (authenticated or not) to view the list of farms
+            permission_classes = [permissions.AllowAny]
         else:
-            # For list and create actions, only require authentication and farmer role
+            # For other actions (like create, retrieve), require authentication and farmer role
             permission_classes = [permissions.IsAuthenticated, IsFarmer]
         
         return [permission() for permission in permission_classes]
@@ -53,15 +56,21 @@ class FarmViewSet(viewsets.ModelViewSet):
         """
         This view returns a list of all farms for the currently authenticated user
         if they are a farmer, or an empty queryset otherwise.
+        
+        For the 'list' action, it returns all farms for any user (authenticated or not).
         """
         user = self.request.user
         
-        # If user is an admin, return all farms
-        if user.user_role == 'admin':
+        # If the action is 'list', return all farms for any user
+        if self.action == 'list':
+            return Farm.objects.all()
+
+        # If user is an admin, return all farms for other actions
+        if user.is_authenticated and user.user_role == 'admin':
             return Farm.objects.all()
         
-        # If user is a farmer, return their farms
-        elif user.user_role == 'farmer':
+        # If user is a farmer, return their farms for other actions
+        elif user.is_authenticated and user.user_role == 'farmer':
             queryset = Farm.objects.filter(farmer=user)
             
             # Filter by location_id if provided
