@@ -7,6 +7,9 @@ export default {
   theme: {
     extend: {
       colors: {
+        green: {
+          DEFAULT: '#3e7b51',
+        },
         primary: {
           50: '#f0fdf4',
           100: '#dcfce7',
@@ -29,4 +32,4 @@ export default {
     require('@tailwindcss/forms'),
     require('@tailwindcss/typography'),
   ],
-} 
+}

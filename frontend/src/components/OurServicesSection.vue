@@ -1,8 +1,8 @@
 <template>
   <div class="relative pt-5 pb-20 sm:pt-6 sm:pb-24 lg:pt-8 lg:pb-32">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <p class="text-2xl text-gray-900 font-semibold tracking-wide uppercase font-dancing-script">Our</p>
-      <h2 class="mt-2 text-4xl font-extrabold text-green-600 tracking-tight sm:text-4xl">
+<p class="text-xl text-gray-900 font-semibold tracking-wide uppercase font-dancing-script">Our</p>
+      <h2 class="mt-2 text-2xl font-extrabold text-green-600 tracking-tight sm:text-4xl">
         Services
       </h2>
     </div>

@@ -9,8 +9,8 @@
     <div class="relative bg-green-800 py-8 rounded-xl">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="text-center">
-          <h3 class="text-4xl font-dancing-script text-white font-semibold tracking-wide">Newsletter</h3>
-          <p class="mt-2 text-lg text-white">Stay updated with exclusive offers and news by subscribing to our newsletter!</p>
+<h3 class="text-3xl font-dancing-script text-white font-semibold tracking-wide sm:text-3xl md:text-4xl">Newsletter</h3>
+          <p class="mt-2 text-sm text-white">Stay updated with exclusive offers and news by subscribing to our newsletter!</p>
         </div>
         <div class="mt-8 flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
           <input

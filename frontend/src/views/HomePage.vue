@@ -12,8 +12,8 @@
       <!-- Shop by Farmer -->
       <div class="mb-20 sm:mb-24 bg-white py-12 sm:py-20">
         <div class="text-center">
-          <p class="text-2xl font-dancing-script text-gray-900 font-semibold tracking-wide uppercase">Discover your</p>
-          <h2 class="mt-2 text-4xl font-extrabold text-green-600 tracking-tight">Favourite Farmer</h2>
+<p class="text-xl font-dancing-script text-gray-900 font-semibold tracking-wide uppercase">Discover your</p>
+          <h2 class="mt-2 text-2xl font-extrabold text-green-600 tracking-tight sm:text-4xl">Favourite Farmer</h2>
         </div>
         <!-- Loading State -->
         <div v-if="loadingFarmers" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6 mt-8 sm:mt-12">
@@ -50,8 +50,8 @@
       <!-- Today's Fresh Picks -->
       <div class="mb-8 sm:mb-12">
         <div class="text-center">
-          <p class="text-2xl font-dancing-script text-gray-900 font-semibold tracking-wide uppercase">Today's</p>
-          <h2 class="mt-2 text-4xl font-extrabold text-green-600 tracking-tight">Fresh Picks</h2>
+<p class="text-xl font-dancing-script text-gray-900 font-semibold tracking-wide uppercase">Today's</p>
+          <h2 class="mt-2 text-2xl font-extrabold text-green-600 tracking-tight sm:text-4xl">Fresh Picks</h2>
         </div>
         
         <!-- Loading State -->
