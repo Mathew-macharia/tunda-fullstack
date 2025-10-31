@@ -1,5 +1,5 @@
 <template>
-  <div class="relative mt-48 mb-0 z-40">
+  <div class="relative mt-36 md:mt-48 mb-0 z-40">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="bg-green-700 rounded-lg shadow-lg p-2 sm:p-3 flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-4">
         <!-- Category Dropdown -->

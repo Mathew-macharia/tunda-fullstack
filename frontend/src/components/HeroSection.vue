@@ -35,7 +35,7 @@
         </p>
         <div class="mt-8 sm:mt-10 max-w-sm mx-auto sm:max-w-none sm:flex sm:justify-center">
           <div class="space-y-4 sm:space-y-0 sm:mx-auto sm:inline-grid sm:grid-cols-1 sm:gap-5">
-            <router-link to="/products" class="flex items-center justify-center px-5 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 md:py-2.5 md:px-7 md:text-base">
+            <router-link to="/products" class="inline-flex md:flex items-center justify-center px-2 md:px-7 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 md:py-2.5 md:text-base">
               Start Shopping
             </router-link>
           </div>

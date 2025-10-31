@@ -14,7 +14,7 @@
       <img src="/images/explore/off-right-lemon-1.png" alt="Blurred Lemon" class="absolute top-[-30%] right-[0%] w-45 h-45" style="animation: float 9s ease-in-out infinite reverse;" />
     </div>
 
-    <div class="relative max-w-7xl mx-20 px-4 sm:px-6 lg:px-8 z-20">
+    <div class="relative max-w-7xl mx-auto -ml-4 md:-ml-20 px-4 sm:px-6 lg:px-8 z-20">
       <div class="max-w-2xl ml-auto text-center w-full lg:w-3/4 mt-10"> <!-- Adjusted for subtle right shift, centered text within -->
         <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900"> <!-- Increased font size to match HeroSection -->
           <span class="block">30% OFF Deals Inside:</span>
