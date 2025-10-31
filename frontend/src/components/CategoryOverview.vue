@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-16 md:mt-0 pt-0 pb-0 sm:py-12 lg:py-24 bg-white">
+  <div class="mt-16 md:mt-0 pt-0 pb-0 mb-8 sm:mb-0 sm:py-12 lg:py-24 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
       <p class="text-2xl text-gray-900 font-semibold tracking-wide uppercase font-dancing-script">Our</p>
       <h2 class="mt-2 text-4xl font-extrabold text-green-600 tracking-tight sm:text-4xl">
@@ -61,75 +61,62 @@ const router = useRouter()
 const { categories, loadingCategories, getCategoryImage, filterByCategory } = useHomePageData()
 
 const categoryListRef = ref(null)
-let scrollInterval = null
-const scrollSpeed = 1 // Adjust scroll speed as needed
-const isOverflowing = ref(false)
+let autoScrollTimeout = null
+const currentScrollIndex = ref(0)
+const scrollDelay = 3000 // 3 seconds
 
 const visibleCategories = computed(() => {
-  if (isOverflowing.value) {
-    return [...categories.value, ...categories.value]
-  }
   return categories.value
 })
 
-const startScrolling = () => {
-  if (!categoryListRef.value || !isOverflowing.value) return
+const autoScrollCategories = () => {
+  if (!categoryListRef.value || categories.value.length === 0) return
 
   const scrollContainer = categoryListRef.value
-  // Calculate the width of a single set of categories
-  // This assumes all category items have roughly the same width and margin
-  const firstCategoryItem = scrollContainer.querySelector('.flex-shrink-0')
-  if (!firstCategoryItem) return
+  const categoryItems = scrollContainer.querySelectorAll('.flex-shrink-0')
 
-  const itemWidth = firstCategoryItem.offsetWidth + parseInt(getComputedStyle(firstCategoryItem).marginRight || '0')
-  const totalItemsWidth = categories.value.length * itemWidth;
-  
-  // The point to jump back is when scrollLeft reaches the end of the first set of original categories
-  const jumpBackPoint = totalItemsWidth;
+  if (categoryItems.length === 0) return
 
-  scrollInterval = setInterval(() => {
-    if (scrollContainer.scrollLeft >= jumpBackPoint) {
-      // If scrolled past the first set, instantly jump back to the start of the first set
-      scrollContainer.scrollLeft -= jumpBackPoint
-    }
-    scrollContainer.scrollLeft += scrollSpeed
-  }, 20) // Adjust interval for smoother/faster scrolling
-}
-
-const checkOverflowAndStartScrolling = async () => {
-  if (scrollInterval) {
-    clearInterval(scrollInterval)
-    scrollInterval = null
+  // Clear any existing timeout
+  if (autoScrollTimeout) {
+    clearTimeout(autoScrollTimeout)
   }
 
-  await nextTick() // Ensure DOM is updated before measuring
+  autoScrollTimeout = setTimeout(() => {
+    currentScrollIndex.value = (currentScrollIndex.value + 1) % categories.value.length
+    const targetElement = categoryItems[currentScrollIndex.value]
 
-  if (categoryListRef.value) {
-    const scrollContainer = categoryListRef.value
-    isOverflowing.value = scrollContainer.scrollWidth > scrollContainer.clientWidth
-
-    if (isOverflowing.value) {
-      startScrolling()
+    if (targetElement) {
+      targetElement.scrollIntoView({
+        behavior: 'smooth',
+        inline: 'center' // or 'start'/'nearest' depending on desired alignment
+      })
     } else {
-      // If not overflowing, ensure scroll position is reset and no scrolling happens
+      // If for some reason targetElement is null, reset to start
       scrollContainer.scrollLeft = 0
+      currentScrollIndex.value = 0
     }
-  }
+    autoScrollCategories() // Loop the scrolling
+  }, scrollDelay)
 }
 
 onMounted(() => {
-  checkOverflowAndStartScrolling()
+  watch(categories, (newCategories) => {
+    if (newCategories.length > 0) {
+      autoScrollCategories()
+    } else {
+      if (autoScrollTimeout) {
+        clearTimeout(autoScrollTimeout)
+      }
+    }
+  }, { immediate: true, deep: true })
 })
 
 onUnmounted(() => {
-  if (scrollInterval) {
-    clearInterval(scrollInterval)
+  if (autoScrollTimeout) {
+    clearTimeout(autoScrollTimeout)
   }
 })
-
-watch(categories, () => {
-  checkOverflowAndStartScrolling()
-}, { deep: true }) // Watch for changes in the categories array itself
 </script>
 
 <style scoped>

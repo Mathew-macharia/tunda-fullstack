@@ -6,7 +6,7 @@
     </div>
 
     <!-- Floating Product Images -->
-    <div class="absolute inset-0 z-10">
+    <div class="absolute inset-0 z-10 hidden sm:block">
       <img src="/images/explore/explore-strawbery-1.png" alt="Strawberry" class="absolute top-[-30%] left-[0%] w-45 h-45" style="animation: float 6s ease-in-out infinite;" />
       <img src="/images/explore/explore-lemon-1.png" alt="Lemon" class="absolute bottom-[10%] left-[15%] w-40 h-40" style="animation: float 7s ease-in-out infinite reverse;" />
       <img src="/images/explore/explore-bucket-1.png" alt="Bucket of Groceries" class="absolute top-[18%] left-[28%] w-[26rem] h-[26rem] -translate-x-1/2 -translate-y-1/2" style="animation: float 8s ease-in-out infinite;" />
@@ -24,8 +24,8 @@
           Discover exclusive discounts and special offers on a wide range of products throughout our
           store. Hurry, while supplies last!
         </p>
-        <div class="mt-10">
-          <router-link to="/products" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 md:py-2 md:px-10">
+        <div class="mt-10 flex justify-center">
+          <router-link to="/products" class="inline-flex items-center justify-center px-2 md:px-7 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 md:py-2.5 md:text-base">
             Explore
           </router-link>
         </div>
