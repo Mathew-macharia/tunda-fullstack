@@ -11,10 +11,10 @@
           />
         </div>
         <h2 class="mt-6 text-center text-3xl font-extrabold">
-          <span class="text-green-600">Karibu </span> 
-          <span class="text-orange-500">Tunda!</span>
+          <span class="text-primary">Karibu </span> 
+          <span class="text-orange-400">Tunda!</span>
         </h2>
-        <p class="mt-2 text-center text-sm text-gray-600">
+        <p class="mt-2 text-center text-sm text-primary">
           Sign up now for the best local produce  🍅
         </p>
       </div>
@@ -183,7 +183,7 @@
           <button
             type="submit"
             :disabled="isLoading"
-            class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-darkGreen focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span v-if="isLoading" class="absolute left-0 inset-y-0 flex items-center pl-3">
               <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
@@ -195,7 +195,7 @@
         <div class="text-center">
           <span class="text-sm text-gray-600">
             Already have an account?
-            <router-link to="/login" class="font-medium text-green-600 hover:text-green-500">
+            <router-link to="/login" class="font-medium text-primary hover:text-green-600">
               Sign in
             </router-link>
           </span>

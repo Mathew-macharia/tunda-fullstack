@@ -6,7 +6,7 @@
       <img src="/images/footer/footer-strawbery-blur.png" alt="Strawberry" class="absolute top-[-40%] left-[-5%] w-45 h-45" style="animation: float 6s ease-in-out infinite;" />
       <img src="/images/footer/footer-lemon.png" alt="Lemon" class="absolute bottom-[-50%] right-[0%] w-72 h-72" style="animation: float 7s ease-in-out infinite reverse;" />
     </div>
-    <div class="relative bg-green-800 py-8 rounded-xl">
+    <div class="relative bg-primary py-8 rounded-xl">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="text-center">
 <h3 class="text-3xl font-dancing-script text-white font-semibold tracking-wide sm:text-3xl md:text-4xl">Newsletter</h3>
@@ -16,11 +16,15 @@
           <input
             type="email"
             placeholder="Enter your email here"
-            class="w-full sm:w-80 px-4 py-2 border border-transparent rounded-lg leading-5 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+            class="w-full sm:w-80 px-4 py-2 border border-transparent rounded-lg leading-5 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:border-transparent text-sm"
           />
           <button
             @click="handleNewsletterSubmit"
-            class="w-1/3 mx-auto sm:w-auto bg-green-700 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
+            class="w-1/3 mx-auto sm:w-auto bg-transparent text-white border border-white 
+                  px-6 py-2 rounded-lg text-sm font-medium 
+                  hover:bg-white hover:text-primary hover:border-transparent 
+                  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary 
+                  transition-colors duration-200"
           >
             Submit
           </button>
@@ -31,7 +35,7 @@
 
   <footer class="bg-white text-white pt-12">
     <!-- Main Footer Content -->
-    <div class="relative bg-green-800 py-12">
+    <div class="relative bg-primary py-12">
       <img src="/images/footer/footer-right-img.png" alt="Fruit and vegetable market stall" class="absolute top-0 right-0 h-3/4 w-auto object-cover object-center opacity-75 hidden md:block" />
 
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 md:pr-1/3 text-center md:text-left">

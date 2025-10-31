@@ -2,7 +2,7 @@
   <div class="mt-16 md:mt-0 pt-0 pb-0 mb-8 sm:mb-0 sm:py-12 lg:py-24 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
 <p class="text-xl text-gray-900 font-semibold tracking-wide uppercase font-dancing-script">Our</p>
-      <h2 class="mt-2 text-2xl font-extrabold text-green-600 tracking-tight sm:text-4xl">
+      <h2 class="mt-2 text-2xl font-extrabold text-primary tracking-tight sm:text-4xl">
         Category
       </h2>
       
@@ -40,7 +40,7 @@
       <div class="mt-8">
         <router-link 
           to="/products" 
-          class="text-green-600 hover:text-green-700 text-sm font-medium flex items-center justify-center space-x-1"
+          class="text-primary hover:text-primary-700 text-sm font-medium flex items-center justify-center space-x-1"
         >
           <span>View All Categories</span>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

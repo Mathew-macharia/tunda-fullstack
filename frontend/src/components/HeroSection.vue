@@ -1,5 +1,5 @@
 <template>
-  <div class="relative bg-green-50 py-20 sm:py-32 lg:py-40 overflow-visible">
+  <div class="relative bg-primary py-20 sm:py-32 lg:py-40 overflow-visible">
     <!-- Background Illustrations -->
     <div class="absolute inset-0 z-0">
       <img src="/images/backgrounds/background_image.png" alt="Background illustrations" class="w-full h-full object-cover object-center" />
@@ -27,7 +27,7 @@
       <div class="text-center" style="transform: translateY(-30%);">
         <h1 class="text-2xl font-extrabold tracking-tight text-grey-900 sm:text-3xl md:text-4xl">
           <span class="block xl:inline">Your One-Stop Shop</span>
-          <span class="block text-green-600 xl:inline"> for Freshness and Savings!</span>
+          <span class="block text-primary xl:inline"> for Freshness and Savings!</span>
         </h1>
         <p class="mt-4 max-w-2xl mx-auto text-sm text-gray-500 sm:text-base md:mt-5 md:max-w-3xl">
           Explore a diverse range of high-quality products, from fresh produce to pantry essentials,
@@ -35,7 +35,7 @@
         </p>
         <div class="mt-8 sm:mt-10 max-w-sm mx-auto sm:max-w-none sm:flex sm:justify-center">
           <div class="space-y-4 sm:space-y-0 sm:mx-auto sm:inline-grid sm:grid-cols-1 sm:gap-5">
-            <router-link to="/products" class="inline-flex md:flex items-center justify-center px-2 md:px-7 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 md:py-2.5 md:text-base">
+            <router-link to="/products" class="inline-flex md:flex items-center justify-center px-2 md:px-7 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-darkGreen md:py-2.5 md:text-base">
               Start Shopping
             </router-link>
           </div>
@@ -47,13 +47,13 @@
     <div class="absolute bottom-[15%] sm:bottom-[20%] right-[5%] sm:right-[15%] lg:right-[28%] z-20">
       <div class="bg-white rounded-lg sm:rounded-xl shadow-lg px-3 py-1.5 sm:px-4 sm:py-2 flex flex-col items-start space-y-0.5 sm:space-y-1">
         <div class="flex items-center space-x-1">
-          <svg class="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
           </svg>
           <span class="text-xs sm:text-sm lg:text-base font-bold text-gray-700">100% Fresh</span>
         </div>
         <div class="flex items-center space-x-1">
-          <svg class="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
           </svg>
           <span class="text-xs sm:text-sm lg:text-base font-light text-gray-700">Super Fast Delivery</span>

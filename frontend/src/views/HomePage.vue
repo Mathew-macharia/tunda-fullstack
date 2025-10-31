@@ -13,7 +13,7 @@
       <div class="mb-20 sm:mb-24 bg-white py-12 sm:py-20">
         <div class="text-center">
 <p class="text-xl font-dancing-script text-gray-900 font-semibold tracking-wide uppercase">Discover your</p>
-          <h2 class="mt-2 text-2xl font-extrabold text-green-600 tracking-tight sm:text-4xl">Favourite Farmer</h2>
+          <h2 class="mt-2 text-2xl font-extrabold text-primary tracking-tight sm:text-4xl">Favourite Farmer</h2>
         </div>
         <!-- Loading State -->
         <div v-if="loadingFarmers" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6 mt-8 sm:mt-12">
@@ -37,7 +37,7 @@
         <div class="mt-8">
           <router-link 
             to="/farmers-marketplace" 
-            class="text-green-600 hover:text-green-700 text-sm font-medium flex items-center justify-center space-x-1"
+            class="text-primary hover:text-primary-700 text-sm font-medium flex items-center justify-center space-x-1"
           >
             <span>View All Farmers</span>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -51,7 +51,7 @@
       <div class="mb-8 sm:mb-12">
         <div class="text-center">
 <p class="text-xl font-dancing-script text-gray-900 font-semibold tracking-wide uppercase">Today's</p>
-          <h2 class="mt-2 text-2xl font-extrabold text-green-600 tracking-tight sm:text-4xl">Fresh Picks</h2>
+          <h2 class="mt-2 text-2xl font-extrabold text-primary tracking-tight sm:text-4xl">Fresh Picks</h2>
         </div>
         
         <!-- Loading State -->
@@ -103,7 +103,7 @@
               
               <!-- Organic Badge -->
               <div v-if="listing.is_organic_certified" class="absolute top-3 right-3">
-                <span class="bg-green-600 text-white px-2.5 py-1 rounded-full text-xs font-medium shadow-sm">
+                <span class="bg-primary text-white px-2.5 py-1 rounded-full text-xs font-medium shadow-sm">
                   Organic
                 </span>
               </div>
@@ -151,7 +151,7 @@
                   v-if="listing.listing_status === 'available'"
                   @click.stop="addToCart(listing)"
                   :disabled="addingToCart === listing.listing_id"
-                  class="bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
+                  class="bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-darkGreen disabled:opacity-50 transition-colors"
                 >
                   <span v-if="addingToCart === listing.listing_id">Adding...</span>
                   <span v-else>Add to Cart</span>
@@ -163,7 +163,7 @@
         <div class="mt-8">
           <router-link 
             to="/products" 
-            class="text-green-600 hover:text-green-700 text-sm font-medium flex items-center justify-center space-x-1"
+            class="text-green-600 hover:text-primary text-sm font-medium flex items-center justify-center space-x-1"
           >
             <span>View All Products</span>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -187,13 +187,13 @@
     >
       <div
         v-if="showNotification"
-        class="fixed bottom-4 right-4 sm:top-4 sm:right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-3"
+        class="fixed bottom-4 right-4 sm:top-4 sm:right-4 bg-primary text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-3"
       >
         <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
         <p class="font-medium">{{ notificationMessage }}</p>
-        <button @click="showNotification = false" class="ml-auto -mr-1 p-1 rounded-full hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+        <button @click="showNotification = false" class="ml-auto -mr-1 p-1 rounded-full hover:bg-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
           <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
           </svg>
