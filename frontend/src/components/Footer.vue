@@ -2,7 +2,7 @@
   <!-- Newsletter Section Wrapper -->
   <div class="relative z-20 mx-auto max-w-6xl mt-16 px-4 sm:px-6 lg:px-8">
     <!-- Floating Product Images -->
-    <div class="absolute inset-0 z-30 pointer-events-none">
+    <div class="absolute inset-0 z-30 pointer-events-none hidden md:block">
       <img src="/images/footer/footer-strawbery-blur.png" alt="Strawberry" class="absolute top-[-40%] left-[-5%] w-45 h-45" style="animation: float 6s ease-in-out infinite;" />
       <img src="/images/footer/footer-lemon.png" alt="Lemon" class="absolute bottom-[-50%] right-[0%] w-72 h-72" style="animation: float 7s ease-in-out infinite reverse;" />
     </div>
@@ -20,7 +20,7 @@
           />
           <button
             @click="handleNewsletterSubmit"
-            class="w-full sm:w-auto bg-green-700 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
+            class="w-1/3 mx-auto sm:w-auto bg-green-700 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
           >
             Submit
           </button>
@@ -34,11 +34,11 @@
     <div class="relative bg-green-800 py-12">
       <img src="/images/footer/footer-right-img.png" alt="Fruit and vegetable market stall" class="absolute top-0 right-0 h-3/4 w-auto object-cover object-center opacity-75 hidden md:block" />
 
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 md:pr-1/3">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 md:pr-1/3 text-center md:text-left">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           <!-- Company Info -->
           <div>
-            <div class="flex items-center mb-4">
+            <div class="flex items-center mb-4 justify-center md:justify-start">
               <img src="/images/logos/tunda_logo.png" alt="Tunda Logo" class="h-10 w-auto mr-2 rounded-full bg-white p-1">
               <span class="text-white text-2xl font-bold">Tun<span class="text-orange-400">da</span></span>
             </div>
@@ -52,7 +52,7 @@
               <span class="font-semibold">Email:</span> hello@gotunda.com
             </p>
             <h4 class="text-lg font-semibold text-white mb-3">Follow Us</h4>
-            <div class="flex space-x-3">
+            <div class="flex space-x-3 justify-center md:justify-start">
               <a href="#0" class="text-gray-300 hover:text-white">
                 <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path fill-rule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.776-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33V22C17.343 21.128 22 16.991 22 12z" clip-rule="evenodd" />
@@ -106,7 +106,7 @@
               <li class="mb-2"><a href="#0" class="text-gray-300 hover:text-white text-sm">Terms & Conditions</a></li>
               <li class="mb-2"><a href="#0" class="text-gray-300 hover:text-white text-sm">Return And Refund Policy</a></li>
             </ul>
-            <div class="flex space-x-2 mt-4">
+            <div class="flex space-x-2 mt-4 justify-center md:justify-start">
               <!-- Payment Icons - Using placeholder images for now -->
               <img src="/images/footer/paypal.png" alt="PayPal" class="h-6">
               <img src="/images/footer/stripe.png" alt="Stripe" class="h-6">
