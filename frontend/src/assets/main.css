@@ -19,11 +19,11 @@
   }
   
   .btn-primary {
-    @apply btn bg-green-600 hover:bg-green-700 text-white focus:ring-green-500;
+    @apply btn bg-primary hover:bg-darkGreen text-white focus:ring-primary;
 }
 
   .btn-secondary {
-    @apply btn bg-white hover:bg-gray-50 text-gray-700 border-gray-300 focus:ring-green-500;
+    @apply btn bg-white hover:bg-gray-50 text-gray-700 border-gray-300 focus:ring-primary;
   }
   
   .btn-danger {
@@ -39,11 +39,11 @@
   }
   
   .form-radio {
-    @apply h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300;
+    @apply h-4 w-4 text-primary focus:ring-primary border-gray-300;
   }
   
   .form-checkbox {
-    @apply h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded;
+    @apply h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded;
   }
   
   .card {

@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gray-50">
     <div v-if="loading" class="flex justify-center items-center h-64">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
     </div>
     
     <div v-else-if="!product" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
@@ -51,7 +51,7 @@
                 {{ product.product_name }}
               </h1>
               <div v-if="product.is_organic_certified" class="flex-shrink-0">
-                <span class="bg-green-600 text-white px-2 py-1 sm:px-3 rounded-full text-xs sm:text-sm font-medium">
+                <span class="bg-primary text-white px-2 py-1 sm:px-3 rounded-full text-xs sm:text-sm font-medium">
                   Organic Certified
                 </span>
               </div>
@@ -129,7 +129,7 @@
                   v-model.number="quantity"
                   :min="product.min_order_quantity || 1"
                   :max="product.quantity_available"
-                  class="w-16 sm:w-20 px-2 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500 text-center"
+                  class="w-16 sm:w-20 px-2 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary text-center"
                 />
             <span class="text-xs sm:text-sm text-gray-500">{{ product.product_unit_display }}</span>
           </div>
@@ -219,13 +219,13 @@
     >
       <div
         v-if="showNotification"
-        class="fixed bottom-4 right-4 sm:top-4 sm:right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-3"
+        class="fixed bottom-4 right-4 sm:top-4 sm:right-4 bg-primary text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-3"
       >
         <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
         <p class="font-medium">{{ notificationMessage }}</p>
-        <button @click="showNotification = false" class="ml-auto -mr-1 p-1 rounded-full hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+        <button @click="showNotification = false" class="ml-auto -mr-1 p-1 rounded-full hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
           <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
           </svg>

@@ -22,11 +22,11 @@ export function useHomePageData() {
     'vegetables': 'vegetables.svg', 
     'fruits' : 'fruits.svg',
     'grains': 'grains.svg',
-    'herbs': 'herbs.svg',
-    'honey': 'honey.svg',
+    'herbs & spices': 'herbs.svg',
+    'honey & natural': 'honey.svg',
     'legumes': 'legumes.svg',
-    'meat and seafood': 'meat.svg', // Assuming 'Meat and Seafood' maps to 'meat.svg'
-    'nuts': 'nuts.svg',
+    'meat & poultry': 'meat.svg', // Assuming 'Meat and poultry' maps to 'meat.svg'
+    'nuts & seeds': 'nuts.svg',
     'processed foods': 'processed_foods.svg',
     'vegetables': 'vegetables.svg',
     'default': 'default.svg' // Fallback default SVG icon
