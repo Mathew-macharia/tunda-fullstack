@@ -26,12 +26,11 @@
     <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center" style="transform: translateY(-30%);">
         <h1 class="text-2xl font-extrabold tracking-tight text-grey-900 sm:text-3xl md:text-4xl">
-          <span class="block xl:inline">Your One-Stop Shop</span>
-          <span class="block text-primary xl:inline"> for Freshness and Savings!</span>
+          <span class="block xl:inline">Fresh From Farmers</span>
+          <span class="block text-primary xl:inline"> Right to Your Doorstep.</span>
         </h1>
         <p class="mt-4 max-w-2xl mx-auto text-sm text-gray-500 sm:text-base md:mt-5 md:max-w-3xl">
-          Explore a diverse range of high-quality products, from fresh produce to pantry essentials,
-          all conveniently located for your shopping pleasure throughout our well-stocked aisles.
+          Experience groceries that haven't forgotten their roots. Picked by local farmers at dawn, we deliver them to your doorstep before the day fades. No warehouses. No markups. Just food in its purest form!
         </p>
         <div class="mt-8 sm:mt-10 max-w-sm mx-auto sm:max-w-none sm:flex sm:justify-center">
           <div class="space-y-4 sm:space-y-0 sm:mx-auto sm:inline-grid sm:grid-cols-1 sm:gap-5">
