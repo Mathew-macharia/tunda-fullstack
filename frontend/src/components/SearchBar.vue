@@ -97,7 +97,7 @@ const handleSearch = () => {
     path: '/products',
     query: {
       search: searchQuery.value,
-      category_id: selectedCategory.value
+      category: selectedCategory.value
     }
   })
 }

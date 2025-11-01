@@ -19,14 +19,13 @@ export function useHomePageData() {
   // Image mapping for categories with SVG icons
   const categoryImages = {
     'dairy': 'dairy.svg',
-    'vegetables': 'vegetables.svg', 
     'fruits' : 'fruits.svg',
     'grains': 'grains.svg',
-    'herbs & spices': 'herbs.svg',
-    'honey & natural': 'honey.svg',
+    'herbs and spices': 'herbs.svg',
+    'honey and natural': 'honey.svg',
     'legumes': 'legumes.svg',
-    'meat & poultry': 'meat.svg', // Assuming 'Meat and poultry' maps to 'meat.svg'
-    'nuts & seeds': 'nuts.svg',
+    'meat and poultry': 'meat.svg', // Assuming 'Meat and poultry' maps to 'meat.svg'
+    'nuts and seeds': 'nuts.svg',
     'processed foods': 'processed_foods.svg',
     'vegetables': 'vegetables.svg',
     'default': 'default.svg' // Fallback default SVG icon
