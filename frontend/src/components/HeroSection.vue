@@ -8,19 +8,19 @@
     <!-- Floating Product Images -->
     <div class="absolute z-10 w-full h-full pointer-events-none">
       <!-- Hidden on mobile, visible on md and up -->
-      <img src="/images/hero/red_tomato.png" alt="Red Tomato" class="hidden md:block absolute bottom-[25%] left-[20%] w-24 h-24 lg:w-32 lg:h-32 xl:w-36 xl:h-36 -translate-x-1/2 -translate-y-1/2 rotate-0" style="animation: bounce-float 6s ease-in-out infinite alternate;" />
-      <img src="/images/hero/yellow_bell_pepper.png" alt="Yellow Bell Pepper" class="hidden md:block absolute bottom-[25%] right-[20%] w-24 h-24 lg:w-32 lg:h-32 xl:w-36 xl:h-36 translate-x-1/2 -translate-y-1/2 -rotate-6" style="animation: bounce-float 6s ease-in-out infinite alternate;" />
-      <img src="/images/hero/broccoli.png" alt="Broccoli" class="hidden md:block absolute top-[5%] left-[0%] w-24 h-24 lg:w-32 lg:h-32 xl:w-36 xl:h-36 -translate-x-1/2 translate-y-1/2 rotate-3" style="animation: bounce-float 6s ease-in-out infinite alternate;" />
+      <img src="/images/hero/red_tomato.png" alt="Red Tomato" class="hidden md:block absolute bottom-[25%] left-[20%] w-24 h-24 lg:w-32 lg:h-32 xl:w-36 xl:h-36 -translate-x-1/2 -translate-y-1/2 rotate-0 animated-float-image" />
+      <img src="/images/hero/yellow_bell_pepper.png" alt="Yellow Bell Pepper" class="hidden md:block absolute bottom-[25%] right-[20%] w-24 h-24 lg:w-32 lg:h-32 xl:w-36 xl:h-36 translate-x-1/2 -translate-y-1/2 -rotate-6 animated-float-image" />
+      <img src="/images/hero/broccoli.png" alt="Broccoli" class="hidden md:block absolute top-[5%] left-[0%] w-24 h-24 lg:w-32 lg:h-32 xl:w-36 xl:h-36 -translate-x-1/2 translate-y-1/2 rotate-3 animated-float-image" />
       
       <!-- Basket - visible on all screens but scaled down on mobile, brought forward with z-50 -->
       <!-- Mobile: bottom-[5%] (very low), Tablet/Desktop: bottom-[35%] (original) -->
       <img src="/images/hero/basket_of_grocerries.png" alt="Basket of Groceries" class="absolute bottom-[25%] md:bottom-[35%] left-1/2 w-64 h-64 sm:w-80 sm:h-80 lg:w-96 lg:h-96 -translate-x-1/2 translate-y-1/2 z-50" />
       
       <!-- Hidden on mobile, visible on md and up -->
-      <img src="/images/hero/Swiss_chard.png" alt="Swiss Chard" class="hidden md:block absolute top-[5%] right-[0%] w-24 h-24 lg:w-32 lg:h-32 xl:w-36 xl:h-36" style="animation: bounce-float 6s ease-in-out infinite alternate;" />
-      <img src="/images/hero/top-bottol-blur-1.png" alt="Top Bottle" class="hidden md:block absolute bottom-[20%] right-[0%] w-20 h-20 lg:w-24 lg:h-24 xl:w-28 xl:h-28" style="animation: bounce-float 6s ease-in-out infinite alternate;" />
-      <img src="/images/hero/top-mirchi-blur-1.png" alt="Top Mirchi" class="hidden md:block absolute top-[15%] right-[24%] w-16 h-16 lg:w-20 lg:h-20" style="animation: bounce-float 6s ease-in-out infinite alternate;" />
-      <img src="/images/hero/top-tomato-blur-1.png" alt="Top Tomato Blue" class="hidden md:block absolute top-[-20%] left-[10%] w-16 h-16 lg:w-20 lg:h-20 rotate-6" style="animation: bounce-float 6s ease-in-out infinite alternate;" />
+      <img src="/images/hero/Swiss_chard.png" alt="Swiss Chard" class="hidden md:block absolute top-[5%] right-[0%] w-24 h-24 lg:w-32 lg:h-32 xl:w-36 xl:h-36 animated-float-image" />
+      <img src="/images/hero/top-bottol-blur-1.png" alt="Top Bottle" class="hidden md:block absolute bottom-[20%] right-[0%] w-20 h-20 lg:w-24 lg:h-24 xl:w-28 xl:h-28 animated-float-image" />
+      <img src="/images/hero/top-mirchi-blur-1.png" alt="Top Mirchi" class="hidden md:block absolute top-[15%] right-[24%] w-16 h-16 lg:w-20 lg:h-20 animated-float-image" />
+      <img src="/images/hero/top-tomato-blur-1.png" alt="Top Tomato Blue" class="hidden md:block absolute top-[-20%] left-[10%] w-16 h-16 lg:w-20 lg:h-20 rotate-6 animated-float-image" />
     </div>
 
     <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

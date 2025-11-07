@@ -15,10 +15,10 @@
 
       <!-- Floating Product Images and Man Image -->
       <div class="absolute inset-0 z-30 hidden lg:block">
-      <img src="/images/services/service-strawbery-blur-1.png" alt="Strawberry" class="absolute top-[-25%] left-[30%] max-w-64 max-h-64 object-contain" style="animation: bounce-float 6s ease-in-out infinite alternate; width: auto; height: auto;" />
-        <img src="/images/services/service-blur-mango-1.png" alt="Mango" class="absolute bottom-[5%] right-[0%] max-w-64 max-h-64 object-contain" style="animation: bounce-float 6s ease-in-out infinite alternate; width: auto; height: auto;" />
-        <img src="/images/services/service-cabbage-1.png" alt="Cabbage" class="absolute bottom-[-15%] left-[0%] max-w-64 max-h-64 object-contain" style="animation: bounce-float 6s ease-in-out infinite alternate; width: auto; height: auto;" />
-        <img src="/images/services/service-bottle-right-2.png" alt="Bottle" class="absolute top-[-15%] right-[0%] max-w-64 max-h-64 object-contain" style="animation: bounce-float 6s ease-in-out infinite alternate; width: auto; height: auto;" />
+      <img src="/images/services/service-strawbery-blur-1.png" alt="Strawberry" class="absolute top-[-25%] left-[30%] max-w-64 max-h-64 object-contain animated-float-image" />
+        <img src="/images/services/service-blur-mango-1.png" alt="Mango" class="absolute bottom-[5%] right-[0%] max-w-64 max-h-64 object-contain animated-float-image" />
+        <img src="/images/services/service-cabbage-1.png" alt="Cabbage" class="absolute bottom-[-15%] left-[0%] max-w-64 max-h-64 object-contain animated-float-image" />
+        <img src="/images/services/service-bottle-right-2.png" alt="Bottle" class="absolute top-[-15%] right-[0%] max-w-64 max-h-64 object-contain animated-float-image" />
         <!-- Man Image -->
         <img src="/images/services/service-man.png" alt="Delivery Man" class="absolute top-[5%] left-[-12%] w-120 h-120" />
       </div>

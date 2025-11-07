@@ -114,8 +114,29 @@
     }
   }
 
-  @keyframes bounce-float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-20px); }
+  :root {
+    --bounce-duration: 3s;
+    --bounce-timing-function: cubic-bezier(.17,.67,.29,.83);
+    --bounce-iteration-count: infinite;
+    --bounce-direction: normal;
+    --bounce-height: -20px; /* Default bounce height */
+  }
+
+@keyframes bounce-float {
+  0% { 
+    transform: translateY(0);
+    animation-timing-function: ease-out; /* Fast start, gradual slow at top */
+  }
+  50% { 
+    transform: translateY(var(--bounce-height));
+    animation-timing-function: cubic-bezier(0.6, 0, 0.4, 1); /* Accelerates down, gentle cushion at bottom */
+  }
+  100% { 
+    transform: translateY(0);
+  }
+}
+
+  .animated-float-image {
+    animation: bounce-float var(--bounce-duration) var(--bounce-timing-function) var(--bounce-iteration-count) var(--bounce-direction);
   }
 }

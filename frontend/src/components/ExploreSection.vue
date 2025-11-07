@@ -7,11 +7,11 @@
 
     <!-- Floating Product Images -->
     <div class="absolute inset-0 z-10 hidden sm:block">
-      <img src="/images/explore/explore-strawbery-1.png" alt="Strawberry" class="absolute top-[-30%] left-[0%] w-45 h-45" style="animation: bounce-float 6s ease-in-out infinite alternate;" />
-      <img src="/images/explore/explore-lemon-1.png" alt="Lemon" class="absolute bottom-[10%] left-[15%] w-40 h-40" style="animation: bounce-float 6s ease-in-out infinite alternate;" />
+      <img src="/images/explore/explore-strawbery-1.png" alt="Strawberry" class="absolute top-[-30%] left-[0%] w-45 h-45 animated-float-image" />
+      <img src="/images/explore/explore-lemon-1.png" alt="Lemon" class="absolute bottom-[10%] left-[15%] w-40 h-40 animated-float-image" />
       <img src="/images/explore/explore-bucket-1.png" alt="Bucket of Groceries" class="absolute top-[18%] left-[28%] w-[26rem] h-[26rem] -translate-x-1/2 -translate-y-1/2" />
-      <img src="/images/explore/off-blur-strawbery-2.png" alt="Blurred Strawberry" class="absolute bottom-[10%] right-[15%] w-40 h-40" style="animation: bounce-float 6s ease-in-out infinite alternate;" />
-      <img src="/images/explore/off-right-lemon-1.png" alt="Blurred Lemon" class="absolute top-[-30%] right-[0%] w-45 h-45" style="animation: bounce-float 6s ease-in-out infinite alternate;" />
+      <img src="/images/explore/off-blur-strawbery-2.png" alt="Blurred Strawberry" class="absolute bottom-[10%] right-[15%] w-40 h-40 animated-float-image" />
+      <img src="/images/explore/off-right-lemon-1.png" alt="Blurred Lemon" class="absolute top-[-30%] right-[0%] w-45 h-45 animated-float-image" />
     </div>
 
     <div class="relative max-w-7xl mx-auto -ml-4 md:-ml-20 px-4 sm:px-6 lg:px-8 z-20">
