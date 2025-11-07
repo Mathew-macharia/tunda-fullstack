@@ -26,8 +26,10 @@
     <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center" style="transform: translateY(-30%);">
         <h1 class="text-2xl font-extrabold tracking-tight text-grey-900 sm:text-3xl md:text-4xl">
-          <span class="block xl:inline">Fresh From Farmers</span>
-          <span class="block text-primary xl:inline"> Right to Your Doorstep.</span>
+          <span class="typewriter-wrapper">
+            <span class="block xl:inline">Fresh From Farmers</span>
+            <span class="block text-primary xl:inline"> Right to Your Doorstep.</span>
+          </span>
         </h1>
         <p class="mt-4 max-w-2xl mx-auto text-sm text-gray-500 sm:text-base md:mt-5 md:max-w-3xl">
           Experience groceries that haven't forgotten their roots. Picked by local farmers at dawn, we deliver them to your doorstep before the day fades. No warehouses. No markups. Just food in its purest form!
@@ -70,4 +72,36 @@ export default {
 
 <style scoped>
 /* The global bounce-float animation is defined in main.css */
+
+.typewriter-wrapper {
+  --characters: 42; /* "Fresh From Farmers Right to Your Doorstep." has 42 characters */
+  width: calc(var(--characters) * 1ch);
+  animation: typing 4s steps(var(--characters), end) infinite, blink-caret .75s step-end infinite;
+  white-space: nowrap;
+  overflow: hidden;
+  border-right: 3px solid currentColor; /* Caret color matches text color */
+  display: inline-block; /* Ensure it respects width and border-right */
+  vertical-align: bottom; /* Align with text baseline */
+}
+
+@keyframes typing {
+  from { width: 0 }
+  to { width: calc(var(--characters) * 1ch) }
+}
+
+@keyframes blink-caret {
+  from, to { border-color: transparent }
+  50% { border-color: currentColor; } /* Blinking caret */
+}
+
+/* Mobile responsiveness: Disable typing effect and allow text wrap */
+@media (max-width: 639px) { /* Tailwind's default 'sm' breakpoint is 640px */
+  .typewriter-wrapper {
+    white-space: normal; /* Allow text to wrap on multiple lines */
+    overflow: visible;   /* Ensure all text is visible */
+    width: auto;         /* Let the width adjust to content */
+    border-right: none;  /* Hide the blinking caret on mobile */
+    animation: none;     /* Disable the typing animation on mobile */
+  }
+}
 </style>
