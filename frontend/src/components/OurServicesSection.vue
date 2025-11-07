@@ -15,10 +15,10 @@
 
       <!-- Floating Product Images and Man Image -->
       <div class="absolute inset-0 z-30 hidden lg:block">
-        <img src="/images/services/service-strawbery-blur-1.png" alt="Strawberry" class="absolute top-[-25%] left-[30%] max-w-64 max-h-64 object-contain" style="animation: float 6s ease-in-out infinite; width: auto; height: auto;" />
-        <img src="/images/services/service-blur-mango-1.png" alt="Mango" class="absolute bottom-[5%] right-[0%] max-w-64 max-h-64 object-contain" style="animation: float 7s ease-in-out infinite reverse; width: auto; height: auto;" />
-        <img src="/images/services/service-cabbage-1.png" alt="Cabbage" class="absolute bottom-[-15%] left-[0%] max-w-64 max-h-64 object-contain" style="animation: float 8s ease-in-out infinite; width: auto; height: auto;" />
-        <img src="/images/services/service-bottle-right-2.png" alt="Bottle" class="absolute top-[-15%] right-[0%] max-w-64 max-h-64 object-contain" style="animation: float 5s ease-in-out infinite; width: auto; height: auto;" />
+      <img src="/images/services/service-strawbery-blur-1.png" alt="Strawberry" class="absolute top-[-25%] left-[30%] max-w-64 max-h-64 object-contain" style="animation: bounce-float 6s ease-in-out infinite alternate; width: auto; height: auto;" />
+        <img src="/images/services/service-blur-mango-1.png" alt="Mango" class="absolute bottom-[5%] right-[0%] max-w-64 max-h-64 object-contain" style="animation: bounce-float 6s ease-in-out infinite alternate; width: auto; height: auto;" />
+        <img src="/images/services/service-cabbage-1.png" alt="Cabbage" class="absolute bottom-[-15%] left-[0%] max-w-64 max-h-64 object-contain" style="animation: bounce-float 6s ease-in-out infinite alternate; width: auto; height: auto;" />
+        <img src="/images/services/service-bottle-right-2.png" alt="Bottle" class="absolute top-[-15%] right-[0%] max-w-64 max-h-64 object-contain" style="animation: bounce-float 6s ease-in-out infinite alternate; width: auto; height: auto;" />
         <!-- Man Image -->
         <img src="/images/services/service-man.png" alt="Delivery Man" class="absolute top-[5%] left-[-12%] w-120 h-120" />
       </div>
@@ -114,20 +114,7 @@ export default {
 </script>
 
 <style scoped>
-@keyframes float {
-  0% { transform: translate(0, 0) rotate(0deg); }
-  25% { transform: translate(-5px, -5px) rotate(-2deg); }
-  50% { transform: translate(0, -10px) rotate(0deg); }
-  75% { transform: translate(5px, -5px) rotate(2deg); }
-  100% { transform: translate(0, 0) rotate(0deg); }
-}
-
-.absolute img {
-  animation-duration: 6s;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-}
-
+/* The global bounce-float animation is defined in main.css */
 .font-dancing-script {
   font-family: 'Dancing Script', cursive;
 }

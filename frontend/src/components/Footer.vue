@@ -3,8 +3,8 @@
   <div class="relative z-20 mx-auto max-w-6xl mt-16 px-4 sm:px-6 lg:px-8">
     <!-- Floating Product Images -->
     <div class="absolute inset-0 z-30 pointer-events-none hidden md:block">
-      <img src="/images/footer/footer-strawbery-blur.png" alt="Strawberry" class="absolute top-[-40%] left-[-5%] w-45 h-45" style="animation: float 6s ease-in-out infinite;" />
-      <img src="/images/footer/footer-lemon.png" alt="Lemon" class="absolute bottom-[-50%] right-[0%] w-72 h-72" style="animation: float 7s ease-in-out infinite reverse;" />
+      <img src="/images/footer/footer-strawbery-blur.png" alt="Strawberry" class="absolute top-[-40%] left-[-5%] w-45 h-45" style="animation: bounce-float 6s ease-in-out infinite alternate;" />
+      <img src="/images/footer/footer-lemon.png" alt="Lemon" class="absolute bottom-[-50%] right-[0%] w-72 h-72" style="animation: bounce-float 6s ease-in-out infinite alternate;" />
     </div>
     <div class="relative bg-primary py-8 rounded-xl">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -145,11 +145,5 @@ const handleNewsletterSubmit = () => {
   font-family: 'Dancing Script', cursive;
 }
 
-@keyframes float {
-  0% { transform: translate(0, 0) rotate(0deg); }
-  25% { transform: translate(-5px, -5px) rotate(-2deg); }
-  50% { transform: translate(0, -10px) rotate(0deg); }
-  75% { transform: translate(5px, -5px) rotate(2deg); }
-  100% { transform: translate(0, 0) rotate(0deg); }
-}
+/* The global bounce-float animation is defined in main.css */
 </style>
