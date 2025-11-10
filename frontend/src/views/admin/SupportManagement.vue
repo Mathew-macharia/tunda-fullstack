@@ -36,7 +36,7 @@
         <div class="bg-white rounded-lg shadow p-3 sm:p-6">
           <div class="flex items-center">
             <div class="flex-shrink-0">
-              <ExclamationTriangleIcon class="w-6 w-6 sm:w-8 sm:h-8 text-red-500" />
+              <ExclamationTriangleIcon class="w-6 sm:w-8 sm:h-8 text-red-500" />
             </div>
             <div class="ml-2 sm:ml-4">
               <p class="text-xs sm:text-sm font-medium text-gray-500">Open Tickets</p>

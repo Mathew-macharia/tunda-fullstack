@@ -19,11 +19,11 @@
   }
   
   .btn-primary {
-    @apply btn bg-green-600 hover:bg-green-700 text-white focus:ring-green-500;
+    @apply btn bg-primary hover:bg-darkGreen text-white focus:ring-primary;
 }
 
   .btn-secondary {
-    @apply btn bg-white hover:bg-gray-50 text-gray-700 border-gray-300 focus:ring-green-500;
+    @apply btn bg-white hover:bg-gray-50 text-gray-700 border-gray-300 focus:ring-primary;
   }
   
   .btn-danger {
@@ -31,7 +31,7 @@
   }
   
   .form-input {
-    @apply block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm;
+    @apply block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm;
   }
   
   .form-label {
@@ -39,11 +39,11 @@
   }
   
   .form-radio {
-    @apply h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300;
+    @apply h-4 w-4 text-primary focus:ring-primary border-gray-300;
   }
   
   .form-checkbox {
-    @apply h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded;
+    @apply h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded;
   }
   
   .card {
@@ -112,5 +112,31 @@
     .modal-content {
       @apply max-h-screen rounded-none;
     }
+  }
+
+  :root {
+    --bounce-duration: 3s;
+    --bounce-timing-function: cubic-bezier(.17,.67,.29,.83);
+    --bounce-iteration-count: infinite;
+    --bounce-direction: normal;
+    --bounce-height: -20px; /* Default bounce height */
+  }
+
+@keyframes bounce-float {
+  0% { 
+    transform: translateY(0);
+    animation-timing-function: ease-out; /* Fast start, gradual slow at top */
+  }
+  50% { 
+    transform: translateY(var(--bounce-height));
+    animation-timing-function: cubic-bezier(0.6, 0, 0.4, 1); /* Accelerates down, gentle cushion at bottom */
+  }
+  100% { 
+    transform: translateY(0);
+  }
+}
+
+  .animated-float-image {
+    animation: bounce-float var(--bounce-duration) var(--bounce-timing-function) var(--bounce-iteration-count) var(--bounce-direction);
   }
 }

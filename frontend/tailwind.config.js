@@ -8,6 +8,7 @@ export default {
     extend: {
       colors: {
         primary: {
+          DEFAULT: '#3e7b51',
           50: '#f0fdf4',
           100: '#dcfce7',
           200: '#bbf7d0',
@@ -19,6 +20,7 @@ export default {
           800: '#166534',
           900: '#14532d',
         },
+        darkGreen: '#376b47',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
@@ -29,4 +31,4 @@ export default {
     require('@tailwindcss/forms'),
     require('@tailwindcss/typography'),
   ],
-} 
+}

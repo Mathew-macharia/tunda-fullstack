@@ -3,7 +3,7 @@
     <!-- Loading State -->
     <div v-if="loading" class="flex justify-center items-center py-20">
       <div class="text-center">
-        <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-green-600 mx-auto"></div>
+        <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-primary mx-auto"></div>
         <p class="mt-4 text-gray-600">Loading farmer profile...</p>
       </div>
     </div>
@@ -15,7 +15,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <p class="text-red-700 font-medium">{{ error }}</p>
-        <button @click="$router.go(-1)" class="mt-4 text-green-600 hover:text-green-700 font-medium">
+        <button @click="$router.go(-1)" class="mt-4 text-primary hover:text-darkGreen font-medium">
           ← Go Back
         </button>
       </div>
@@ -27,7 +27,7 @@
       <nav class="flex mb-6" aria-label="Breadcrumb">
         <ol class="inline-flex items-center space-x-1 md:space-x-3">
           <li class="inline-flex items-center">
-            <router-link to="/" class="text-gray-700 hover:text-green-600 inline-flex items-center">
+            <router-link to="/" class="text-gray-700 hover:text-primary inline-flex items-center">
               <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
               </svg>
@@ -59,7 +59,7 @@
               />
               <div 
                 v-else 
-                class="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-green-600 flex items-center justify-center border-2 border-green-100 shadow"
+                class="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-primary flex items-center justify-center border-2 border-green-100 shadow"
               >
                 <span class="text-2xl sm:text-3xl font-bold text-white">{{ getInitials(farmer.farmer_name) }}</span>
               </div>
@@ -96,7 +96,7 @@
 
               <!-- Quick Stats - Inline -->
               <div class="flex items-center gap-3 text-xs sm:text-sm">
-                <div class="flex items-center text-green-600 font-medium">
+                <div class="flex items-center text-primary font-medium">
                   <span>{{ farmer.total_products }} products</span>
                 </div>
                 <span class="text-gray-300">•</span>
@@ -104,7 +104,7 @@
                   {{ farmer.farms_count }} {{ farmer.farms_count === 1 ? 'farm' : 'farms' }}
                 </div>
                 <span v-if="farmer.statistics.organic_products > 0" class="text-gray-300 hidden sm:inline">•</span>
-                <div v-if="farmer.statistics.organic_products > 0" class="text-green-600 hidden sm:block">
+                <div v-if="farmer.statistics.organic_products > 0" class="text-primary hidden sm:block">
                   {{ farmer.statistics.organic_products }} organic
                 </div>
               </div>
@@ -114,7 +114,7 @@
           <!-- View All Products Button - Full width on mobile -->
           <router-link 
             :to="`/products?farmer_id=${farmer.farmer_id}`"
-            class="mt-4 w-full sm:w-auto inline-flex items-center justify-center px-6 py-2.5 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 transition-colors"
+            class="mt-4 w-full sm:w-auto inline-flex items-center justify-center px-6 py-2.5 border border-transparent text-sm font-medium rounded-lg text-white bg-primary hover:bg-darkGreen transition-colors"
           >
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -133,7 +133,7 @@
           </div>
           <router-link 
             :to="`/products?farmer_id=${farmer.farmer_id}`"
-            class="text-green-600 hover:text-green-700 text-sm font-medium flex items-center self-start sm:self-auto"
+            class="text-primary hover:text-green-600 text-sm font-medium flex items-center self-start sm:self-auto"
           >
             <span class="whitespace-nowrap">View All ({{ farmer.total_products }})</span>
             <svg class="w-4 h-4 ml-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -179,7 +179,7 @@
               
               <!-- Organic Badge -->
               <div v-if="listing.is_organic_certified" class="absolute top-3 right-3">
-                <span class="bg-green-600 text-white px-2.5 py-1 rounded-full text-xs font-medium shadow-sm">
+                <span class="bg-primary text-white px-2.5 py-1 rounded-full text-xs font-medium shadow-sm">
                   Organic
                 </span>
               </div>
@@ -217,7 +217,7 @@
                   v-if="listing.listing_status === 'available'"
                   @click.stop="addToCart(listing)"
                   :disabled="addingToCart === listing.listing_id"
-                  class="bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
+                  class="bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-darkGreen disabled:opacity-50 transition-colors"
                 >
                   <span v-if="addingToCart === listing.listing_id">Adding...</span>
                   <span v-else>Add to Cart</span>

@@ -2,7 +2,7 @@
   <div class="p-6 bg-gray-100 min-h-screen">
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-3xl font-bold text-gray-800">Product Category Management</h1>
-      <button @click="openCreateModal" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
+      <button @click="openCreateModal" class="bg-primary hover:bg-darkGreen text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
         Add New Category
       </button>
     </div>
@@ -25,7 +25,7 @@
                 <p class="text-xs text-gray-400 mt-1">Parent: {{ category.parent_category_name || 'None' }}</p>
               </div>
               <div class="flex items-center space-x-3">
-                <span :class="category.is_active ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'" class="px-3 py-1 rounded-full text-sm font-medium">
+                <span :class="category.is_active ? 'bg-green-200 text-darkGreen' : 'bg-red-200 text-red-800'" class="px-3 py-1 rounded-full text-sm font-medium">
                   {{ category.is_active ? 'Active' : 'Inactive' }}
                 </span>
                 <button @click="openEditModal(category)" class="text-blue-500 hover:text-blue-700 transition duration-200">

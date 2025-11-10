@@ -1,147 +1,61 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <!-- Shop by Categories -->
-      <div class="mb-8 sm:mb-12">
-        <div class="flex items-center justify-between mb-6">
-          <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">Shop by Category</h2>
-          <router-link 
-            to="/products" 
-            class="text-green-600 hover:text-green-700 text-sm font-medium flex items-center space-x-1"
-          >
-            <span>View All</span>
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-            </svg>
-          </router-link>
+    <HeroSection />
+    <SearchBar
+      :categories="categories"
+      :initialSearchQuery="searchQuery"
+      @search="handleSearch"
+    />
+    <CategoryOverview />
+    <ExploreSection />
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-0">
+      <!-- Shop by Farmer -->
+      <div class="mb-20 sm:mb-24 bg-white py-12 sm:py-20">
+        <div class="text-center">
+<p class="text-xl font-dancing-script text-gray-900 font-semibold tracking-wide uppercase">Discover your</p>
+          <h2 class="mt-2 text-2xl font-extrabold text-primary tracking-tight sm:text-4xl">Favourite Farmer</h2>
         </div>
-        
         <!-- Loading State -->
-        <div v-if="loadingCategories" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-          <div v-for="n in 5" :key="n" class="bg-white rounded-2xl p-6 shadow-sm animate-pulse">
-            <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gray-200 mx-auto mb-4"></div>
-            <div class="h-4 bg-gray-200 rounded"></div>
-          </div>
-        </div>
-        
-        <!-- Categories Scrollable List -->
-        <div v-else class="relative">
-          <div class="flex space-x-4 overflow-x-auto pb-2 -mb-2 scrollbar-hide scroll-fade">
-            <div
-              v-for="category in categories"
-              :key="category.category_id"
-              @click="filterByCategory(category.category_id)"
-              class="flex-shrink-0 w-32 sm:w-40 bg-white rounded-2xl p-4 sm:p-6 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer text-center border border-gray-100 hover:border-green-200 transform hover:-translate-y-1"
-            >
-              <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden mx-auto mb-3 sm:mb-4 shadow-md">
-                <img 
-                  :src="getCategoryImage(category.category_name)"
-                  :alt="category.category_name"
-                  class="w-full h-full object-cover"
-                />
-              </div>
-              <h3 class="text-sm sm:text-base font-semibold text-gray-900 line-clamp-2">
-                {{ category.category_name }}
-              </h3>
+        <div v-if="loadingFarmers" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6 mt-8 sm:mt-12">
+          <div v-for="n in 6" :key="n" class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm animate-pulse">
+            <div class="w-full h-40 sm:h-48 bg-gray-200 rounded-t-2xl"></div>
+            <div class="p-4">
+              <div class="h-4 bg-gray-200 rounded mb-2"></div>
+              <div class="h-3 bg-gray-200 rounded w-2/3"></div>
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- Shop by Farmer -->
-      <div class="mb-8 sm:mb-12">
-        <div class="flex items-center justify-between mb-6">
-          <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">Shop by Farmer</h2>
-          <router-link 
-            to="/products" 
-            class="text-green-600 hover:text-green-700 text-sm font-medium flex items-center space-x-1"
-          >
-            <span>View All</span>
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-            </svg>
-          </router-link>
-        </div>
         
-        <!-- Loading State -->
-        <div v-if="loadingFarmers" class="flex space-x-4 overflow-x-auto pb-2 -mb-2 scrollbar-hide">
-          <div v-for="n in 5" :key="n" class="flex-shrink-0 w-32 sm:w-40 bg-white rounded-2xl p-4 sm:p-6 shadow-sm animate-pulse">
-            <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gray-200 mx-auto mb-3 sm:mb-4"></div>
-            <div class="h-4 bg-gray-200 rounded mb-2"></div>
-            <div class="h-3 bg-gray-200 rounded w-2/3 mx-auto"></div>
-          </div>
-        </div>
-        
-        <!-- Farmers Scrollable List -->
-        <div v-else class="relative">
-          <div class="flex space-x-4 overflow-x-auto pb-2 -mb-2 scrollbar-hide scroll-fade">
-            <div
+        <!-- Farmers Grid -->
+        <div v-else class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6 mt-10 sm:mt-12">
+            <FarmerCard
               v-for="farmer in farmers"
               :key="farmer.farmer_id"
-              @click="filterByFarmer(farmer.farmer_id)"
-              class="flex-shrink-0 w-32 sm:w-40 bg-white rounded-2xl p-4 sm:p-6 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer text-center border border-gray-100 hover:border-green-200 transform hover:-translate-y-1"
-            >
-              <!-- Farmer Avatar/Photo -->
-              <div class="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden mx-auto mb-3 sm:mb-4 bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
-                <!-- If profile photo exists -->
-                <img 
-                  v-if="farmer.profile_photo_url"
-                  :src="farmer.profile_photo_url"
-                  :alt="farmer.farmer_name"
-                  class="w-full h-full object-cover"
-                />
-                <!-- Fallback: Initials -->
-                <span v-else class="text-white text-xl sm:text-2xl font-bold">
-                  {{ getInitials(farmer.farmer_name) }}
-                </span>
-                
-                <!-- Verified Badge (if high rating) -->
-                <div v-if="farmer.average_rating >= 4.5" class="absolute -bottom-1 -right-1 bg-green-600 rounded-full p-1">
-                  <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                  </svg>
-                </div>
-              </div>
-              
-              <!-- Farmer Name -->
-              <h3 class="text-sm sm:text-base font-semibold text-gray-900 line-clamp-2 mb-2">
-                {{ farmer.farmer_name }}
-              </h3>
-              
-              <!-- Rating -->
-              <div v-if="farmer.review_count > 0" class="flex items-center justify-center text-xs text-gray-600 mb-2">
-                <svg class="h-3 h-3 sm:h-4 sm:w-4 text-yellow-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.929 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z"></path>
-                </svg>
-                <span class="font-medium text-xs">{{ farmer.average_rating.toFixed(1) }}</span>
-              </div>
-              
-              <!-- Active Listings Count -->
-              <div class="text-xs text-green-600 font-medium">
-                {{ farmer.active_listings_count }} {{ farmer.active_listings_count === 1 ? 'product' : 'products' }}
-              </div>
-            </div>
-          </div>
+              :farmer="farmer"
+            />
+        </div>
+        <div class="mt-8">
+          <router-link 
+            to="/farmers-marketplace" 
+            class="text-primary hover:text-primary-700 text-sm font-medium flex items-center justify-center space-x-1"
+          >
+            <span>View All Farmers</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </router-link>
         </div>
       </div>
 
       <!-- Today's Fresh Picks -->
       <div class="mb-8 sm:mb-12">
-        <div class="flex items-center justify-between mb-6">
-          <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">Today's Fresh Picks</h2>
-          <router-link 
-            to="/products" 
-            class="text-green-600 hover:text-green-700 text-sm font-medium flex items-center space-x-1"
-          >
-            <span>View All</span>
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-            </svg>
-          </router-link>
+        <div class="text-center">
+<p class="text-xl font-dancing-script text-gray-900 font-semibold tracking-wide uppercase">Today's</p>
+          <h2 class="mt-2 text-2xl font-extrabold text-primary tracking-tight sm:text-4xl">Fresh Picks</h2>
         </div>
         
         <!-- Loading State -->
-        <div v-if="loadingFreshPicks" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
+        <div v-if="loadingFreshPicks" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6 mt-8 sm:mt-12">
           <div v-for="n in 10" :key="n" class="bg-white rounded-2xl shadow-sm animate-pulse">
             <div class="h-40 sm:h-48 bg-gray-200 rounded-t-2xl"></div>
             <div class="p-4">
@@ -152,7 +66,7 @@
         </div>
         
         <!-- Fresh Picks Grid -->
-        <div v-else class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
+        <div v-else class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6 mt-8 sm:mt-12">
           <div
             v-for="listing in freshPicks"
             :key="listing.listing_id"
@@ -189,7 +103,7 @@
               
               <!-- Organic Badge -->
               <div v-if="listing.is_organic_certified" class="absolute top-3 right-3">
-                <span class="bg-green-600 text-white px-2.5 py-1 rounded-full text-xs font-medium shadow-sm">
+                <span class="bg-primary text-white px-2.5 py-1 rounded-full text-xs font-medium shadow-sm">
                   Organic
                 </span>
               </div>
@@ -222,7 +136,7 @@
               
               <div class="flex items-center text-xs text-gray-500 mb-3">
                 <svg class="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                 </svg>
                 <span class="truncate">{{ listing.farm_name }}</span>
@@ -237,21 +151,30 @@
                   v-if="listing.listing_status === 'available'"
                   @click.stop="addToCart(listing)"
                   :disabled="addingToCart === listing.listing_id"
-                  class="bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
+                  class="bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-darkGreen disabled:opacity-50 transition-colors"
                 >
                   <span v-if="addingToCart === listing.listing_id">Adding...</span>
                   <span v-else>Add to Cart</span>
                 </button>
-                
-                <!-- No longer "Login to Buy" for unauthenticated users, just "Add to Cart" -->
-                <!-- The button above handles both authenticated and unauthenticated -->
               </div>
             </div>
           </div>
         </div>
+        <div class="mt-8">
+          <router-link 
+            to="/products" 
+            class="text-green-600 hover:text-primary text-sm font-medium flex items-center justify-center space-x-1"
+          >
+            <span>View All Products</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </router-link>
+        </div>
       </div>
-
     </div>
+
+    <OurServicesSection />
 
     <!-- Notification Message -->
     <transition
@@ -264,13 +187,13 @@
     >
       <div
         v-if="showNotification"
-        class="fixed bottom-4 right-4 sm:top-4 sm:right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-3"
+        class="fixed bottom-4 right-4 sm:top-4 sm:right-4 bg-primary text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-3"
       >
         <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
         <p class="font-medium">{{ notificationMessage }}</p>
-        <button @click="showNotification = false" class="ml-auto -mr-1 p-1 rounded-full hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+        <button @click="showNotification = false" class="ml-auto -mr-1 p-1 rounded-full hover:bg-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
           <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
           </svg>
@@ -281,210 +204,86 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { isAuthenticated, isCustomer, addGuestCartItem } from '@/stores/auth'
-import { productsAPI, cartAPI } from '@/services/api'
+import HeroSection from '@/components/HeroSection.vue'
+import CategoryOverview from '@/components/CategoryOverview.vue'
+import SearchBar from '@/components/SearchBar.vue'
+import ExploreSection from '@/components/ExploreSection.vue'
+import FarmerCard from '@/components/FarmerCard.vue'
+import OurServicesSection from '@/components/OurServicesSection.vue' // Import the new component
+import { useHomePageData } from '@/composables/useHomePageData'
+import { useCartActions } from '@/composables/useCartActions'
+import { isAuthenticated, isCustomer } from '@/stores/auth'
 
 export default {
   name: 'HomePage',
+  components: {
+    HeroSection,
+    CategoryOverview,
+    SearchBar,
+    ExploreSection,
+    FarmerCard,
+    OurServicesSection // Register the new component
+  },
   setup() {
-    const router = useRouter()
-    
-    // State
-    const categories = ref([])
-    const farmers = ref([])
-    const freshPicks = ref([])
-    const searchQuery = ref('')
-    const addingToCart = ref(null)
-    const showNotification = ref(false)
-    const notificationMessage = ref('')
-    
-    // Loading states
-    const loadingCategories = ref(false)
-    const loadingFarmers = ref(false)
-    const loadingFreshPicks = ref(false)
-    
-    // Image mapping for categories with correct extensions
-    const categoryImages = {
-      'dairy': 'dairy.jpg',
-      'fruits': 'fruits.webp',
-      'grains': 'grains.jpg',
-      'herbs & spices': 'herbs and spices.png',
-      'honey & natural': 'honey.webp',
-      'legumes': 'legumes.jpg',
-      'meat & poultry': 'meat and poultry.jpg',
-      'nuts & seeds': 'nuts.png',
-      'processed foods': 'ProcessedFoods.jpg',
-      'vegetables': 'vegetables.webp',
-      'default': 'default.jpg' // Fallback default image
-    }
-    
-    // Methods
-    const getCategoryImage = (categoryName) => {
-      const imagePath = categoryImages[categoryName.toLowerCase()] || categoryImages.default;
-      return `/images/categories/${imagePath}`;
-    }
-    
-    const debouncedSearch = () => {
-      clearTimeout(searchTimeout)
-      searchTimeout = setTimeout(() => {
-        if (searchQuery.value.trim()) {
-          router.push(`/products?search=${encodeURIComponent(searchQuery.value)}`)
-        }
-      }, 500)
-    }
-    
-    const loadCategories = async () => {
-      loadingCategories.value = true
-      try {
-        const response = await productsAPI.getCategories()
-        categories.value = response.results || response
-      } catch (error) {
-        console.error('Failed to load categories:', error)
-      } finally {
-        loadingCategories.value = false
-      }
-    }
-    
-    const loadFarmers = async () => {
-      loadingFarmers.value = true
-      try {
-        const response = await productsAPI.getActiveFarmers()
-        farmers.value = Array.isArray(response) ? response.slice(0, 10) : [] // Limit to 10 farmers
-      } catch (error) {
-        console.error('Failed to load farmers:', error)
-      } finally {
-        loadingFarmers.value = false
-      }
-    }
-    
-    const loadFreshPicks = async () => {
-      loadingFreshPicks.value = true
-      try {
-        const response = await productsAPI.getListings({
-          page_size: 10,
-          listing_status: 'available',
-          ordering: '-created_at'
-        })
-        
-        if (response.results) {
-          freshPicks.value = response.results
-        } else if (Array.isArray(response)) {
-          freshPicks.value = response.slice(0, 10)
-        }
-      } catch (error) {
-        console.error('Failed to load fresh picks:', error)
-      } finally {
-        loadingFreshPicks.value = false
-      }
-    }
-
-    const getStatusDisplay = (status) => {
-      const statusMap = {
-        'available': 'Available',
-        'pre_order': 'Pre-order',
-        'sold_out': 'Sold Out',
-        'inactive': 'Inactive'
-      }
-      return statusMap[status] || status
-    }
-    
-    const filterByCategory = (categoryId) => {
-      router.push(`/products?category=${categoryId}`)
-    }
-    
-    const filterByFarmer = (farmerId) => {
-      router.push(`/farmers/${farmerId}`)
-    }
-    
-    const getInitials = (name) => {
-      if (!name) return '?'
-      const parts = name.trim().split(' ')
-      if (parts.length === 1) {
-        return parts[0].charAt(0).toUpperCase()
-      }
-      return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
-    }
-    
-    const viewProduct = (listing) => {
-      router.push(`/products/${listing.listing_id}`)
-    }
-    
-    const addToCart = async (listing) => {
-      addingToCart.value = listing.listing_id
-      
-      try {
-        if (isAuthenticated.value && isCustomer.value) {
-          await cartAPI.addToCart(listing.listing_id, listing.min_order_quantity || 1)
-          console.log(`${listing.product_name} added to authenticated cart!`)
-        } else {
-          // Add to guest cart if not authenticated or not a customer
-          addGuestCartItem(listing, listing.min_order_quantity || 1) // Pass the full listing object
-          console.log(`${listing.product_name} added to guest cart!`)
-        }
-        
-        window.dispatchEvent(new CustomEvent('cartUpdated'))
-        
-        notificationMessage.value = `${listing.product_name} added to cart!`
-        showNotification.value = true
-        setTimeout(() => {
-          showNotification.value = false
-        }, 3000) // Hide after 3 seconds
-        
-      } catch (error) {
-        console.error('Failed to add to cart:', error)
-        notificationMessage.value = 'Failed to add item to cart. Please try again.'
-        showNotification.value = true
-        setTimeout(() => {
-          showNotification.value = false
-        }, 3000) // Hide after 3 seconds
-      } finally {
-        addingToCart.value = null
-      }
-    }
-    
-    // Lifecycle
-    onMounted(() => {
-      loadCategories()
-      loadFarmers()
-      loadFreshPicks()
-    })
-    
-    return {
-      // State
+    const {
       categories,
       farmers,
       freshPicks,
       searchQuery,
-      addingToCart,
-      
-      // Loading states
-      loadingCategories,
       loadingFarmers,
       loadingFreshPicks,
-      
-      // Computed
-      isAuthenticated,
-      isCustomer,
-      showNotification,
-      notificationMessage,
-      
-      // Methods
-      getCategoryImage,
       debouncedSearch,
       getStatusDisplay,
-      filterByCategory,
       filterByFarmer,
       getInitials,
       viewProduct,
+      getFarmerDisplayImage
+    } = useHomePageData()
+
+    console.log('HomePage - farmers ref:', farmers.value);
+    console.log('HomePage - loadingFarmers ref:', loadingFarmers.value);
+
+    const handleSearch = ({ query, category }) => {
+      console.log('Search triggered from HomePage:', query, category);
+    };
+
+    const {
+      addingToCart,
+      showNotification,
+      notificationMessage,
       addToCart
+    } = useCartActions()
+    
+    return {
+      categories,
+      farmers,
+      freshPicks,
+      searchQuery,
+      loadingFarmers,
+      loadingFreshPicks,
+      addingToCart,
+      showNotification,
+      notificationMessage,
+      addToCart,
+      debouncedSearch,
+      getStatusDisplay,
+      filterByFarmer,
+      getInitials,
+      viewProduct,
+      handleSearch,
+      getFarmerDisplayImage,
+      isAuthenticated,
+      isCustomer
     }
   }
 }
 </script>
 
 <style scoped>
+.font-dancing-script {
+  font-family: 'Dancing Script', cursive;
+}
+
 .line-clamp-1 {
   overflow: hidden;
   display: -webkit-box;
@@ -507,15 +306,13 @@ export default {
   white-space: nowrap;
 }
 
-/* Hide scrollbar for Chrome, Safari and Opera */
 .scrollbar-hide::-webkit-scrollbar {
     display: none;
 }
 
-/* Hide scrollbar for IE, Edge and Firefox */
 .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
 .scroll-fade {

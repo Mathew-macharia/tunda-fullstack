@@ -5,7 +5,7 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <div class="md:flex md:items-center md:justify-between">
           <div class="flex-1 min-w-0">
-            <h1 class="text-xl font-bold leading-7 text-gray-900 sm:text-2xl lg:text-3xl">
+            <h1 class="text-xl font-bold leading-7 text-primary sm:text-2xl lg:text-3xl">
               Fresh Products
             </h1>
             <p class="mt-1 text-sm text-gray-500">
@@ -15,7 +15,7 @@
           <!-- Mobile filter toggle -->
           <button
             @click="showFilters = !showFilters"
-            class="md:hidden mt-3 inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            class="md:hidden mt-3 inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
           >
             <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
@@ -77,7 +77,7 @@
                         value=""
                         v-model="filters.category"
                         @change="resetAndLoadProducts"
-                        class="form-radio text-green-600"
+                        class="form-radio text-primary"
                       />
                       <span class="ml-2 text-sm text-gray-700">All Categories</span>
                     </label>
@@ -87,7 +87,7 @@
                         :value="category.category_id"
                         v-model="filters.category"
                         @change="resetAndLoadProducts"
-                        class="form-radio text-green-600"
+                        class="form-radio text-primary"
                       />
                       <span class="ml-2 text-sm text-gray-700">{{ category.category_name }}</span>
                     </label>
@@ -102,7 +102,7 @@
                         type="checkbox"
                         v-model="filters.availableOnly"
                         @change="resetAndLoadProducts"
-                        class="form-checkbox text-green-600"
+                        class="form-checkbox text-primary"
                       />
                       <span class="ml-2 text-sm text-gray-700">Available Now</span>
                     </label>
@@ -111,7 +111,7 @@
                         type="checkbox"
                         v-model="filters.organicOnly"
                         @change="resetAndLoadProducts"
-                        class="form-checkbox text-green-600"
+                        class="form-checkbox text-primary"
                       />
                       <span class="ml-2 text-sm text-gray-700">Organic Certified</span>
                     </label>
@@ -168,7 +168,7 @@
                     value=""
                     v-model="filters.category"
                     @change="resetAndLoadProducts"
-                    class="form-radio text-green-600"
+                    class="form-radio text-primary"
                   />
                   <span class="ml-2 text-sm text-gray-700">All Categories</span>
                 </label>
@@ -178,7 +178,7 @@
                     :value="category.category_id"
                     v-model="filters.category"
                     @change="resetAndLoadProducts"
-                    class="form-radio text-green-600"
+                    class="form-radio text-primary"
                   />
                   <span class="ml-2 text-sm text-gray-700">{{ category.category_name }}</span>
                 </label>
@@ -194,7 +194,7 @@
                     type="checkbox"
                     v-model="filters.availableOnly"
                     @change="resetAndLoadProducts"
-                    class="form-checkbox text-green-600"
+                    class="form-checkbox text-primary"
                   />
                   <span class="ml-2 text-sm text-gray-700">Available Now</span>
                 </label>
@@ -203,7 +203,7 @@
                     type="checkbox"
                     v-model="filters.organicOnly"
                     @change="resetAndLoadProducts"
-                    class="form-checkbox text-green-600"
+                    class="form-checkbox text-primary"
                   />
                   <span class="ml-2 text-sm text-gray-700">Organic Certified</span>
                 </label>
@@ -240,7 +240,7 @@
             <select
               v-model="filters.sortBy"
               @change="resetAndLoadProducts"
-              class="text-sm border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+              class="text-sm border-gray-300 rounded-md focus:ring-primary focus:border-primary"
             >
               <option value="">Sort by</option>
               <option value="price_asc">Price ↑</option>
@@ -252,7 +252,7 @@
 
           <!-- Loading -->
           <div v-if="loading" class="flex justify-center items-center h-64">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           </div>
           
           <!-- Empty State -->
@@ -304,7 +304,7 @@
                 
                 <!-- Organic Badge -->
                 <div v-if="listing.is_organic_certified" class="absolute top-1 right-1 sm:top-2 sm:right-2">
-                  <span class="bg-green-600 text-white px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-xs font-medium">
+                  <span class="bg-primary text-white px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-xs font-medium">
                     Organic
                   </span>
                 </div>
@@ -385,7 +385,7 @@
                 :key="page"
                 @click="changePage(page)"
                 :class="{
-                  'bg-green-600 text-white': page === currentPage,
+                  'bg-primary text-white': page === currentPage,
                   'bg-white text-gray-500 hover:bg-gray-50': page !== currentPage
                 }"
                 class="px-2 py-2 sm:px-3 text-sm font-medium border border-gray-300"
@@ -418,13 +418,13 @@
     >
       <div
         v-if="showNotification"
-        class="fixed bottom-4 right-4 sm:top-4 sm:right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-3"
+        class="fixed bottom-4 right-4 sm:top-4 sm:right-4 bg-primary text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-3"
       >
         <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
         <p class="font-medium">{{ notificationMessage }}</p>
-        <button @click="showNotification = false" class="ml-auto -mr-1 p-1 rounded-full hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+        <button @click="showNotification = false" class="ml-auto -mr-1 p-1 rounded-full hover:bg-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
           <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
           </svg>
