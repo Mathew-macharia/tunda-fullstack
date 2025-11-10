@@ -62,6 +62,7 @@
           >
             <option value="">Select unit</option>
             <option value="kg">Kilogram (kg)</option>
+            <option value="g">Gram (g)</option>
             <option value="piece">Piece</option>
             <option value="bunch">Bunch</option>
             <option value="bag">Bag</option>
