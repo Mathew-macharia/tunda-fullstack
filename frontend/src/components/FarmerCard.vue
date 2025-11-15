@@ -10,6 +10,7 @@
         :src="farmer.profile_photo_url"
         :alt="farmer.farmer_name"
         class="w-full h-40 sm:h-48 object-cover"
+        loading="lazy"
       />
       <div v-else class="w-full h-40 sm:h-48 bg-gray-200 flex items-center justify-center">
         <span class="text-gray-500 text-4xl font-bold">{{ getInitials(farmer.farmer_name) }}</span>

@@ -27,6 +27,7 @@
               :src="getCategoryImage(category.category_name)"
               :alt="category.category_name"
               class="w-24 h-24 mx-auto mb-3 sm:mb-4"
+              loading="lazy"
             />
             <h3 class="text-sm sm:text-base font-semibold text-gray-900 line-clamp-2">
               {{ category.category_name }}

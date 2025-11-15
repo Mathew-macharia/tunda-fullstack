@@ -65,10 +65,10 @@ export function useHomePageData() {
     try {
       // Fetch all farmers, then slice to limit for homepage display
       const response = await farmsAPI.getFarms() // Corrected API call to farmsAPI.getFarms()
-      console.log('API Response for farmers (useHomePageData):', response); // Debugging line
+      // console.log('API Response for farmers (useHomePageData):', response); // Debugging line
       const farmerData = response.results || response;
       farmers.value = Array.isArray(farmerData) ? farmerData.slice(0, 6) : [];
-      console.log('Farmers after assignment (useHomePageData):', farmers.value); // Debugging line
+      // console.log('Farmers after assignment (useHomePageData):', farmers.value); // Debugging line
     } catch (error) {
       console.error('Failed to load farmers:', error)
     } finally {
@@ -121,7 +121,7 @@ export function useHomePageData() {
   }
   
   const filterByFarmer = (farmerId) => {
-    console.log('Navigating to farmer detail for ID:', farmerId); // Debugging line
+    // console.log('Navigating to farmer detail for ID:', farmerId); // Debugging line
     router.push(`/farmers/${farmerId}`)
   }
   

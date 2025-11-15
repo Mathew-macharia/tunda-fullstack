@@ -80,6 +80,7 @@
                 :src="listing.photos[0]"
                 :alt="listing.product_name"
                 class="w-full h-40 sm:h-48 object-cover"
+                loading="lazy"
               />
               <div v-else class="w-full h-40 sm:h-48 bg-gray-200 flex items-center justify-center">
                 <svg class="h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -240,11 +241,8 @@ export default {
       getFarmerDisplayImage
     } = useHomePageData()
 
-    console.log('HomePage - farmers ref:', farmers.value);
-    console.log('HomePage - loadingFarmers ref:', loadingFarmers.value);
-
     const handleSearch = ({ query, category }) => {
-      console.log('Search triggered from HomePage:', query, category);
+      // console.log('Search triggered from HomePage:', query, category);
     };
 
     const {
