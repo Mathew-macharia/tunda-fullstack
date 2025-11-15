@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import UserProfileView, ChangePasswordView, create_user_with_email, AdminUserViewSet
+from .views import UserProfileView, ChangePasswordView, create_user_with_email, AdminUserViewSet, check_user_role
 
 # Create a router for admin viewsets
 router = DefaultRouter()
@@ -11,6 +11,7 @@ urlpatterns = [
     path('profile/', UserProfileView.as_view(), name='user-profile'),
     path('change-password/', ChangePasswordView.as_view(), name='change-password'),
     path('register/', create_user_with_email, name='user-register-custom'),  # Custom registration with email fix
+    path('check-role/', check_user_role, name='check-user-role'),  # Check user role by phone number
     
     # Admin endpoints
     path('', include(router.urls)),

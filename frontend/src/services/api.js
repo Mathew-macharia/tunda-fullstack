@@ -158,6 +158,11 @@ export const authAPI = {
     // This endpoint will need to be implemented on the backend
     const response = await api.post('/carts/merge_guest_cart/', { items })
     return response.data
+  },
+
+  async checkUserRole(phoneNumber) {
+    const response = await api.post('/users/check-role/', { phone_number: phoneNumber })
+    return response.data
   }
 }
 

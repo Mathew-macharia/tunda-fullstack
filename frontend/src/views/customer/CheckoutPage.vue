@@ -91,7 +91,7 @@
                 </svg>
                 <div class="flex-1">
                   <h3 class="text-sm font-medium text-orange-800">Oops! We couldn't log you in</h3>
-                  <p class="mt-2 text-sm text-orange-700">Please double-check your phone number and password, or try creating a new account.</p>
+                  <p class="mt-2 text-sm text-orange-700">{{ authErrors.general }}</p>
                 </div>
               </div>
             </div>
@@ -611,7 +611,7 @@
 <script>
 import { ref, computed, onMounted, watch, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { cartAPI, ordersAPI, locationsAPI, paymentsAPI } from '@/services/api'
+import { cartAPI, ordersAPI, locationsAPI, paymentsAPI, authAPI } from '@/services/api'
 import { user, isAuthenticated, mergeGuestCartToUserCart, guestCartItems, login, register } from '@/stores/auth' // Import login and register
 import MpesaPaymentCard from '@/components/customer/MpesaPaymentCard.vue' // Import the new component
 
@@ -847,6 +847,22 @@ export default {
       }
       
       processingAuth.value = true
+      
+      // First, check if this phone number belongs to a customer
+      try {
+        const roleCheck = await authAPI.checkUserRole(authForm.phone_number)
+        
+        if (roleCheck.exists && roleCheck.user_role !== 'customer') {
+          authErrors.general = `This phone number is registered as a ${roleCheck.user_role} account. Please use a customer account to place orders, or create a new customer account.`
+          processingAuth.value = false
+          return // Exit the entire function - don't proceed with login
+        }
+      } catch (error) {
+        // If role check fails, we'll still attempt login and handle errors there
+        console.error('Role check failed:', error)
+      }
+      
+      // Only reach here if role check passed or failed
       try {
         const result = await login(authForm.phone_number, authForm.password)
         

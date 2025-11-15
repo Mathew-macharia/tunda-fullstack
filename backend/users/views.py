@@ -205,6 +205,41 @@ class AdminUserViewSet(viewsets.ModelViewSet):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+def check_user_role(request):
+    """
+    Check if a phone number exists and return the user role.
+    Used during checkout to prevent non-customer logins.
+    
+    Expected payload:
+    {
+        "phone_number": "0712345678"
+    }
+    
+    Response:
+    {
+        "exists": true,
+        "user_role": "customer"
+    }
+    """
+    phone_number = request.data.get('phone_number')
+    
+    if not phone_number:
+        return Response({'error': 'phone_number is required.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        user = User.objects.get(phone_number=phone_number)
+        return Response({
+            'exists': True,
+            'user_role': user.user_role
+        })
+    except User.DoesNotExist:
+        return Response({
+            'exists': False,
+            'user_role': None
+        })
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
 def create_user_with_email(request):
     """
     Custom user creation endpoint that properly handles email field.
