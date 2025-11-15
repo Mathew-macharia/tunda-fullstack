@@ -368,40 +368,12 @@
             </div>
           </div>
           
-          <!-- Pagination -->
-          <div v-if="totalPages > 1" class="mt-6 sm:mt-8 flex justify-center">
-            <nav class="flex items-center space-x-1">
-              <button
-                @click="changePage(currentPage - 1)"
-                :disabled="currentPage === 1"
-                class="px-2 py-2 sm:px-3 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <span class="hidden sm:inline">Previous</span>
-                <span class="sm:hidden">Prev</span>
-              </button>
-              
-              <button
-                v-for="page in visiblePages"
-                :key="page"
-                @click="changePage(page)"
-                :class="{
-                  'bg-primary text-white': page === currentPage,
-                  'bg-white text-gray-500 hover:bg-gray-50': page !== currentPage
-                }"
-                class="px-2 py-2 sm:px-3 text-sm font-medium border border-gray-300"
-              >
-                {{ page }}
-              </button>
-              
-              <button
-                @click="changePage(currentPage + 1)"
-                :disabled="currentPage === totalPages"
-                class="px-2 py-2 sm:px-3 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <span class="hidden sm:inline">Next</span>
-                <span class="sm:hidden">Next</span>
-              </button>
-            </nav>
+          <!-- Infinite Scroll Trigger / Loading Indicator -->
+          <div v-if="nextPageUrl" ref="loadMoreTrigger" class="mt-6 sm:mt-8 flex justify-center">
+            <div v-if="loading" class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+          <div v-else-if="products.length > 0 && !loading" class="mt-6 sm:mt-8 text-center text-gray-500">
+            You've reached the end of the product list.
           </div>
         </div>
       </div>
@@ -448,17 +420,17 @@ export default {
     const loading = ref(false)
     const products = ref([])
     const categories = ref([])
-    const currentPage = ref(1)
-    const totalPages = ref(1)
+    const nextPageUrl = ref(null) // For infinite scroll
     const addingToCart = ref(null)
     const showFilters = ref(false)
     const showNotification = ref(false)
     const notificationMessage = ref('')
+    const loadMoreTrigger = ref(null) // Ref for the intersection observer target
     
     const filters = reactive({
-      search: route.query.search || '', // Initialize search from URL query
-      category: route.query.category || '', // Initialize category from URL query
-      farmer_id: route.query.farmer_id || '', // Initialize farmer_id from URL query
+      search: route.query.search || '',
+      category: route.query.category || '',
+      farmer_id: route.query.farmer_id || '',
       availableOnly: false,
       organicOnly: false,
       sortBy: ''
@@ -473,35 +445,6 @@ export default {
       }, 500)
     }
     
-    // Computed
-    const visiblePages = computed(() => {
-      const delta = 2
-      const range = []
-      const rangeWithDots = []
-      
-      for (let i = Math.max(2, currentPage.value - delta); 
-           i <= Math.min(totalPages.value - 1, currentPage.value + delta); 
-           i++) {
-        range.push(i)
-      }
-      
-      if (currentPage.value - delta > 2) {
-        rangeWithDots.push(1, '...')
-      } else {
-        rangeWithDots.push(1)
-      }
-      
-      rangeWithDots.push(...range)
-      
-      if (currentPage.value + delta < totalPages.value - 1) {
-        rangeWithDots.push('...', totalPages.value)
-      } else {
-        rangeWithDots.push(totalPages.value)
-      }
-      
-      return rangeWithDots.filter((v, i, a) => a.indexOf(v) === i)
-    })
-    
     // Methods
     const loadCategories = async () => {
       try {
@@ -512,41 +455,42 @@ export default {
       }
     }
     
-    const loadProducts = async (page = 1) => {
+    const loadProducts = async () => {
+      if (loading.value) return // Prevent multiple simultaneous loads
       loading.value = true
-      currentPage.value = page
       
       try {
-        const params = {
-          page,
-          page_size: 12,
-          ...(filters.search && { search: filters.search }),
-          ...(filters.category && { category: filters.category }), // Corrected to 'category'
-          ...(filters.farmer_id && { farmer_id: filters.farmer_id }),
-          ...(filters.availableOnly ? { status: 'available' } : {}),
-          ...(filters.organicOnly && { organic: 'true' }),
-          ...(filters.sortBy && { ordering: getSortOrder(filters.sortBy) })
+        let response
+        if (nextPageUrl.value) {
+          // Use the next URL for subsequent loads
+          response = await productsAPI.get(nextPageUrl.value)
+        } else {
+          // Initial load or after filter change
+          const params = {
+            page_size: 12,
+            ...(filters.search && { search: filters.search }),
+            ...(filters.category && { category: filters.category }),
+            ...(filters.farmer_id && { farmer_id: filters.farmer_id }),
+            ...(filters.availableOnly ? { status: 'available' } : {}),
+            ...(filters.organicOnly && { organic: 'true' }),
+            ...(filters.sortBy && { ordering: getSortOrder(filters.sortBy) })
+          }
+          response = await productsAPI.getListings(params)
         }
         
-        console.log('Loading products with params:', params) // Debug log
-        
-        const response = await productsAPI.getListings(params)
-        
-        console.log('Products API response:', response) // Debug log
-        
         if (response.results) {
-          products.value = response.results
-          totalPages.value = Math.ceil(response.count / 12)
+          products.value = [...products.value, ...response.results]
+          nextPageUrl.value = response.next
         } else if (Array.isArray(response)) {
-          products.value = response
-          totalPages.value = 1
+          products.value = [...products.value, ...response]
+          nextPageUrl.value = null // No more pages if it's a plain array
         } else {
-          products.value = []
-          totalPages.value = 1
+          // Handle cases where response might be empty or unexpected
+          products.value = products.value // Keep existing products
+          nextPageUrl.value = null
         }
       } catch (error) {
         console.error('Failed to load products:', error)
-        products.value = []
       } finally {
         loading.value = false
       }
@@ -585,19 +529,17 @@ export default {
           await cartAPI.addToCart(listing.listing_id, listing.min_order_quantity || 1)
           console.log(`${listing.product_name} added to authenticated cart!`)
         } else {
-          // Add to guest cart if not authenticated or not a customer
-          addGuestCartItem(listing, listing.min_order_quantity || 1) // Pass the full listing object
+          addGuestCartItem(listing, listing.min_order_quantity || 1)
           console.log(`${listing.product_name} added to guest cart!`)
         }
         
-        // Dispatch cart updated event
         window.dispatchEvent(new CustomEvent('cartUpdated'))
         
         notificationMessage.value = `${listing.product_name} added to cart!`
         showNotification.value = true
         setTimeout(() => {
           showNotification.value = false
-        }, 3000) // Hide after 3 seconds
+        }, 3000)
         
       } catch (error) {
         console.error('Failed to add to cart:', error)
@@ -605,29 +547,37 @@ export default {
         showNotification.value = true
         setTimeout(() => {
           showNotification.value = false
-        }, 3000) // Hide after 3 seconds
+        }, 3000)
       } finally {
         addingToCart.value = null
       }
     }
     
-    const changePage = (page) => {
-      if (page >= 1 && page <= totalPages.value) {
-        loadProducts(page)
-      }
-    }
-
     const resetAndLoadProducts = () => {
-      console.log('resetAndLoadProducts called. Current filters:', JSON.parse(JSON.stringify(filters))); // Debug log
-      currentPage.value = 1
-      loadProducts(1)
-      showFilters.value = false // Close mobile filters after applying
+      products.value = [] // Clear existing products
+      nextPageUrl.value = null // Reset next page URL
+      loadProducts()
+      showFilters.value = false
     }
     
     // Lifecycle
     onMounted(() => {
       loadCategories()
       loadProducts()
+      
+      // Set up Intersection Observer
+      const observer = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && nextPageUrl.value && !loading.value) {
+          loadProducts()
+        }
+      }, {
+        rootMargin: '0px',
+        threshold: 0.1
+      })
+      
+      if (loadMoreTrigger.value) {
+        observer.observe(loadMoreTrigger.value)
+      }
     })
 
     // Watch for changes in the route's search query
@@ -653,15 +603,13 @@ export default {
       products,
       categories,
       filters,
-      currentPage,
-      totalPages,
-      visiblePages,
       addingToCart,
       showFilters,
       isAuthenticated,
       isCustomer,
       showNotification,
       notificationMessage,
+      loadMoreTrigger, // Expose ref to template
       
       // Methods
       debouncedSearch,
@@ -670,7 +618,6 @@ export default {
       getStatusDisplay,
       viewProduct,
       addToCart,
-      changePage
     }
   }
 }
