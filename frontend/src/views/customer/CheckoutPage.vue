@@ -22,181 +22,14 @@
         </router-link>
       </div>
 
-      <!-- Authentication Section (Only for non-authenticated users with cart items) -->
-      <div v-else-if="showAuthSection" class="max-w-md mx-auto">
-        <div class="bg-white rounded-lg shadow-lg p-6 sm:p-8">
-          <div class="text-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">
-              {{ authMode === 'login' ? 'Login to Continue' : 'Create Account to Continue' }}
-            </h2>
-            <p class="mt-2 text-sm text-gray-600">
-              {{ authMode === 'login' ? 'Sign in to complete your order' : 'Create an account to track your order' }}
-            </p>
-          </div>
-          
-          <!-- Auth Mode Toggle -->
-          <div class="flex space-x-2 mb-6 border-b border-gray-200">
-            <button
-              @click="switchAuthMode('login')"
-              :class="[
-                'flex-1 py-2 text-sm font-medium transition-colors',
-                authMode === 'login'
-                  ? 'border-b-2 border-green-600 text-green-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              ]"
-            >
-              Login
-            </button>
-            <button
-              @click="switchAuthMode('register')"
-              :class="[
-                'flex-1 py-2 text-sm font-medium transition-colors',
-                authMode === 'register'
-                  ? 'border-b-2 border-green-600 text-green-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              ]"
-            >
-              Create Account
-            </button>
-          </div>
-          
-          <!-- Login Form -->
-          <form v-if="authMode === 'login'" @submit.prevent="handleLogin" class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-              <input
-                v-model="authForm.phone_number"
-                type="tel"
-                required
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                placeholder="+254712345678"
-              />
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-              <input
-                v-model="authForm.password"
-                type="password"
-                required
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                placeholder="Enter your password"
-              />
-            </div>
-            
-            <div v-if="authErrors.general" class="rounded-lg bg-orange-50 border border-orange-200 p-4">
-              <div class="flex items-start space-x-3">
-                <svg class="h-5 w-5 text-orange-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-                </svg>
-                <div class="flex-1">
-                  <h3 class="text-sm font-medium text-orange-800">Oops! We couldn't log you in</h3>
-                  <p class="mt-2 text-sm text-orange-700">{{ authErrors.general }}</p>
-                </div>
-              </div>
-            </div>
-            
-            <button
-              type="submit"
-              :disabled="processingAuth"
-              class="w-full btn-primary py-2 disabled:opacity-50"
-            >
-              {{ processingAuth ? 'Logging in...' : 'Login' }}
-            </button>
-          </form>
-          
-          <!-- Register Form -->
-          <form v-else @submit.prevent="handleRegister" class="space-y-4">
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                <input
-                  v-model="authForm.first_name"
-                  type="text"
-                  required
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                <input
-                  v-model="authForm.last_name"
-                  type="text"
-                  required
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-              <input
-                v-model="authForm.phone_number"
-                type="tel"
-                required
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                placeholder="+254712345678"
-              />
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Email (Optional)</label>
-              <input
-                v-model="authForm.email"
-                type="email"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                placeholder="your@email.com"
-              />
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-              <input
-                v-model="authForm.password"
-                type="password"
-                required
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                placeholder="Min 8 characters"
-              />
-              <p class="mt-1 text-xs text-gray-500">Must be at least 8 characters</p>
-            </div>
-            
-            <div v-if="authErrors.general" class="rounded-lg bg-orange-50 border border-orange-200 p-4">
-              <div class="flex items-start space-x-3">
-                <svg class="h-5 w-5 text-orange-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-                </svg>
-                <div class="flex-1">
-                  <h3 class="text-sm font-medium text-orange-800">We couldn't create your account</h3>
-                  <div class="mt-1 text-sm text-orange-700">
-                    <div v-if="typeof authErrors.general === 'object'">
-                      <div v-for="(errorList, field) in authErrors.general" :key="field" class="mt-1">
-                        <span class="capitalize font-medium">{{ field.replace('_', ' ') }}:</span>
-                        <span v-for="error in errorList" :key="error"> {{ error }}</span>
-                      </div>
-                    </div>
-                    <div v-else>
-                      {{ authErrors.general }}
-                    </div>
-                  </div>
-                  <p class="mt-2 text-xs text-orange-600">Please check the information and try again, or switch to Login if you already have an account.</p>
-                </div>
-              </div>
-            </div>
-            
-            <button
-              type="submit"
-              :disabled="processingAuth"
-              class="w-full btn-primary py-2 disabled:opacity-50"
-            >
-              {{ processingAuth ? 'Creating account...' : 'Create Account & Continue' }}
-            </button>
-          </form>
-        </div>
-      </div>
-
-      <!-- Hide checkout form until authenticated -->
-      <div v-else class="space-y-6 lg:grid lg:grid-cols-3 lg:gap-8 lg:space-y-0">
+      <!-- Checkout Form (always visible, but dimmed when auth modal is shown) -->
+      <div 
+        v-else 
+        :class="[
+          'space-y-6 lg:grid lg:grid-cols-3 lg:gap-8 lg:space-y-0 transition-all duration-300',
+          showAuthSection ? 'opacity-50 pointer-events-none' : ''
+        ]"
+      >
         <!-- Checkout Form (Delivery Information and Payment Method) -->
         <div class="lg:col-span-2 space-y-6">
           <!-- Saved Addresses Section (Only for authenticated users) -->
@@ -604,12 +437,188 @@
           </div>
         </div>
       </div>
+
+      <!-- Authentication Modal Overlay (Only for non-authenticated users with cart items) -->
+      <div 
+        v-if="showAuthSection" 
+        class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 flex items-center justify-center p-4"
+      >
+        <div class="bg-white rounded-lg shadow-2xl p-6 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto">
+          <div class="text-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">
+              {{ authMode === 'login' ? 'Login to Continue' : 'Create Account to Continue' }}
+            </h2>
+            <p class="mt-2 text-sm text-gray-600">
+              {{ authMode === 'login' ? 'Sign in to complete your order' : 'Create an account to track your order' }}
+            </p>
+          </div>
+          
+          <!-- Auth Mode Toggle -->
+          <div class="flex space-x-2 mb-6 border-b border-gray-200">
+            <button
+              @click="switchAuthMode('login')"
+              :class="[
+                'flex-1 py-2 text-sm font-medium transition-colors',
+                authMode === 'login'
+                  ? 'border-b-2 border-green-600 text-green-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              ]"
+            >
+              Login
+            </button>
+            <button
+              @click="switchAuthMode('register')"
+              :class="[
+                'flex-1 py-2 text-sm font-medium transition-colors',
+                authMode === 'register'
+                  ? 'border-b-2 border-green-600 text-green-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              ]"
+            >
+              Create Account
+            </button>
+          </div>
+          
+          <!-- Login Form -->
+          <form v-if="authMode === 'login'" @submit.prevent="handleLogin" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+              <input
+                v-model="authForm.phone_number"
+                type="tel"
+                required
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="+254712345678"
+              />
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <input
+                v-model="authForm.password"
+                type="password"
+                required
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="Enter your password"
+              />
+            </div>
+            
+            <div v-if="authErrors.general" class="rounded-lg bg-orange-50 border border-orange-200 p-4">
+              <div class="flex items-start space-x-3">
+                <svg class="h-5 w-5 text-orange-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                </svg>
+                <div class="flex-1">
+                  <h3 class="text-sm font-medium text-orange-800">Oops! We couldn't log you in</h3>
+                  <p class="mt-2 text-sm text-orange-700">{{ authErrors.general }}</p>
+                </div>
+              </div>
+            </div>
+            
+            <button
+              type="submit"
+              :disabled="processingAuth"
+              class="w-full btn-primary py-2 disabled:opacity-50"
+            >
+              {{ processingAuth ? 'Logging in...' : 'Login' }}
+            </button>
+          </form>
+          
+          <!-- Register Form -->
+          <form v-else @submit.prevent="handleRegister" class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                <input
+                  v-model="authForm.first_name"
+                  type="text"
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                <input
+                  v-model="authForm.last_name"
+                  type="text"
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+              <input
+                v-model="authForm.phone_number"
+                type="tel"
+                required
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="+254712345678"
+              />
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Email (Optional)</label>
+              <input
+                v-model="authForm.email"
+                type="email"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="your@email.com"
+              />
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <input
+                v-model="authForm.password"
+                type="password"
+                required
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="Min 8 characters"
+              />
+              <p class="mt-1 text-xs text-gray-500">Must be at least 8 characters</p>
+            </div>
+            
+            <div v-if="authErrors.general" class="rounded-lg bg-orange-50 border border-orange-200 p-4">
+              <div class="flex items-start space-x-3">
+                <svg class="h-5 w-5 text-orange-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                </svg>
+                <div class="flex-1">
+                  <h3 class="text-sm font-medium text-orange-800">We couldn't create your account</h3>
+                  <div class="mt-1 text-sm text-orange-700">
+                    <div v-if="typeof authErrors.general === 'object'">
+                      <div v-for="(errorList, field) in authErrors.general" :key="field" class="mt-1">
+                        <span class="capitalize font-medium">{{ field.replace('_', ' ') }}:</span>
+                        <span v-for="error in errorList" :key="error"> {{ error }}</span>
+                      </div>
+                    </div>
+                    <div v-else>
+                      {{ authErrors.general }}
+                    </div>
+                  </div>
+                  <p class="mt-2 text-xs text-orange-600">Please check the information and try again, or switch to Login if you already have an account.</p>
+                </div>
+              </div>
+            </div>
+            
+            <button
+              type="submit"
+              :disabled="processingAuth"
+              class="w-full btn-primary py-2 disabled:opacity-50"
+            >
+              {{ processingAuth ? 'Creating account...' : 'Create Account & Continue' }}
+            </button>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import { ref, computed, onMounted, watch, reactive } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { cartAPI, ordersAPI, locationsAPI, paymentsAPI, authAPI } from '@/services/api'
 import { user, isAuthenticated, mergeGuestCartToUserCart, guestCartItems, login, register } from '@/stores/auth' // Import login and register
@@ -867,12 +876,18 @@ export default {
         const result = await login(authForm.phone_number, authForm.password)
         
         if (result.success) {
-          // Auth successful - reload page state
-          showAuthSection.value = false
+          // Auth successful - reload page state BEFORE closing modal
+          // Set loading to prevent "empty cart" flicker
+          loading.value = true
+          
           await Promise.all([
             loadCart(),
             loadSavedAddresses()
           ])
+          
+          // Only close modal and show checkout after cart is loaded
+          showAuthSection.value = false
+          loading.value = false
           initializeForm()
         } else {
           authErrors.general = result.error
@@ -914,12 +929,18 @@ export default {
         const result = await register(userData)
         
         if (result.success) {
-          // Registration successful - reload page state
-          showAuthSection.value = false
+          // Registration successful - reload page state BEFORE closing modal
+          // Set loading to prevent "empty cart" flicker
+          loading.value = true
+          
           await Promise.all([
             loadCart(),
             loadSavedAddresses()
           ])
+          
+          // Only close modal and show checkout after cart is loaded
+          showAuthSection.value = false
+          loading.value = false
           initializeForm()
         } else {
           // Display the error from backend
@@ -1167,6 +1188,20 @@ export default {
         debouncedEstimateDeliveryFee()
       }
     }, { deep: true })
+
+    // Prevent body scrolling when modal is shown
+    watch(showAuthSection, (isOpen) => {
+      if (isOpen) {
+        document.body.style.overflow = 'hidden'
+      } else {
+        document.body.style.overflow = ''
+      }
+    })
+
+    // Cleanup on unmount
+    onUnmounted(() => {
+      document.body.style.overflow = ''
+    })
 
     // Lifecycle
     onMounted(async () => {
