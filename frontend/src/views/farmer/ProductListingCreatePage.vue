@@ -44,16 +44,16 @@
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Product *</label>
                 <div class="flex space-x-2">
-                  <select
+                  <v-select
                     v-model="form.product"
+                    :options="products"
+                    :get-option-label="product => `${product.product_name} (${product.unit_of_measure})`"
+                    :reduce="product => product.product_id"
+                    placeholder="Select a product"
+                    class="flex-1"
+                    :clearable="false"
                     required
-                    class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                  >
-                    <option value="">Select a product</option>
-                    <option v-for="product in products" :key="product.product_id" :value="product.product_id">
-                      {{ product.product_name }} ({{ product.unit_of_measure }})
-                    </option>
-                  </select>
+                  ></v-select>
                   <button
                     type="button"
                     @click="showCreateProductModal = true"
@@ -290,6 +290,8 @@ import {
   XMarkIcon
 } from '@heroicons/vue/24/outline'
 import CreateProductModal from '@/components/farmer/CreateProductModal.vue'
+import vSelect from 'vue-select'
+import 'vue-select/dist/vue-select.css'
 
 const router = useRouter()
 

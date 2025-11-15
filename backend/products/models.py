@@ -29,6 +29,7 @@ class Product(models.Model):
     """Model representing general product information"""
     UNIT_CHOICES = (
         ('kg', 'Kilogram'),
+        ('g', 'Gram'),
         ('piece', 'Piece'),
         ('bunch', 'Bunch'),
         ('litre', 'Litre'),
