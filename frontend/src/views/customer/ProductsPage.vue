@@ -407,7 +407,7 @@
 </template>
 
 <script>
-import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { isAuthenticated, isCustomer, addGuestCartItem } from '@/stores/auth'
 import { productsAPI, cartAPI } from '@/services/api'
@@ -426,6 +426,7 @@ export default {
     const showNotification = ref(false)
     const notificationMessage = ref('')
     const loadMoreTrigger = ref(null) // Ref for the intersection observer target
+    let observer = null // Store observer instance
     
     const filters = reactive({
       search: route.query.search || '',
@@ -560,23 +561,52 @@ export default {
       showFilters.value = false
     }
     
-    // Lifecycle
-    onMounted(() => {
-      loadCategories()
-      loadProducts()
+    // Set up Intersection Observer
+    const setupObserver = () => {
+      // Clean up existing observer
+      if (observer) {
+        observer.disconnect()
+      }
       
-      // Set up Intersection Observer
-      const observer = new IntersectionObserver((entries) => {
+      // Create new observer
+      observer = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting && nextPageUrl.value && !loading.value) {
           loadProducts()
         }
       }, {
-        rootMargin: '0px',
+        rootMargin: '100px', // Start loading 100px before reaching the trigger
         threshold: 0.1
       })
       
-      if (loadMoreTrigger.value) {
-        observer.observe(loadMoreTrigger.value)
+      // Observe the trigger element if it exists
+      nextTick(() => {
+        if (loadMoreTrigger.value) {
+          observer.observe(loadMoreTrigger.value)
+        }
+      })
+    }
+    
+    // Watch for when nextPageUrl changes to set up observer
+    watch(nextPageUrl, (newUrl) => {
+      if (newUrl) {
+        setupObserver()
+      } else if (observer) {
+        observer.disconnect()
+      }
+    })
+    
+    // Lifecycle
+    onMounted(() => {
+      loadCategories()
+      loadProducts()
+      // Set up observer after initial load
+      setupObserver()
+    })
+    
+    // Cleanup
+    onUnmounted(() => {
+      if (observer) {
+        observer.disconnect()
       }
     })
 
