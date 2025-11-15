@@ -260,7 +260,7 @@ const routes = [
     name: 'checkout',
     component: CheckoutPage,
     meta: { 
-      requiresAuth: true, 
+      // Removed requiresAuth - authentication is handled inline on the page
       roles: ['customer'],
       title: 'Checkout - Tunda App',
       description: 'Complete your purchase on Tunda App with secure checkout.'

@@ -22,11 +22,236 @@
         </router-link>
       </div>
 
+      <!-- Authentication Section (Only for non-authenticated users with cart items) -->
+      <div v-else-if="showAuthSection" class="max-w-md mx-auto">
+        <div class="bg-white rounded-lg shadow-lg p-6 sm:p-8">
+          <div class="text-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">
+              {{ authMode === 'login' ? 'Login to Continue' : 'Create Account to Continue' }}
+            </h2>
+            <p class="mt-2 text-sm text-gray-600">
+              {{ authMode === 'login' ? 'Sign in to complete your order' : 'Create an account to track your order' }}
+            </p>
+          </div>
+          
+          <!-- Auth Mode Toggle -->
+          <div class="flex space-x-2 mb-6 border-b border-gray-200">
+            <button
+              @click="switchAuthMode('login')"
+              :class="[
+                'flex-1 py-2 text-sm font-medium transition-colors',
+                authMode === 'login'
+                  ? 'border-b-2 border-green-600 text-green-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              ]"
+            >
+              Login
+            </button>
+            <button
+              @click="switchAuthMode('register')"
+              :class="[
+                'flex-1 py-2 text-sm font-medium transition-colors',
+                authMode === 'register'
+                  ? 'border-b-2 border-green-600 text-green-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              ]"
+            >
+              Create Account
+            </button>
+          </div>
+          
+          <!-- Login Form -->
+          <form v-if="authMode === 'login'" @submit.prevent="handleLogin" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+              <input
+                v-model="authForm.phone_number"
+                type="tel"
+                required
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="+254712345678"
+              />
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <input
+                v-model="authForm.password"
+                type="password"
+                required
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="Enter your password"
+              />
+            </div>
+            
+            <div v-if="authErrors.general" class="rounded-lg bg-orange-50 border border-orange-200 p-4">
+              <div class="flex items-start space-x-3">
+                <svg class="h-5 w-5 text-orange-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                </svg>
+                <div class="flex-1">
+                  <h3 class="text-sm font-medium text-orange-800">Oops! We couldn't log you in</h3>
+                  <p class="mt-2 text-sm text-orange-700">Please double-check your phone number and password, or try creating a new account.</p>
+                </div>
+              </div>
+            </div>
+            
+            <button
+              type="submit"
+              :disabled="processingAuth"
+              class="w-full btn-primary py-2 disabled:opacity-50"
+            >
+              {{ processingAuth ? 'Logging in...' : 'Login' }}
+            </button>
+          </form>
+          
+          <!-- Register Form -->
+          <form v-else @submit.prevent="handleRegister" class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                <input
+                  v-model="authForm.first_name"
+                  type="text"
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                <input
+                  v-model="authForm.last_name"
+                  type="text"
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+              <input
+                v-model="authForm.phone_number"
+                type="tel"
+                required
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="+254712345678"
+              />
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Email (Optional)</label>
+              <input
+                v-model="authForm.email"
+                type="email"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="your@email.com"
+              />
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <input
+                v-model="authForm.password"
+                type="password"
+                required
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="Min 8 characters"
+              />
+              <p class="mt-1 text-xs text-gray-500">Must be at least 8 characters</p>
+            </div>
+            
+            <div v-if="authErrors.general" class="rounded-lg bg-orange-50 border border-orange-200 p-4">
+              <div class="flex items-start space-x-3">
+                <svg class="h-5 w-5 text-orange-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                </svg>
+                <div class="flex-1">
+                  <h3 class="text-sm font-medium text-orange-800">We couldn't create your account</h3>
+                  <div class="mt-1 text-sm text-orange-700">
+                    <div v-if="typeof authErrors.general === 'object'">
+                      <div v-for="(errorList, field) in authErrors.general" :key="field" class="mt-1">
+                        <span class="capitalize font-medium">{{ field.replace('_', ' ') }}:</span>
+                        <span v-for="error in errorList" :key="error"> {{ error }}</span>
+                      </div>
+                    </div>
+                    <div v-else>
+                      {{ authErrors.general }}
+                    </div>
+                  </div>
+                  <p class="mt-2 text-xs text-orange-600">Please check the information and try again, or switch to Login if you already have an account.</p>
+                </div>
+              </div>
+            </div>
+            
+            <button
+              type="submit"
+              :disabled="processingAuth"
+              class="w-full btn-primary py-2 disabled:opacity-50"
+            >
+              {{ processingAuth ? 'Creating account...' : 'Create Account & Continue' }}
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Hide checkout form until authenticated -->
       <div v-else class="space-y-6 lg:grid lg:grid-cols-3 lg:gap-8 lg:space-y-0">
         <!-- Checkout Form (Delivery Information and Payment Method) -->
         <div class="lg:col-span-2 space-y-6">
+          <!-- Saved Addresses Section (Only for authenticated users) -->
+          <div v-if="isAuthenticated && savedAddresses.length > 0" class="bg-white rounded-lg shadow p-4 sm:p-6">
+            <h2 class="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Select Delivery Address</h2>
+            
+            <div class="space-y-3">
+              <div
+                v-for="address in savedAddresses"
+                :key="address.address_id"
+                @click="selectSavedAddress(address)"
+                :class="[
+                  'border rounded-lg p-4 cursor-pointer transition-colors',
+                  selectedAddressId === address.address_id
+                    ? 'border-green-500 bg-green-50'
+                    : 'border-gray-200 hover:border-green-300'
+                ]"
+              >
+                <div class="flex items-start justify-between">
+                  <div class="flex items-start space-x-3">
+                    <input
+                      type="radio"
+                      :checked="selectedAddressId === address.address_id"
+                      class="mt-1 h-4 w-4 text-green-600"
+                      @click.stop="selectSavedAddress(address)"
+                    />
+                    <div>
+                      <div class="flex items-center space-x-2">
+                        <p class="font-medium text-gray-900">{{ address.full_name }}</p>
+                        <span v-if="address.is_default" class="px-2 py-0.5 text-xs bg-green-100 text-green-800 rounded">
+                          Default
+                        </span>
+                      </div>
+                      <p class="text-sm text-gray-600 mt-1">{{ address.phone_number }}</p>
+                      <p class="text-sm text-gray-600 mt-1">
+                        {{ address.detailed_address }}<br>
+                        {{ address.sub_county_name }}, {{ address.county_name }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <button
+                @click="showNewAddressFormHandler"
+                type="button"
+                class="w-full border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-green-400 transition-colors"
+              >
+                <span class="text-green-600 font-medium">+ Add New Address</span>
+              </button>
+            </div>
+          </div>
+
           <!-- Delivery Information -->
-          <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+          <div v-if="!isAuthenticated || showNewAddressForm || savedAddresses.length === 0" class="bg-white rounded-lg shadow p-4 sm:p-6">
             <h2 class="text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-6">Delivery Information</h2>
             
             <form @submit.prevent="createOrderManually" class="space-y-4 sm:space-y-6">
@@ -190,6 +415,21 @@
                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-sm sm:text-base"
                   placeholder="Any special instructions for delivery..."
                 ></textarea>
+              </div>
+
+              <!-- Save this address checkbox (only for authenticated users adding new address) -->
+              <div v-if="isAuthenticated && showNewAddressForm" class="mt-4">
+                <div class="flex items-start">
+                  <input
+                    id="save-address"
+                    v-model="saveThisAddress"
+                    type="checkbox"
+                    class="mt-1 h-4 w-4 text-green-600 focus:ring-green-500"
+                  />
+                  <label for="save-address" class="ml-2 text-sm text-gray-700">
+                    Save this address for future orders
+                  </label>
+                </div>
               </div>
             </form>
           </div>
@@ -369,10 +609,10 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { cartAPI, ordersAPI, locationsAPI, paymentsAPI } from '@/services/api'
-import { user, isAuthenticated, mergeGuestCartToUserCart, guestCartItems } from '@/stores/auth' // Import isAuthenticated, mergeGuestCartToUserCart, guestCartItems
+import { user, isAuthenticated, mergeGuestCartToUserCart, guestCartItems, login, register } from '@/stores/auth' // Import login and register
 import MpesaPaymentCard from '@/components/customer/MpesaPaymentCard.vue' // Import the new component
 
 export default {
@@ -409,6 +649,33 @@ export default {
     
     // M-Pesa payment state (removed for manual flow)
     const processingPayment = ref(false)
+    
+    // Saved addresses variables
+    const savedAddresses = ref([])
+    const loadingSavedAddresses = ref(false)
+    const selectedAddressId = ref(null)
+    const showNewAddressForm = ref(false)
+    const saveThisAddress = ref(false)
+    
+    // Authentication variables
+    const showAuthSection = ref(false)
+    const authMode = ref('login') // 'login' or 'register'
+    const authForm = reactive({
+      phone_number: '',
+      password: '',
+      first_name: '',
+      last_name: '',
+      email: ''
+    })
+    const authErrors = reactive({
+      phone_number: '',
+      password: '',
+      first_name: '',
+      last_name: '',
+      email: '',
+      general: ''
+    })
+    const processingAuth = ref(false)
     
     const orderForm = ref({
       delivery_address: {
@@ -482,11 +749,8 @@ export default {
 
     const loadCounties = async () => {
       try {
-        console.log('Loading counties...')
         const response = await locationsAPI.getCounties()
-        console.log('Counties response:', response)
         counties.value = response.results || response
-        console.log('Counties set to:', counties.value)
       } catch (error) {
         console.error('Failed to load counties:', error)
       }
@@ -505,17 +769,156 @@ export default {
       loadingSubCounties.value = true
       
       try {
-        console.log('Loading sub-counties for county:', orderForm.value.delivery_address.county_id)
         const response = await locationsAPI.getSubCounties(orderForm.value.delivery_address.county_id)
-        console.log('Sub-counties response:', response)
         subCounties.value = response.results || response
-        console.log('Sub-counties set to:', subCounties.value)
       } catch (error) {
         console.error('Failed to load sub-counties:', error)
         subCounties.value = []
       } finally {
         loadingSubCounties.value = false
       }
+    }
+
+    const loadSavedAddresses = async () => {
+      if (!isAuthenticated.value) return
+      
+      loadingSavedAddresses.value = true
+      try {
+        const response = await locationsAPI.getUserAddresses()
+        
+        // DRF ModelViewSet returns array directly, not wrapped in results
+        savedAddresses.value = Array.isArray(response) ? response : (response.results || [])
+        
+        // Auto-select default address if exists
+        const defaultAddr = savedAddresses.value.find(addr => addr.is_default)
+        if (defaultAddr) {
+          selectSavedAddress(defaultAddr)
+        } else if (savedAddresses.value.length > 0) {
+          // If no default but addresses exist, show the form to let user choose
+          showNewAddressForm.value = false
+        }
+      } catch (error) {
+        console.error('Failed to load saved addresses:', error)
+        console.error('Error details:', error.response?.data)
+      } finally {
+        loadingSavedAddresses.value = false
+      }
+    }
+
+    const selectSavedAddress = (address) => {
+      selectedAddressId.value = address.address_id
+      showNewAddressForm.value = false
+      
+      // Store the subcounty_id before loading subcounties
+      const savedSubCountyId = address.sub_county
+      
+      // Populate form with saved address
+      orderForm.value.delivery_address.full_name = address.full_name
+      orderForm.value.delivery_address.phone_number = address.phone_number
+      orderForm.value.delivery_address.county_id = address.county
+      orderForm.value.delivery_address.detailed_address = address.detailed_address
+      
+      // Load subcounties for the county, then restore the subcounty_id
+      loadSubCounties().then(() => {
+        orderForm.value.delivery_address.subcounty_id = savedSubCountyId
+      })
+    }
+
+    const showNewAddressFormHandler = () => {
+      selectedAddressId.value = null
+      showNewAddressForm.value = true
+      
+      // Clear form
+      orderForm.value.delivery_address.full_name = user.value ? `${user.value.first_name} ${user.value.last_name}`.trim() : ''
+      orderForm.value.delivery_address.phone_number = user.value?.phone_number || ''
+      orderForm.value.delivery_address.county_id = ''
+      orderForm.value.delivery_address.subcounty_id = ''
+      orderForm.value.delivery_address.detailed_address = ''
+    }
+
+    const handleLogin = async () => {
+      // Clear errors
+      Object.keys(authErrors).forEach(key => authErrors[key] = '')
+      
+      // Validate
+      if (!authForm.phone_number || !authForm.password) {
+        authErrors.general = 'Please enter phone number and password'
+        return
+      }
+      
+      processingAuth.value = true
+      try {
+        const result = await login(authForm.phone_number, authForm.password)
+        
+        if (result.success) {
+          // Auth successful - reload page state
+          showAuthSection.value = false
+          await Promise.all([
+            loadCart(),
+            loadSavedAddresses()
+          ])
+          initializeForm()
+        } else {
+          authErrors.general = result.error
+        }
+      } catch (error) {
+        authErrors.general = 'Login failed. Please try again.'
+      } finally {
+        processingAuth.value = false
+      }
+    }
+
+    const handleRegister = async () => {
+      // Clear errors
+      Object.keys(authErrors).forEach(key => authErrors[key] = '')
+      
+      // Validate
+      if (!authForm.first_name || !authForm.last_name || !authForm.phone_number || !authForm.password) {
+        authErrors.general = 'Please fill in all required fields'
+        return
+      }
+      
+      if (authForm.password.length < 8) {
+        authErrors.password = 'Password must be at least 8 characters'
+        return
+      }
+      
+      processingAuth.value = true
+      try {
+        const userData = {
+          user_role: 'customer',
+          first_name: authForm.first_name,
+          last_name: authForm.last_name,
+          phone_number: authForm.phone_number,
+          email: authForm.email || null,
+          password: authForm.password,
+          re_password: authForm.password
+        }
+        
+        const result = await register(userData)
+        
+        if (result.success) {
+          // Registration successful - reload page state
+          showAuthSection.value = false
+          await Promise.all([
+            loadCart(),
+            loadSavedAddresses()
+          ])
+          initializeForm()
+        } else {
+          // Display the error from backend
+          authErrors.general = result.error
+          processingAuth.value = false
+        }
+      } catch (error) {
+        authErrors.general = 'Registration failed. Please try again.'
+        processingAuth.value = false
+      }
+    }
+
+    const switchAuthMode = (mode) => {
+      authMode.value = mode
+      Object.keys(authErrors).forEach(key => authErrors[key] = '')
     }
 
     const estimateDeliveryFee = async () => {
@@ -618,6 +1021,24 @@ export default {
         }
 
         const response = await ordersAPI.createOrder(orderPayload)
+        
+        // Save address if requested and it's a new address
+        if (saveThisAddress.value && showNewAddressForm.value) {
+          try {
+            await locationsAPI.createAddress({
+              full_name: orderForm.value.delivery_address.full_name,
+              phone_number: orderForm.value.delivery_address.phone_number,
+              county: orderForm.value.delivery_address.county_id,
+              sub_county: orderForm.value.delivery_address.subcounty_id,
+              location_name: orderForm.value.delivery_address.detailed_address.substring(0, 50),
+              detailed_address: orderForm.value.delivery_address.detailed_address,
+              is_default: savedAddresses.value.length === 0 // First address is default
+            })
+          } catch (error) {
+            console.error('Failed to save address:', error)
+            // Don't block order creation if address save fails
+          }
+        }
         
         if (response.order_id) {
           router.push(`/orders/${response.order_id}`)
@@ -733,21 +1154,24 @@ export default {
 
     // Lifecycle
     onMounted(async () => {
-      // Authentication gate: If not authenticated and guest cart is not empty, redirect to login
+      // If not authenticated and has cart items, show auth section instead of redirecting
       if (!isAuthenticated.value && guestCartItems.value.length > 0) {
-        router.push({ name: 'login', query: { redirect: router.currentRoute.value.fullPath } });
-        return; // Stop further execution
+        showAuthSection.value = true
       } else if (!isAuthenticated.value && guestCartItems.value.length === 0) {
-        // If not authenticated and cart is empty, redirect to products page
-        router.push({ name: 'products' });
-        return; // Stop further execution
+        router.push({ name: 'products' })
+        return
       }
 
       await Promise.all([
         loadCart(),
-        loadCounties()
+        loadCounties(),
+        isAuthenticated.value ? loadSavedAddresses() : Promise.resolve()
       ])
-      initializeForm()
+      
+      if (isAuthenticated.value) {
+        initializeForm()
+      }
+      
       loading.value = false
     })
 
@@ -780,6 +1204,22 @@ export default {
       debouncedEstimateDeliveryFee,
       processingPayment,
       formSubmitted, // Expose formSubmitted
+      isAuthenticated, // Expose isAuthenticated for template
+      savedAddresses,
+      loadingSavedAddresses,
+      selectedAddressId,
+      showNewAddressForm,
+      selectSavedAddress,
+      showNewAddressFormHandler,
+      saveThisAddress,
+      showAuthSection,
+      authMode,
+      authForm,
+      authErrors,
+      processingAuth,
+      handleLogin,
+      handleRegister,
+      switchAuthMode
     }
   }
 }

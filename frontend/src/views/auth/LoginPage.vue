@@ -73,8 +73,16 @@
           </div>
         </div>
 
-        <div v-if="errors.general" class="alert-error">
-          {{ errors.general }}
+        <div v-if="errors.general" class="rounded-lg bg-orange-50 border border-orange-200 p-4">
+          <div class="flex items-start space-x-3">
+            <svg class="h-5 w-5 text-orange-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+            </svg>
+            <div class="flex-1">
+              <h3 class="text-sm font-medium text-orange-800">Oops! We couldn't log you in</h3>
+              <p class="mt-2 text-sm text-orange-700">Please double-check your phone number and password, or create a new account if you're new here.</p>
+            </div>
+          </div>
         </div>
 
         <div>

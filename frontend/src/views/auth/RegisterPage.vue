@@ -165,17 +165,26 @@
           </div>
         </div>
 
-        <div v-if="errors.general" class="alert-error">
-          <div v-if="typeof errors.general === 'object'">
-            <ul class="list-disc list-inside space-y-1">
-              <li v-for="(errorList, field) in errors.general" :key="field">
-                <span class="capitalize">{{ field }}:</span>
-                <span v-for="error in errorList" :key="error">{{ error }}</span>
-              </li>
-            </ul>
-          </div>
-          <div v-else>
-            {{ errors.general }}
+        <div v-if="errors.general" class="rounded-lg bg-orange-50 border border-orange-200 p-4">
+          <div class="flex items-start space-x-3">
+            <svg class="h-5 w-5 text-orange-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+            </svg>
+            <div class="flex-1">
+              <h3 class="text-sm font-medium text-orange-800">We couldn't create your account</h3>
+              <div class="mt-1 text-sm text-orange-700">
+                <div v-if="typeof errors.general === 'object'">
+                  <div v-for="(errorList, field) in errors.general" :key="field" class="mt-1">
+                    <span class="capitalize font-medium">{{ field }}:</span>
+                    <span v-for="error in errorList" :key="error"> {{ error }}</span>
+                  </div>
+                </div>
+                <div v-else>
+                  {{ errors.general }}
+                </div>
+              </div>
+              <p class="mt-2 text-xs text-orange-600">Please review the information above and try again. We're here to help!</p>
+            </div>
           </div>
         </div>
 

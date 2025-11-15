@@ -48,7 +48,12 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config
     
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // Don't intercept errors from login/register endpoints - let them be handled by the forms
+    const isAuthEndpoint = originalRequest.url?.includes('/jwt/create/') || 
+                          originalRequest.url?.includes('/register/') ||
+                          originalRequest.url?.includes('/users/users/')
+    
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
       originalRequest._retry = true
       
       const refreshToken = getRefreshToken()
@@ -459,6 +464,36 @@ export const locationsAPI = {
 
   async deleteLocation(id) {
     const response = await api.delete(`/locations/${id}/`)
+    return response.data
+  },
+
+  async getUserAddresses() {
+    const response = await api.get('/locations/addresses/')
+    return response.data
+  },
+
+  async getDefaultAddress() {
+    const response = await api.get('/locations/addresses/default/')
+    return response.data
+  },
+
+  async createAddress(addressData) {
+    const response = await api.post('/locations/addresses/', addressData)
+    return response.data
+  },
+
+  async updateAddress(id, addressData) {
+    const response = await api.patch(`/locations/addresses/${id}/`, addressData)
+    return response.data
+  },
+
+  async deleteAddress(id) {
+    const response = await api.delete(`/locations/addresses/${id}/`)
+    return response.data
+  },
+
+  async setDefaultAddress(id) {
+    const response = await api.post(`/locations/addresses/${id}/set_default/`)
     return response.data
   }
 }
